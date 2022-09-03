@@ -1,0 +1,69 @@
+#pragma once
+#include "Dialog.h"
+
+#include "CheckBox.h"
+#include "NumericEdit.h"
+#include "OddsEdit.h"
+#include "BetList.h"
+#include "model.h"
+
+class BetTabDlg :
+    public Dialog
+{
+public:
+	static HICON hResetIcon;
+	static HICON hClearIcon;
+	static HICON hTickIcon;
+	static HICON hCalculatorIcon;
+private:
+	bool selSide = 0;
+	RECT rcErase1 = { 0 };
+	RECT rcErase2 = { 0 };
+	long long initialAmount = 0;
+	BOOL winProbSide = 0;
+	double winProb = 0;
+	double winProbError = 0;
+	Model model;
+
+	HWND hProbabilityCalculator = nullptr;
+	HICON hProbabilityCalculatorIcon = nullptr;
+
+protected:
+	Button resetButton;
+	HWND totalInvestText;
+	HWND currentProfitText[2];
+	CheckBox haveClosingCheck;
+	BetList betList[2];
+	HWND bankerBetSelector[10];
+	OddsEdit oddsEdit[10];
+	NumericEdit amountEdit[2];
+	Button clearAmountButton[2];
+	Button addAmountButton[8];
+	Button addButton[2];
+	NumericEdit boughtEdit;
+	HWND moveSpin;
+	Button allBoughtButton;
+	ListBox resultList[3];
+	Button confirmButton[3];
+	NumericEdit initialAmountEdit;
+	HWND winProbSideLeftSelector;
+	NumericEdit winProbEdit;
+	NumericEdit winProbErrorEdit;
+	Button winProbCalculatorButton;
+	HWND referenceOddsText[8];
+public:
+	BetTabDlg();
+	virtual INT_PTR initDlg(HWND hDlg);
+	virtual INT_PTR dlgProc(UINT message, WPARAM wParam, LPARAM lParam);
+private:
+	void updateCurrentProfit();
+	void updateMinOdds();
+	void add(int uid);
+	void onKillFocusList();
+	void calcBalanceAimAmount();
+	void updateInitialAmount();
+	void updateWinProb();
+	void updateWinProbError();
+	void disconnectCalculator();
+	void calcAimAmount(int side);
+};

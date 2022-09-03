@@ -1,0 +1,172 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <Filter Include="源文件">
+      <UniqueIdentifier>{4FC737F1-C7A5-4376-A066-2A32D752A2FF}</UniqueIdentifier>
+      <Extensions>cpp;c;cc;cxx;c++;cppm;ixx;def;odl;idl;hpj;bat;asm;asmx</Extensions>
+    </Filter>
+    <Filter Include="头文件">
+      <UniqueIdentifier>{93995380-89BD-4b04-88EB-625FBE52EBFB}</UniqueIdentifier>
+      <Extensions>h;hh;hpp;hxx;h++;hm;inl;inc;ipp;xsd</Extensions>
+    </Filter>
+    <Filter Include="资源文件">
+      <UniqueIdentifier>{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}</UniqueIdentifier>
+      <Extensions>rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tiff;tif;png;wav;mfcribbon-ms</Extensions>
+    </Filter>
+    <Filter Include="源文件\controls">
+      <UniqueIdentifier>{199a0f8f-d8d1-4cc4-aae9-b98eb787036d}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="头文件\controls">
+      <UniqueIdentifier>{7af97638-35b2-4c8e-b900-aa7519ad4e75}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="源文件\dialogs">
+      <UniqueIdentifier>{7d93d8b4-ebef-49fb-a9b4-40cfffad08c8}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="头文件\dialogs">
+      <UniqueIdentifier>{caa72f3a-98db-4e40-bbbb-145ea7e36690}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="源文件\controls\edits">
+      <UniqueIdentifier>{78498ded-13b3-4a18-997e-90d51a199eab}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="头文件\controls\edits">
+      <UniqueIdentifier>{b46a8652-8ecd-41ae-9ec9-2f0ff97d44e4}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="源文件\controls\listboxes">
+      <UniqueIdentifier>{2c4ef985-ee5c-43c8-8279-27f388d5e3ec}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="头文件\controls\listboxes">
+      <UniqueIdentifier>{2901f21e-ca70-4c6a-bf79-68a47cb0e240}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="源文件\controls\buttons">
+      <UniqueIdentifier>{cd46b83c-872c-4433-9ef6-b5b092b90c01}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="头文件\controls\buttons">
+      <UniqueIdentifier>{c9dbfbac-8e9b-48d7-b9cb-b6c3e312bdac}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="framework.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="targetver.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="Resource.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="bet.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="model.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="common.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="Dialog.h">
+      <Filter>头文件\dialogs</Filter>
+    </ClInclude>
+    <ClInclude Include="BetDlg.h">
+      <Filter>头文件\dialogs</Filter>
+    </ClInclude>
+    <ClInclude Include="BetTabDlg.h">
+      <Filter>头文件\dialogs</Filter>
+    </ClInclude>
+    <ClInclude Include="ConfigDlg.h">
+      <Filter>头文件\dialogs</Filter>
+    </ClInclude>
+    <ClInclude Include="Edit.h">
+      <Filter>头文件\controls\edits</Filter>
+    </ClInclude>
+    <ClInclude Include="NumericEdit.h">
+      <Filter>头文件\controls\edits</Filter>
+    </ClInclude>
+    <ClInclude Include="OddsEdit.h">
+      <Filter>头文件\controls\edits</Filter>
+    </ClInclude>
+    <ClInclude Include="ListBox.h">
+      <Filter>头文件\controls\listboxes</Filter>
+    </ClInclude>
+    <ClInclude Include="BetList.h">
+      <Filter>头文件\controls\listboxes</Filter>
+    </ClInclude>
+    <ClInclude Include="Button.h">
+      <Filter>头文件\controls\buttons</Filter>
+    </ClInclude>
+    <ClInclude Include="CheckBox.h">
+      <Filter>头文件\controls\buttons</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="bet.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="model.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="common.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="Dialog.cpp">
+      <Filter>源文件\dialogs</Filter>
+    </ClCompile>
+    <ClCompile Include="BetDlg.cpp">
+      <Filter>源文件\dialogs</Filter>
+    </ClCompile>
+    <ClCompile Include="BetTabDlg.cpp">
+      <Filter>源文件\dialogs</Filter>
+    </ClCompile>
+    <ClCompile Include="ConfigDlg.cpp">
+      <Filter>源文件\dialogs</Filter>
+    </ClCompile>
+    <ClCompile Include="Edit.cpp">
+      <Filter>源文件\controls\edits</Filter>
+    </ClCompile>
+    <ClCompile Include="NumericEdit.cpp">
+      <Filter>源文件\controls\edits</Filter>
+    </ClCompile>
+    <ClCompile Include="OddsEdit.cpp">
+      <Filter>源文件\controls\edits</Filter>
+    </ClCompile>
+    <ClCompile Include="ListBox.cpp">
+      <Filter>源文件\controls\listboxes</Filter>
+    </ClCompile>
+    <ClCompile Include="BetList.cpp">
+      <Filter>源文件\controls\listboxes</Filter>
+    </ClCompile>
+    <ClCompile Include="Button.cpp">
+      <Filter>源文件\controls\buttons</Filter>
+    </ClCompile>
+    <ClCompile Include="CheckBox.cpp">
+      <Filter>源文件\controls\buttons</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ResourceCompile Include="bet.rc">
+      <Filter>资源文件</Filter>
+    </ResourceCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <Image Include="chips.ico">
+      <Filter>资源文件</Filter>
+    </Image>
+    <Image Include="calculator.ico">
+      <Filter>资源文件</Filter>
+    </Image>
+    <Image Include="tick.ico">
+      <Filter>资源文件</Filter>
+    </Image>
+    <Image Include="reset.ico">
+      <Filter>资源文件</Filter>
+    </Image>
+    <Image Include="settings.ico">
+      <Filter>资源文件</Filter>
+    </Image>
+    <Image Include="clear.ico">
+      <Filter>资源文件</Filter>
+    </Image>
+  </ItemGroup>
+  <ItemGroup>
+    <Manifest Include="bet.exe.manifest" />
+  </ItemGroup>
+</Project>
