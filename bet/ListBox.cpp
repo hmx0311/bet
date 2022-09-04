@@ -57,11 +57,6 @@ void ListBox::attach(HWND hListBox)
 	this->hListBox = hListBox;
 	SetWindowLongPtr(hListBox, GWLP_USERDATA, (LONG_PTR)this);
 	SetWindowLongPtr(hListBox, GWLP_WNDPROC, (LONG_PTR)::listBoxProc);
-	RECT rcListBox;
-	GetWindowRect(hListBox, &rcListBox);
-	MapWindowRect(HWND_DESKTOP, GetParent(hListBox), &rcListBox);
-	rcListBox.bottom -= (rcListBox.bottom - rcListBox.top - 4) % listItemHeight;
-	SetWindowPos(hListBox, nullptr, rcListBox.left, rcListBox.top, rcListBox.right - rcListBox.left, rcListBox.bottom - rcListBox.top, SWP_NOZORDER);
 }
 
 HWND ListBox::getHwnd()

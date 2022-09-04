@@ -298,8 +298,6 @@ void BetList::attach(HWND hListBox, HWND hMoveSpin, HWND hAllBoughtButton, Numer
 	SetWindowLongPtr(hListBox, GWLP_WNDPROC, (LONG_PTR)::listBoxProc);
 	GetWindowRect(hListBox, &rcListBox);
 	MapWindowRect(HWND_DESKTOP, GetParent(hListBox), &rcListBox);
-	rcListBox.bottom = maxDisplayedItemCnt * listItemHeight + 4 + rcListBox.top;
-	SetWindowPos(hListBox, nullptr, rcListBox.left, rcListBox.top, rcListBox.right - rcListBox.left, rcListBox.bottom - rcListBox.top, SWP_NOZORDER);
 	resetContent();
 }
 
