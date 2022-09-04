@@ -68,13 +68,6 @@ LRESULT BetList::listBoxProc(UINT message, WPARAM wParam, LPARAM lParam)
 			{
 				return (LRESULT)TRUE;
 			}
-			RECT rect;
-			getItemRect(curSel, &rect);
-			POINT pos = { GET_X_LPARAM(lParam),GET_Y_LPARAM(lParam) };
-			if (!PtInRect(&rect, pos))
-			{
-				return (LRESULT)TRUE;
-			}
 			ShowWindow(hMoveSpin, SW_HIDE);
 			ShowWindow(hAllBoughtButton, SW_HIDE);
 			ShowWindow(boughtEdit->getHwnd(), SW_SHOW);
