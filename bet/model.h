@@ -47,6 +47,8 @@ private:
 	std::vector<Bet> bets[2];
 	std::vector<Banker> bankers[2];
 	bool haveClosing;
+	//[side][0]:被买后获胜收益
+	//[side][1]:可被买数量（负值）
 	IntervalSumTree potentialProfit[2][2];
 
 public:

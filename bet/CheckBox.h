@@ -8,6 +8,7 @@ private:
     bool check;
 public:
 	virtual void drawItem(HDC hDC, UINT itemState, RECT& rcItem);
+	void attach(HWND hButton, bool check);
 	void setCheck(bool check);
 	bool getCheck();
 private:

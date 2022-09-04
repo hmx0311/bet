@@ -20,10 +20,7 @@ void CheckBox::drawItem(HDC hDC, UINT itemState, RECT& rcItem)
 	{
 		state = (CHECKBOXSTATES)(state + CBS_CHECKEDNORMAL - CBS_UNCHECKEDNORMAL);
 	}
-	BP_ANIMATIONPARAMS animParams = { sizeof(BP_ANIMATIONPARAMS),0, BPAS_LINEAR, CHECKBOX_ANIMATION_DURATION };
-	HDC hdcFrom, hdcTo;
-	HANIMATIONBUFFER hbpAnimation = BeginBufferedAnimation(hButton, hDC, &rcItem, BPBF_COMPATIBLEBITMAP, NULL, &animParams, &hdcFrom, &hdcTo);
-	if (lastState == state || hbpAnimation == nullptr)
+	if (lastState == state)
 	{
 		int width = rcItem.right - rcItem.left;
 		int height = rcItem.bottom - rcItem.top;
@@ -35,17 +32,27 @@ void CheckBox::drawItem(HDC hDC, UINT itemState, RECT& rcItem)
 		BitBlt(hDC, rcItem.left, rcItem.top, width, height, hDCMem, 0, 0, SRCCOPY);
 		DeleteDC(hDCMem);
 		DeleteObject(bmp);
+		return;
 	}
-	else
-	{
-		SelectObject(hdcFrom, hFont);
-		SelectObject(hdcTo, hFont);
-		drawCheckBox(hdcFrom, lastState, rcItem);
-		drawCheckBox(hdcTo, state, rcItem);
-		BufferedPaintStopAllAnimations(hButton);
-		EndBufferedAnimation(hbpAnimation, TRUE);
-	}
+	BP_ANIMATIONPARAMS animParams = { sizeof(BP_ANIMATIONPARAMS),0, BPAS_LINEAR, CHECKBOX_ANIMATION_DURATION };
+	HDC hdcFrom, hdcTo;
+	HANIMATIONBUFFER hbpAnimation = BeginBufferedAnimation(hButton, hDC, &rcItem, BPBF_COMPATIBLEBITMAP, NULL, &animParams, &hdcFrom, &hdcTo);
+	SelectObject(hdcFrom, hFont);
+	SelectObject(hdcTo, hFont);
+	drawCheckBox(hdcFrom, lastState, rcItem);
+	drawCheckBox(hdcTo, state, rcItem);
+	BufferedPaintStopAllAnimations(hButton);
+	EndBufferedAnimation(hbpAnimation, TRUE);
 	lastState = state;
+}
+
+void CheckBox::attach(HWND hButton, bool check)
+{
+	this->hButton = hButton;
+	this->check = check;
+	lastState = check ? CBS_CHECKEDNORMAL : CBS_UNCHECKEDNORMAL;
+	SetWindowLongPtr(hButton, GWLP_USERDATA, (LONG_PTR)this);
+	SetWindowLongPtr(hButton, GWLP_WNDPROC, (LONG_PTR)::buttonProc);
 }
 
 void CheckBox::setCheck(bool check)

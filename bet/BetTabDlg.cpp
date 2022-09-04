@@ -47,7 +47,7 @@ INT_PTR BetTabDlg::initDlg(HWND hDlg)
 	hTotalInvestText = GetDlgItem(hDlg, IDC_TOTAL_INVEST_TEXT);
 	hCurrentProfitText[0] = GetDlgItem(hDlg, IDC_L_CURRENT_PROFIT_TEXT);
 	hCurrentProfitText[1] = GetDlgItem(hDlg, IDC_R_CURRENT_PROFIT_TEXT);
-	haveClosingCheck.attach(GetDlgItem(hDlg, IDC_HAVE_CLOSING_CHECK));
+	haveClosingCheck.attach(GetDlgItem(hDlg, IDC_HAVE_CLOSING_CHECK), config.defaultClosing);
 	hMoveSpin = GetDlgItem(hDlg, IDC_MOVE_SPIN);
 	allBoughtButton.attach(GetDlgItem(hDlg, IDC_ALL_BOUGHT_BUTTON));
 	boughtEdit.attach(GetDlgItem(hDlg, IDC_CHANGE_BOUGHT_EDIT));
@@ -131,7 +131,6 @@ INT_PTR BetTabDlg::initDlg(HWND hDlg)
 	allBoughtButton.setIcon(hTickIcon);
 	winProbCalculatorButton.setIcon(hCalculatorIcon);
 	boughtEdit.setTextLimit(7);
-	haveClosingCheck.setCheck(config.defaultClosing);
 	initialAmountEdit.setTextLimit(14);
 
 	SendMessage(hWinProbSideLeftSelector, BM_SETCHECK, 1, 0);

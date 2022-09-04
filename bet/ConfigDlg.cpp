@@ -14,21 +14,21 @@ ConfigDlg::ConfigDlg()
 INT_PTR ConfigDlg::initDlg(HWND hDlg)
 {
 	Dialog::initDlg(hDlg);
+	loadConfig(oldConfig);
+
 	cutEdit.attach(GetDlgItem(hDlg, IDC_CUT_EDIT));
-	defaultClosingCheck.attach(GetDlgItem(hDlg, IDC_DEFAULT_CLOSING_CHECK));
+	defaultClosingCheck.attach(GetDlgItem(hDlg, IDC_DEFAULT_CLOSING_CHECK), oldConfig.defaultClosing);
 	for (int i = 0; i < 4; i++)
 	{
 		fastAddedAmountEdit[i].attach(GetDlgItem(hDlg, IDC_FAST_ADDED_AMOUNT_EDIT1 + i));
 	}
 	defaultProbErrorEdit.attach(GetDlgItem(hDlg, IDC_DEFAULT_PROBABILTY_ERROR_EDIT));
 
-	loadConfig(oldConfig);
 
 	cutEdit.setTextLimit(3);
 	TCHAR str[6];
 	swprintf(str, 6, _T("%03d"), (int)round((1 - oldConfig.cut) * 1000));
 	cutEdit.setText(str);
-	defaultClosingCheck.setCheck(oldConfig.defaultClosing);
 	for (int i = 0; i < 4; i++)
 	{
 		fastAddedAmountEdit[i].setTextLimit(5);

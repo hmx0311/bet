@@ -69,10 +69,7 @@ void Button::drawItem(HDC hDC, UINT itemState, RECT& rcItem)
 	{
 		state = PBS_HOT;
 	}
-	BP_ANIMATIONPARAMS animParams = { sizeof(BP_ANIMATIONPARAMS),0, BPAS_LINEAR, BUTTON_ANIMATION_DURATION };
-	HDC hdcFrom, hdcTo;
-	HANIMATIONBUFFER hbpAnimation = BeginBufferedAnimation(hButton, hDC, &rcItem, BPBF_COMPATIBLEBITMAP, NULL, &animParams, &hdcFrom, &hdcTo);
-	if (lastState == state || hbpAnimation == nullptr)
+	if (lastState == state)
 	{
 		int width = rcItem.right - rcItem.left;
 		int height = rcItem.bottom - rcItem.top;
@@ -84,16 +81,17 @@ void Button::drawItem(HDC hDC, UINT itemState, RECT& rcItem)
 		BitBlt(hDC, rcItem.left, rcItem.top, width, height, hDCMem, 0, 0, SRCCOPY);
 		DeleteDC(hDCMem);
 		DeleteObject(hBmBuffer);
+		return;
 	}
-	else
-	{
-		SelectObject(hdcFrom, hFont);
-		SelectObject(hdcTo, hFont);
-		drawButton(hdcFrom, lastState, rcItem);
-		drawButton(hdcTo, state, rcItem);
-		BufferedPaintStopAllAnimations(hButton);
-		EndBufferedAnimation(hbpAnimation, TRUE);
-	}
+	BP_ANIMATIONPARAMS animParams = { sizeof(BP_ANIMATIONPARAMS),0, BPAS_LINEAR, BUTTON_ANIMATION_DURATION };
+	HDC hdcFrom, hdcTo;
+	HANIMATIONBUFFER hbpAnimation = BeginBufferedAnimation(hButton, hDC, &rcItem, BPBF_COMPATIBLEBITMAP, NULL, &animParams, &hdcFrom, &hdcTo);
+	SelectObject(hdcFrom, hFont);
+	SelectObject(hdcTo, hFont);
+	drawButton(hdcFrom, lastState, rcItem);
+	drawButton(hdcTo, state, rcItem);
+	BufferedPaintStopAllAnimations(hButton);
+	EndBufferedAnimation(hbpAnimation, TRUE);
 	lastState = state;
 }
 
@@ -133,7 +131,7 @@ void Button::drawButton(HDC hDC, PUSHBUTTONSTATES state, RECT& rcItem)
 	{
 		if (state == PBS_HOT)
 		{
-			FillRect(hDC, &rcItem,(HBRUSH)GetStockObject(LTGRAY_BRUSH));
+			FillRect(hDC, &rcItem, (HBRUSH)GetStockObject(LTGRAY_BRUSH));
 		}
 		rcContent.left++;
 		rcContent.top++;
