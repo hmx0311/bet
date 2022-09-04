@@ -3,7 +3,8 @@
 
 #include "common.h"
 
-#define CHECKBOX_ANIMATION_DURATION 125
+#define BUTTON_ANIMATION_DURATION_SHORT 100
+#define BUTTON_ANIMATION_DURATION_LONG  200
 
 void CheckBox::drawItem(HDC hDC, UINT itemState, RECT& rcItem)
 {
@@ -34,7 +35,8 @@ void CheckBox::drawItem(HDC hDC, UINT itemState, RECT& rcItem)
 		DeleteObject(bmp);
 		return;
 	}
-	BP_ANIMATIONPARAMS animParams = { sizeof(BP_ANIMATIONPARAMS),0, BPAS_LINEAR, CHECKBOX_ANIMATION_DURATION };
+	BP_ANIMATIONPARAMS animParams = { sizeof(BP_ANIMATIONPARAMS),0, BPAS_LINEAR,
+		state==CBS_CHECKEDPRESSED|| state==CBS_UNCHECKEDPRESSED|| lastState == CBS_CHECKEDPRESSED || lastState == CBS_UNCHECKEDPRESSED? BUTTON_ANIMATION_DURATION_SHORT: BUTTON_ANIMATION_DURATION_LONG };
 	HDC hdcFrom, hdcTo;
 	HANIMATIONBUFFER hbpAnimation = BeginBufferedAnimation(hButton, hDC, &rcItem, BPBF_COMPATIBLEBITMAP, NULL, &animParams, &hdcFrom, &hdcTo);
 	SelectObject(hdcFrom, hFont);

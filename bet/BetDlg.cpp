@@ -5,12 +5,12 @@
 #include "Edit.h"
 #include "ConfigDlg.h"
 
+#include <windowsx.h>
 #include <CommCtrl.h>
 #include <cmath>
 #include <ctime>
 
 #define TAB_WIDTH (int)roundf(142 * xScale)
-#define TAB_HEIGHT (int)ceilf(23 * yScale)
 #define ADD_TAB_X (TAB_WIDTH+4)
 #define MAX_TAB 4
 #define TAB_NAME_EDIT_MARGIN_X (int)roundf(2*xScale)
@@ -43,21 +43,21 @@ INT_PTR BetDlg::initDlg(HWND hDlg)
 
 	RECT pos;
 	GetWindowRect(betTab, &pos);
-	POINT point = { pos.right,pos.bottom };
-	ScreenToClient(hDlg, &point);
-	xScale = point.x / 676.0f;
-	yScale = point.y / 530.0f;
+	MapWindowRect(HWND_DESKTOP, hDlg, &pos);
+	xScale = pos.right / 676.0f;
+	yScale = pos.bottom / 530.0f;
 	hFont = (HFONT)SendMessage(hDlg, WM_GETFONT, 0, 0);
 	LOGFONT logFont;
 	GetObject(hFont, sizeof(LOGFONT), &logFont);
 	listItemHeight = -logFont.lfHeight;
-	addTabPosY = point.y - TAB_HEIGHT - 2;
+	int tabHeight = pos.bottom - pos.top - 3;
+	addTabPosY = pos.bottom - tabHeight - 2;
 	nameEditPosX = TAB_NAME_EDIT_MARGIN_X + 2;
-	nameEditPosY = point.y - TAB_HEIGHT + TAB_NAME_EDIT_MARGIN_Y - 1;
+	nameEditPosY = pos.bottom - tabHeight + TAB_NAME_EDIT_MARGIN_Y - 1;
 
 	tabNameEdit = CreateWindowEx(WS_EX_STATICEDGE, _T("EDIT"), _T(""),
 		WS_CHILD | WS_VISIBLE | ES_CENTER | ES_MULTILINE,
-		nameEditPosX, nameEditPosY, TAB_WIDTH - 2 * TAB_NAME_EDIT_MARGIN_X, TAB_HEIGHT - 2 * TAB_NAME_EDIT_MARGIN_Y,
+		nameEditPosX, nameEditPosY, TAB_WIDTH - 2 * TAB_NAME_EDIT_MARGIN_X, tabHeight - 2 * TAB_NAME_EDIT_MARGIN_Y,
 		hDlg, (HMENU)IDC_TAB_NAME_EDIT, hInst, nullptr);
 
 	defEditProc = (WNDPROC)SetWindowLongPtr(tabNameEdit, GWLP_WNDPROC, (LONG_PTR)editProc);
@@ -71,7 +71,7 @@ INT_PTR BetDlg::initDlg(HWND hDlg)
 	betTabs.push_back(currentTab);
 	ShowWindow(currentTab->getHwnd(), SW_SHOW);
 
-	SendMessage(betTab, TCM_SETITEMSIZE, 0, MAKELPARAM(TAB_WIDTH, TAB_HEIGHT));
+	SendMessage(betTab, TCM_SETITEMSIZE, 0, MAKELPARAM(TAB_WIDTH, tabHeight));
 	TCITEM tcItem;
 	tcItem.mask = TCIF_TEXT;
 	TCHAR tabName[] = _T("1");

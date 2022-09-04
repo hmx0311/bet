@@ -28,26 +28,30 @@ INT_PTR CALLBACK dlgProc(HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam)
 					{
 						button->drawItem(hDC, lpDrawItemStruct->itemState, lpDrawItemStruct->rcItem);
 					}
-					break;
+					return (INT_PTR)TRUE;
 				}
 			case ODT_LISTBOX:
-				ListBox* listBox = (ListBox*)GetWindowLongPtr(lpDrawItemStruct->hwndItem, GWLP_USERDATA);
-				if (listBox != nullptr)
+				if (lpDrawItemStruct->itemID == -1)
 				{
-					int width = lpDrawItemStruct->rcItem.right - lpDrawItemStruct->rcItem.left;
-					int height = lpDrawItemStruct->rcItem.bottom - lpDrawItemStruct->rcItem.top;
-					HBITMAP bmp = CreateCompatibleBitmap(hDC, width, height);
-					HDC hDCMem = CreateCompatibleDC(hDC);
-					SelectObject(hDCMem, bmp);
-					SelectObject(hDCMem, hFont);
-
-					listBox->drawItem(hDCMem, lpDrawItemStruct->itemID, lpDrawItemStruct->itemState, lpDrawItemStruct->itemData, lpDrawItemStruct->rcItem);
-
-					BitBlt(hDC, lpDrawItemStruct->rcItem.left, lpDrawItemStruct->rcItem.top, width, height, hDCMem, 0, 0, SRCCOPY);
-					DeleteDC(hDCMem);
-					DeleteObject(bmp);
+					return (INT_PTR)TRUE;
 				}
-				break;
+				ListBox* listBox = (ListBox*)GetWindowLongPtr(lpDrawItemStruct->hwndItem, GWLP_USERDATA);
+				if (listBox == nullptr)
+				{
+					return (INT_PTR)TRUE;
+				}
+				int width = lpDrawItemStruct->rcItem.right - lpDrawItemStruct->rcItem.left;
+				int height = lpDrawItemStruct->rcItem.bottom - lpDrawItemStruct->rcItem.top;
+				HBITMAP bmp = CreateCompatibleBitmap(hDC, width, height);
+				HDC hDCMem = CreateCompatibleDC(hDC);
+				SelectObject(hDCMem, bmp);
+				SelectObject(hDCMem, hFont);
+
+				listBox->drawItem(hDCMem, lpDrawItemStruct->itemID, lpDrawItemStruct->itemState, lpDrawItemStruct->itemData, lpDrawItemStruct->rcItem);
+
+				BitBlt(hDC, lpDrawItemStruct->rcItem.left, lpDrawItemStruct->rcItem.top, width, height, hDCMem, 0, 0, SRCCOPY);
+				DeleteDC(hDCMem);
+				DeleteObject(bmp);
 			}
 			return (INT_PTR)TRUE;
 		}

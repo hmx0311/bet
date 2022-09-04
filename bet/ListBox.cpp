@@ -35,10 +35,6 @@ LRESULT ListBox::wndProc(UINT message, WPARAM wParam, LPARAM lParam)
 
 void ListBox::drawItem(HDC hDC, int itemID, UINT itemState, ULONG_PTR itemData, RECT& rcItem)
 {
-	if (itemID == -1)
-	{
-		return;
-	}
 	RECT rcContent = { 0,0, rcItem.right, rcItem.bottom - rcItem.top };
 
 	FillRect(hDC, &rcContent, GetSysColorBrush(itemState & ODS_SELECTED ? COLOR_HIGHLIGHT : COLOR_WINDOW));

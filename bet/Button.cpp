@@ -4,7 +4,8 @@
 #include "common.h"
 #include "bet.h"
 
-#define BUTTON_ANIMATION_DURATION 250
+#define BUTTON_ANIMATION_DURATION_SHORT 150
+#define BUTTON_ANIMATION_DURATION_LONG  200
 
 WNDPROC defButtonProc;
 HTHEME hButtonTheme;
@@ -83,7 +84,7 @@ void Button::drawItem(HDC hDC, UINT itemState, RECT& rcItem)
 		DeleteObject(hBmBuffer);
 		return;
 	}
-	BP_ANIMATIONPARAMS animParams = { sizeof(BP_ANIMATIONPARAMS),0, BPAS_LINEAR, BUTTON_ANIMATION_DURATION };
+	BP_ANIMATIONPARAMS animParams = { sizeof(BP_ANIMATIONPARAMS),0, BPAS_LINEAR, state == PBS_PRESSED ? BUTTON_ANIMATION_DURATION_SHORT : BUTTON_ANIMATION_DURATION_LONG };
 	HDC hdcFrom, hdcTo;
 	HANIMATIONBUFFER hbpAnimation = BeginBufferedAnimation(hButton, hDC, &rcItem, BPBF_COMPATIBLEBITMAP, NULL, &animParams, &hdcFrom, &hdcTo);
 	SelectObject(hdcFrom, hFont);
