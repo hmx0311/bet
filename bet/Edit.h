@@ -12,7 +12,7 @@ class Edit
 protected:
 	HWND hEdit;
 public:
-	virtual LRESULT editProc(UINT message, WPARAM wParam, LPARAM lParam) = 0;
+	virtual LRESULT wndProc(UINT message, WPARAM wParam, LPARAM lParam) = 0;
 	void attach(HWND hListBox);
 	HWND getHwnd();
 	void getRect(RECT* rect);

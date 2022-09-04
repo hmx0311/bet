@@ -52,7 +52,7 @@ void CheckBox::attach(HWND hButton, bool check)
 	this->check = check;
 	lastState = check ? CBS_CHECKEDNORMAL : CBS_UNCHECKEDNORMAL;
 	SetWindowLongPtr(hButton, GWLP_USERDATA, (LONG_PTR)this);
-	SetWindowLongPtr(hButton, GWLP_WNDPROC, (LONG_PTR)::buttonProc);
+	SetWindowLongPtr(hButton, GWLP_WNDPROC, (LONG_PTR)buttonProc);
 }
 
 void CheckBox::setCheck(bool check)

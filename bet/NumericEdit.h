@@ -11,6 +11,6 @@ private:
 private:
     void updateStr();
 public:
-    virtual LRESULT editProc(UINT, WPARAM, LPARAM);
+    virtual LRESULT wndProc(UINT, WPARAM, LPARAM);
     void setText(LPCWSTR str);
 };

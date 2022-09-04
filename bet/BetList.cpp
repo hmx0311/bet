@@ -15,7 +15,7 @@ int X_MOVE;
 
 int BetList::maxDisplayedItemCnt;
 
-LRESULT BetList::listBoxProc(UINT message, WPARAM wParam, LPARAM lParam)
+LRESULT BetList::wndProc(UINT message, WPARAM wParam, LPARAM lParam)
 {
 	switch (message)
 	{
@@ -295,7 +295,7 @@ void BetList::attach(HWND hListBox, HWND hMoveSpin, HWND hAllBoughtButton, Numer
 	this->hAllBoughtButton = hAllBoughtButton;
 	this->boughtEdit = boughtEdit;
 	SetWindowLongPtr(hListBox, GWLP_USERDATA, (LONG_PTR)this);
-	SetWindowLongPtr(hListBox, GWLP_WNDPROC, (LONG_PTR)::listBoxProc);
+	SetWindowLongPtr(hListBox, GWLP_WNDPROC, (LONG_PTR)listBoxProc);
 	GetWindowRect(hListBox, &rcListBox);
 	MapWindowRect(HWND_DESKTOP, GetParent(hListBox), &rcListBox);
 	resetContent();

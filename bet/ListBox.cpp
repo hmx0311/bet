@@ -25,10 +25,10 @@ LRESULT CALLBACK listBoxProc(HWND hListBox, UINT message, WPARAM wParam, LPARAM 
 	{
 		return CallWindowProc(defListBoxProc, hListBox, message, wParam, lParam);
 	}
-	return listBox->listBoxProc(message, wParam, lParam);
+	return listBox->wndProc(message, wParam, lParam);
 }
 
-LRESULT ListBox::listBoxProc(UINT message, WPARAM wParam, LPARAM lParam)
+LRESULT ListBox::wndProc(UINT message, WPARAM wParam, LPARAM lParam)
 {
 	return CallWindowProc(defListBoxProc, hListBox, message, wParam, lParam);
 }
@@ -56,7 +56,7 @@ void ListBox::attach(HWND hListBox)
 {
 	this->hListBox = hListBox;
 	SetWindowLongPtr(hListBox, GWLP_USERDATA, (LONG_PTR)this);
-	SetWindowLongPtr(hListBox, GWLP_WNDPROC, (LONG_PTR)::listBoxProc);
+	SetWindowLongPtr(hListBox, GWLP_WNDPROC, (LONG_PTR)listBoxProc);
 }
 
 HWND ListBox::getHwnd()

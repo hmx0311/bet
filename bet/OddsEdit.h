@@ -6,7 +6,7 @@ class OddsEdit :
 private:
 	double odds = 0.1;
 public:
-	virtual LRESULT editProc(UINT, WPARAM, LPARAM);
+	virtual LRESULT wndProc(UINT, WPARAM, LPARAM);
 	double getOdds();
 	void updateOdds();
 	void oddsUp();

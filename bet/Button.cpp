@@ -15,7 +15,7 @@ LRESULT CALLBACK buttonProc(HWND hButton, UINT message, WPARAM wParam, LPARAM lP
 	LRESULT result = (LRESULT)FALSE;
 	if (button != nullptr)
 	{
-		result = button->buttonProc(message, wParam, lParam);
+		result = button->wndProc(message, wParam, lParam);
 	}
 	if (result)
 	{
@@ -24,7 +24,7 @@ LRESULT CALLBACK buttonProc(HWND hButton, UINT message, WPARAM wParam, LPARAM lP
 	return CallWindowProc(defButtonProc, hButton, message, wParam, lParam);
 }
 
-LRESULT Button::buttonProc(UINT message, WPARAM wParam, LPARAM lParam)
+LRESULT Button::wndProc(UINT message, WPARAM wParam, LPARAM lParam)
 {
 	switch (message)
 	{
@@ -99,7 +99,7 @@ void Button::attach(HWND hButton)
 {
 	this->hButton = hButton;
 	SetWindowLongPtr(hButton, GWLP_USERDATA, (LONG_PTR)this);
-	SetWindowLongPtr(hButton, GWLP_WNDPROC, (LONG_PTR)::buttonProc);
+	SetWindowLongPtr(hButton, GWLP_WNDPROC, (LONG_PTR)buttonProc);
 }
 
 HWND Button::getHwnd()

@@ -3,7 +3,7 @@
 
 using namespace std;
 
-LRESULT NumericEdit::editProc(UINT message, WPARAM wParam, LPARAM lParam)
+LRESULT NumericEdit::wndProc(UINT message, WPARAM wParam, LPARAM lParam)
 {
 	switch (message)
 	{

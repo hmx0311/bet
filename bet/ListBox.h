@@ -9,7 +9,7 @@ class ListBox
 protected:
 	HWND hListBox;
 public:
-	virtual LRESULT listBoxProc(UINT message, WPARAM wParam, LPARAM lParam);
+	virtual LRESULT wndProc(UINT message, WPARAM wParam, LPARAM lParam);
 	virtual void drawItem(HDC hDC, int itemID, UINT itemState, ULONG_PTR itemData, RECT& rcItem);
 	void attach(HWND hListBox);
 	HWND getHwnd();

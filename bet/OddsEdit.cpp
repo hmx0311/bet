@@ -1,7 +1,7 @@
 #include "framework.h"
 #include "OddsEdit.h"
 
-LRESULT OddsEdit::editProc(UINT message, WPARAM wParam, LPARAM lParam)
+LRESULT OddsEdit::wndProc(UINT message, WPARAM wParam, LPARAM lParam)
 {
 	switch (message)
 	{

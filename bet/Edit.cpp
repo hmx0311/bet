@@ -21,7 +21,7 @@ LRESULT CALLBACK editProc(HWND hEdit, UINT message, WPARAM wParam, LPARAM lParam
 	LRESULT result = (LRESULT)FALSE;
 	if (edit != nullptr)
 	{
-		result = edit->editProc(message, wParam, lParam);
+		result = edit->wndProc(message, wParam, lParam);
 	}
 	if (message == WM_COMMAND)
 	{
@@ -44,7 +44,7 @@ void Edit::attach(HWND hEdit)
 {
 	this->hEdit = hEdit;
 	SetWindowLongPtr(hEdit, GWLP_USERDATA, (LONG_PTR)this);
-	SetWindowLongPtr(hEdit, GWLP_WNDPROC, (LONG_PTR)::editProc);
+	SetWindowLongPtr(hEdit, GWLP_WNDPROC, (LONG_PTR)editProc);
 	setVCentered(hEdit);
 }
 
