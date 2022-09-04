@@ -116,6 +116,7 @@ LRESULT BetList::wndProc(UINT message, WPARAM wParam, LPARAM lParam)
 				int selLineIdx = getCurSel() - getScrollPos();
 				if (selLineIdx < 0 || selLineIdx >= maxDisplayedItemCnt)
 				{
+					setCurSel(-1);
 					if (GetFocus() == boughtEdit->getHwnd())
 					{
 						ShowWindow(boughtEdit->getHwnd(), SW_HIDE);
@@ -126,7 +127,6 @@ LRESULT BetList::wndProc(UINT message, WPARAM wParam, LPARAM lParam)
 						ShowWindow(hMoveSpin, SW_HIDE);
 						ShowWindow(hAllBoughtButton, SW_HIDE);
 					}
-					setCurSel(-1);
 				}
 			}
 			return (LRESULT)TRUE;
@@ -222,6 +222,7 @@ LRESULT BetList::wndProc(UINT message, WPARAM wParam, LPARAM lParam)
 			int selLineIdx = getCurSel() - getScrollPos();
 			if (selLineIdx < 0 || selLineIdx >= maxDisplayedItemCnt)
 			{
+				setCurSel(-1);
 				if (GetFocus() == boughtEdit->getHwnd())
 				{
 					ShowWindow(boughtEdit->getHwnd(), SW_HIDE);
@@ -232,7 +233,6 @@ LRESULT BetList::wndProc(UINT message, WPARAM wParam, LPARAM lParam)
 					ShowWindow(hMoveSpin, SW_HIDE);
 					ShowWindow(hAllBoughtButton, SW_HIDE);
 				}
-				setCurSel(-1);
 			}
 		}
 	}

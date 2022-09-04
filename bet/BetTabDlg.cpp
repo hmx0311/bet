@@ -272,7 +272,7 @@ INT_PTR BetTabDlg::dlgProc(UINT message, WPARAM wParam, LPARAM lParam)
 			switch (GetDlgCtrlID(GetFocus()))
 			{
 			case IDC_CHANGE_BOUGHT_EDIT:
-				boughtEdit.setText(_T(""));
+				ShowWindow(boughtEdit.getHwnd(), SW_HIDE);
 				SetFocus(betList[selSide].getHwnd());
 				return INT_PTR(TRUE);
 			}
