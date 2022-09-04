@@ -1,7 +1,6 @@
 #include "framework.h"
 #include "common.h"
 
-#include <iostream>
 #include <fstream>
 
 using namespace std;

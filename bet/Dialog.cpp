@@ -2,10 +2,8 @@
 #include "Dialog.h"
 
 #include "Button.h"
-#include "listBox.h"
+#include "ListBox.h"
 #include "common.h"
-
-#include <uxtheme.h>
 
 INT_PTR CALLBACK dlgProc(HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam)
 {

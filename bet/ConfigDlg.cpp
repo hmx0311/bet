@@ -1,9 +1,6 @@
 #include "framework.h"
 #include "ConfigDlg.h"
 
-#include "Button.h"
-#include "edit.h"
-
 #include <cmath>
 #include <fstream>
 

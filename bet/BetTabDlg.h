@@ -30,27 +30,27 @@ private:
 
 protected:
 	Button resetButton;
-	HWND totalInvestText;
-	HWND currentProfitText[2];
+	HWND hTotalInvestText;
+	HWND hCurrentProfitText[2];
 	CheckBox haveClosingCheck;
 	BetList betList[2];
-	HWND bankerBetSelector[10];
+	HWND hBankerBetSelector[10];
 	OddsEdit oddsEdit[10];
 	NumericEdit amountEdit[2];
 	Button clearAmountButton[2];
 	Button addAmountButton[8];
 	Button addButton[2];
 	NumericEdit boughtEdit;
-	HWND moveSpin;
+	HWND hMoveSpin;
 	Button allBoughtButton;
 	ListBox resultList[3];
 	Button confirmButton[3];
 	NumericEdit initialAmountEdit;
-	HWND winProbSideLeftSelector;
+	HWND hWinProbSideLeftSelector;
 	NumericEdit winProbEdit;
 	NumericEdit winProbErrorEdit;
 	Button winProbCalculatorButton;
-	HWND referenceOddsText[8];
+	HWND hReferenceOddsText[8];
 public:
 	BetTabDlg();
 	virtual INT_PTR initDlg(HWND hDlg);
@@ -59,7 +59,6 @@ private:
 	void updateCurrentProfit();
 	void updateMinOdds();
 	void add(int uid);
-	void onKillFocusList();
 	void calcBalanceAimAmount();
 	void updateInitialAmount();
 	void updateWinProb();

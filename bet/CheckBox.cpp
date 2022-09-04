@@ -23,7 +23,7 @@ void CheckBox::drawItem(HDC hDC, UINT itemState, RECT& rcItem)
 	BP_ANIMATIONPARAMS animParams = { sizeof(BP_ANIMATIONPARAMS),0, BPAS_LINEAR, CHECKBOX_ANIMATION_DURATION };
 	HDC hdcFrom, hdcTo;
 	HANIMATIONBUFFER hbpAnimation = BeginBufferedAnimation(hButton, hDC, &rcItem, BPBF_COMPATIBLEBITMAP, NULL, &animParams, &hdcFrom, &hdcTo);
-	if (lastState == state|| hbpAnimation ==nullptr)
+	if (lastState == state || hbpAnimation == nullptr)
 	{
 		int width = rcItem.right - rcItem.left;
 		int height = rcItem.bottom - rcItem.top;

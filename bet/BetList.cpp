@@ -138,6 +138,17 @@ LRESULT BetList::listBoxProc(UINT message, WPARAM wParam, LPARAM lParam)
 			}
 			return (LRESULT)TRUE;
 		}
+	case WM_KILLFOCUS:
+		{
+			HWND hFocus = GetFocus();
+			if (hFocus != hAllBoughtButton && hFocus != boughtEdit->getHwnd())
+			{
+				setCurSel(-1);
+				ShowWindow(hMoveSpin, SW_HIDE);
+				ShowWindow(hAllBoughtButton, SW_HIDE);
+			}
+			break;
+		}
 	case WM_COMMAND:
 		switch (LOWORD(wParam))
 		{
@@ -237,14 +248,14 @@ LRESULT BetList::listBoxProc(UINT message, WPARAM wParam, LPARAM lParam)
 
 void BetList::drawItem(HDC hDC, int itemID, UINT itemState, ULONG_PTR itemData, RECT& rcItem)
 {
+	RECT rcContent = { 0,0, rcItem.right, rcItem.bottom - rcItem.top };
 	if ((itemID < 2 || betsSize + 1 < itemID && itemID < betsSize + 5) && itemState & ODS_SELECTED)
 	{
-		itemState &= ~ODS_SELECTED;
+		itemState -= ODS_SELECTED;
 		ShowWindow(hMoveSpin, SW_HIDE);
 		ShowWindow(hAllBoughtButton, SW_HIDE);
 	}
-	RECT rcContent = { 0,0, rcItem.right, rcItem.bottom - rcItem.top };
-	if (itemState & ODS_SELECTED && itemID >= getScrollPos() && itemID < getScrollPos() + maxDisplayedItemCnt)
+	if (itemState & ODS_SELECTED)
 	{
 		int posY = rcListBox.top + rcItem.top + 2;
 		if (IsWindowVisible(boughtEdit->getHwnd()))
@@ -352,6 +363,8 @@ void BetList::updateBanker(int nIndex, LPCTSTR lpszItem, COLORREF color)
 {
 	insertString(nIndex, lpszItem, DT_CENTER, color);
 	SendMessage(hListBox, LB_DELETESTRING, nIndex + 1, 0);
+	ShowWindow(hMoveSpin, SW_HIDE);
+	ShowWindow(hAllBoughtButton, SW_HIDE);
 }
 
 int BetList::insertString(int nIndex, LPCTSTR lpszItem, BYTE style, COLORREF color)
@@ -412,6 +425,9 @@ pair<bool, int> BetList::deleteSel()
 	{
 		setTopIndex(betsSize + bankersSize + 5 - maxDisplayedItemCnt);
 	}
+	ShowWindow(hMoveSpin, SW_HIDE);
+	ShowWindow(hAllBoughtButton, SW_HIDE);
+	ShowWindow(boughtEdit->getHwnd(), SW_HIDE);
 	return result;
 }
 

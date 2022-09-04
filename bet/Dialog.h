@@ -15,4 +15,3 @@ public:
 	INT_PTR dialogBox(HWND hWndParent = nullptr);
 	HWND getHwnd();
 };
-

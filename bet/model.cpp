@@ -3,7 +3,6 @@
 
 #include "common.h"
 
-#include <string>
 using namespace std;
 
 constexpr double DBL_PRECISION_COMPENSATE = 1 + 40 * DBL_EPSILON;

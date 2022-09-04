@@ -2,7 +2,7 @@
 #include "Button.h"
 
 #include "common.h"
-#include "Resource.h"
+#include "bet.h"
 
 #define BUTTON_ANIMATION_DURATION 250
 
