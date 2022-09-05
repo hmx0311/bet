@@ -2,7 +2,7 @@
 #include "BetDlg.h"
 
 #include "common.h"
-#include "Edit.h"
+#include "tooltip.h"
 #include "ConfigDlg.h"
 
 #include <windowsx.h>
@@ -65,6 +65,9 @@ INT_PTR BetDlg::initDlg(HWND hDlg)
 	hButtonTheme = OpenThemeData(settingsButton.getHwnd(), _T("Button"));
 
 	settingsButton.setIcon(hSettingsIcon);
+
+	TCHAR settingsTipText[] = _T("ÉèÖÃ");
+	createToolTip(settingsButton.getHwnd(), hDlg, settingsTipText);
 
 	currentTab = new BetTabDlg;
 	currentTab->createDialog(hDlg);

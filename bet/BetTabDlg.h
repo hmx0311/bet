@@ -50,6 +50,7 @@ protected:
 	NumericEdit winProbEdit;
 	NumericEdit winProbErrorEdit;
 	Button winProbCalculatorButton;
+	HWND hWinProbCalculatorTip;
 	HWND hReferenceOddsText[8];
 public:
 	BetTabDlg();

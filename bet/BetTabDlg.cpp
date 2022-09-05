@@ -3,6 +3,8 @@
 
 #include "common.h"
 
+#include "tooltip.h"
+
 #include <CommCtrl.h>
 #include <Vsstyle.h>
 #include <uxtheme.h>
@@ -95,6 +97,9 @@ INT_PTR BetTabDlg::initDlg(HWND hDlg)
 			return result;
 		});
 
+	TCHAR resetTipText[] = _T("重置当前竞猜");
+	createToolTip(resetButton.getHwnd(), hDlg, resetTipText);
+
 	for (int i = 0; i < 10; i += 2)
 	{
 		SendMessage(hBankerBetSelector[i], BM_SETCHECK, 1, 0);
@@ -141,6 +146,9 @@ INT_PTR BetTabDlg::initDlg(HWND hDlg)
 	winProbErrorEdit.setText(str);
 	winProbError = config.defaultProbError;
 
+	TCHAR winProbCalculatorTipText[] = _T("选择胜率计算器");
+	hWinProbCalculatorTip= createToolTip(winProbCalculatorButton.getHwnd(), hDlg, winProbCalculatorTipText);
+
 	return INT_PTR(TRUE);
 }
 
@@ -154,6 +162,8 @@ INT_PTR BetTabDlg::dlgProc(UINT message, WPARAM wParam, LPARAM lParam)
 			hProbabilityCalculator = (HWND)wParam;
 			hProbabilityCalculatorIcon = CopyIcon((HICON)SendMessage(hProbabilityCalculator, WM_GETICON, ICON_BIG, 0));
 			winProbCalculatorButton.setIcon(hProbabilityCalculatorIcon);
+			TCHAR winProbCalculatorTipText[] = _T("断开胜率计算器");
+			setToolTipText(hWinProbCalculatorTip, winProbCalculatorButton.getHwnd(), hDlg, winProbCalculatorTipText);
 		}
 		return INT_PTR(TRUE);
 	case BPC_DISCONNECT:
@@ -756,6 +766,8 @@ void BetTabDlg::disconnectCalculator()
 	winProbCalculatorButton.setIcon(hCalculatorIcon);
 	DeleteObject(hProbabilityCalculatorIcon);
 	hProbabilityCalculatorIcon = nullptr;
+	TCHAR winProbCalculatorTipText[] = _T("选择胜率计算器");
+	setToolTipText(hWinProbCalculatorTip, winProbCalculatorButton.getHwnd(), hDlg, winProbCalculatorTipText);
 }
 
 void BetTabDlg::calcAimAmount(int side)
