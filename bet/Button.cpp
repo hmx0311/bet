@@ -15,14 +15,13 @@ HTHEME hButtonTheme;
 LRESULT CALLBACK buttonProc(HWND hButton, UINT message, WPARAM wParam, LPARAM lParam)
 {
 	Button* button = (Button*)GetWindowLongPtr(hButton, GWLP_USERDATA);
-	LRESULT result = (LRESULT)FALSE;
 	if (button != nullptr)
 	{
-		result = button->wndProc(message, wParam, lParam);
+		return button->wndProc(message, wParam, lParam);
 	}
-	if (result)
+	if (message == WM_UPDATEUISTATE)
 	{
-		return result;
+		wParam &= ~MAKELONG(0, UISF_HIDEFOCUS);
 	}
 	return CallWindowProc(defButtonProc, hButton, message, wParam, lParam);
 }
@@ -58,7 +57,7 @@ LRESULT Button::wndProc(UINT message, WPARAM wParam, LPARAM lParam)
 		SendMessage(hButton, WM_LBUTTONDOWN, wParam, lParam);
 		return LRESULT(TRUE);
 	}
-	return LRESULT(FALSE);
+	return CallWindowProc(defButtonProc, hButton, message, wParam, lParam);
 }
 
 void Button::drawItem(HDC hDC, UINT itemState, RECT& rcItem)

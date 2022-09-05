@@ -25,6 +25,11 @@ INT_PTR ConfigDlg::initDlg(HWND hDlg)
 	defaultProbErrorEdit.attach(GetDlgItem(hDlg, IDC_DEFAULT_PROBABILTY_ERROR_EDIT));
 
 
+	SendMessage(GetDlgItem(hDlg,IDOK), WM_UPDATEUISTATE, MAKEWPARAM(UIS_SET, UISF_HIDEFOCUS), 0);
+	SetWindowLongPtr(GetDlgItem(hDlg, IDOK), GWLP_WNDPROC, (LONG_PTR)buttonProc);
+	SendMessage(GetDlgItem(hDlg, IDCANCEL), WM_UPDATEUISTATE, MAKEWPARAM(UIS_SET, UISF_HIDEFOCUS), 0);
+	SetWindowLongPtr(GetDlgItem(hDlg, IDCANCEL), GWLP_WNDPROC, (LONG_PTR)buttonProc);
+
 	cutEdit.setTextLimit(3);
 	TCHAR str[6];
 	swprintf(str, 6, _T("%03d"), (int)round((1 - oldConfig.cut) * 1000));

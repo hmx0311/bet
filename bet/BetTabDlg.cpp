@@ -35,7 +35,7 @@ INT_PTR BetTabDlg::initDlg(HWND hDlg)
 {
 	Dialog::initDlg(hDlg);
 
-	if (defListBoxProc==nullptr)
+	if (defListBoxProc == nullptr)
 	{
 		defListBoxProc = (WNDPROC)GetWindowLongPtr(GetDlgItem(hDlg, IDC_L_BET_LIST), GWLP_WNDPROC);
 		RECT rect;
@@ -87,6 +87,11 @@ INT_PTR BetTabDlg::initDlg(HWND hDlg)
 	confirmButton[1].attach(GetDlgItem(hDlg, IDC_L_CONFIRM_BUTTON));
 	confirmButton[2].attach(GetDlgItem(hDlg, IDC_R_CONFIRM_BUTTON));
 
+	for (int i = 0; i < 10; i++)
+	{
+		SendMessage(hBankerBetSelector[i], WM_UPDATEUISTATE, MAKEWPARAM(UIS_SET, UISF_HIDEFOCUS), 0);
+		SetWindowLongPtr(hBankerBetSelector[i], GWLP_WNDPROC, (LONG_PTR)buttonProc);
+	}
 	SetWindowLongPtr(allBoughtButton.getHwnd(), GWLP_WNDPROC, (LONG_PTR)(WNDPROC)[](HWND button, UINT message, WPARAM wParam, LPARAM lParam)->LRESULT
 		{
 			LRESULT result = buttonProc(button, message, wParam, lParam);
@@ -147,7 +152,7 @@ INT_PTR BetTabDlg::initDlg(HWND hDlg)
 	winProbError = config.defaultProbError;
 
 	TCHAR winProbCalculatorTipText[] = _T("º”‘ÿ §¬ º∆À„∆˜");
-	hWinProbCalculatorTip= createToolTip(winProbCalculatorButton.getHwnd(), hDlg, winProbCalculatorTipText);
+	hWinProbCalculatorTip = createToolTip(winProbCalculatorButton.getHwnd(), hDlg, winProbCalculatorTipText);
 
 	return INT_PTR(TRUE);
 }
