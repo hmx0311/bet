@@ -13,7 +13,7 @@ void CheckBox::drawItem(HDC hDC, UINT itemState, RECT& rcItem)
 	{
 		state = CBS_UNCHECKEDPRESSED;
 	}
-	else if (itemState & ODS_HOTLIGHT || isTracking)
+	else if (isTracking)
 	{
 		state = CBS_UNCHECKEDHOT;
 	}
