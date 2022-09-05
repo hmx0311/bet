@@ -146,7 +146,7 @@ INT_PTR BetTabDlg::initDlg(HWND hDlg)
 	winProbErrorEdit.setText(str);
 	winProbError = config.defaultProbError;
 
-	TCHAR winProbCalculatorTipText[] = _T("选择胜率计算器");
+	TCHAR winProbCalculatorTipText[] = _T("加载胜率计算器");
 	hWinProbCalculatorTip= createToolTip(winProbCalculatorButton.getHwnd(), hDlg, winProbCalculatorTipText);
 
 	return INT_PTR(TRUE);
@@ -766,7 +766,7 @@ void BetTabDlg::disconnectCalculator()
 	winProbCalculatorButton.setIcon(hCalculatorIcon);
 	DeleteObject(hProbabilityCalculatorIcon);
 	hProbabilityCalculatorIcon = nullptr;
-	TCHAR winProbCalculatorTipText[] = _T("选择胜率计算器");
+	TCHAR winProbCalculatorTipText[] = _T("加载胜率计算器");
 	setToolTipText(hWinProbCalculatorTip, winProbCalculatorButton.getHwnd(), hDlg, winProbCalculatorTipText);
 }
 
