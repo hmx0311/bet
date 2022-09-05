@@ -258,7 +258,6 @@ INT_PTR BetDlg::dlgProc(UINT message, WPARAM wParam, LPARAM lParam)
 						lastClickTime = clock();
 						lastSel = curSel;
 					}
-					SetFocus(currentTab->getHwnd());
 					return (INT_PTR)TRUE;
 				}
 			case NM_RCLICK:
