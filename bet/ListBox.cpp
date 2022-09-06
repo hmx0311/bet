@@ -35,6 +35,9 @@ LRESULT CALLBACK listBoxSubclassProc(HWND hListBox, UINT msg, WPARAM wParam, LPA
 	return listBox->wndProc(msg, wParam, lParam);
 }
 
+
+//class ListBox
+
 void ListBox::attach(HWND hListBox)
 {
 	this->hListBox = hListBox;
@@ -89,6 +92,8 @@ int ListBox::getCurSel()
 	return (int)SendMessage(hListBox, LB_GETCURSEL, 0, 0);
 }
 
+
+//class BetList
 
 int BetList::maxDisplayedItemCnt;
 
@@ -153,6 +158,12 @@ LRESULT BetList::wndProc(UINT msg, WPARAM wParam, LPARAM lParam)
 		{
 			int curSel = getCurSel();
 			if (curSel < betsSize + 5)
+			{
+				return (LRESULT)TRUE;
+			}
+			RECT rect;
+			getItemRect(curSel, &rect);
+			if (!PtInRect(&rect, { GET_X_LPARAM(lParam),GET_Y_LPARAM(lParam) }))
 			{
 				return (LRESULT)TRUE;
 			}

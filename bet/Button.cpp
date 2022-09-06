@@ -25,6 +25,9 @@ LRESULT CALLBACK buttonSubclassProc(HWND hButton, UINT msg, WPARAM wParam, LPARA
 	return DefSubclassProc(hButton, msg, wParam, lParam);
 }
 
+
+//class Button
+
 void Button::attach(HWND hButton)
 {
 	this->hButton = hButton;

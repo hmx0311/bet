@@ -42,6 +42,9 @@ LRESULT CALLBACK editSubclassProc(HWND hEdit, UINT msg, WPARAM wParam, LPARAM lP
 	return DefSubclassProc(hEdit, msg, wParam, lParam);
 }
 
+
+//abstract class Edit
+
 void Edit::attach(HWND hEdit)
 {
 	this->hEdit = hEdit;
@@ -86,6 +89,8 @@ void Edit::setSel(int start, int end)
 	SendMessage(hEdit, EM_SETSEL, start, end);
 }
 
+
+//class NumericEdit
 
 LRESULT NumericEdit::wndProc(UINT msg, WPARAM wParam, LPARAM lParam)
 {
@@ -213,6 +218,8 @@ void NumericEdit::updateStr()
 	curUndo = temp;
 }
 
+
+//class OddsEdit
 
 LRESULT OddsEdit::wndProc(UINT msg, WPARAM wParam, LPARAM lParam)
 {
