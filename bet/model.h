@@ -37,7 +37,7 @@ private:
 
 	public:
 		long long getAmount(int index);
-		void update(int index, long long deltaAmount);
+		void deltaUpdate(int index, long long deltaAmount);
 		long long getSum(int begin, int end);	//sum between [begin,end)
 		long long total();
 	};

@@ -312,7 +312,7 @@ int BetList::getBankersSize()
 
 int BetList::getCurSel()
 {
-	int curSel = SendMessage(hListBox, LB_GETCURSEL, 0, 0);
+	int curSel = ListBox::getCurSel();
 	if (curSel < 2 || betsSize + 1 < curSel && curSel < betsSize + 5)
 	{
 		return -1;

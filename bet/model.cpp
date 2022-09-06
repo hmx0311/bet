@@ -29,7 +29,7 @@ long long Model::IntervalSumTree::getAmount(int index)
 	return amount[index | (1 << INTERVAL_TREE_DEPTH)];
 }
 
-void Model::IntervalSumTree::update(int index, long long deltaAmount)
+void Model::IntervalSumTree::deltaUpdate(int index, long long deltaAmount)
 {
 	for (index |= 1 << INTERVAL_TREE_DEPTH; index > 0; index >>= 1)
 	{
@@ -76,8 +76,8 @@ void Model::addBanker(bool side, Banker& banker)
 {
 	totalInvest += banker.amount;
 	int oddsIdx = round(10 * banker.odds);
-	potentialProfit[side][0].update(oddsIdx, banker.maxBought / banker.odds * config.cut * DBL_PRECISION_COMPENSATE);
-	potentialProfit[side][1].update(oddsIdx, -banker.maxBought);
+	potentialProfit[side][0].deltaUpdate(oddsIdx, banker.maxBought / banker.odds * config.cut * DBL_PRECISION_COMPENSATE);
+	potentialProfit[side][1].deltaUpdate(oddsIdx, -banker.maxBought);
 	if (!haveClosing)
 	{
 		profit[!side] -= banker.maxBought;
@@ -106,12 +106,12 @@ const Banker& Model::changeBought(bool side, int index, int amount)
 	{
 		profit[!side] += banker.bought - amount;
 	}
-	potentialProfit[side][1].update(oddsIdx, amount - banker.bought);
+	potentialProfit[side][1].deltaUpdate(oddsIdx, amount - banker.bought);
 	int porfitDiff = -banker.profit;
 	banker.changeBought(amount);
 	porfitDiff += banker.profit;
 	profit[side] += porfitDiff;
-	potentialProfit[side][0].update(oddsIdx, -porfitDiff);
+	potentialProfit[side][0].deltaUpdate(oddsIdx, -porfitDiff);
 	return banker;
 }
 
@@ -140,9 +140,9 @@ void Model::deleteBanker(bool side, int index)
 	totalInvest -= banker->amount;
 	int oddsIdx = round(10 * banker->odds);
 	profit[side] -= banker->profit;
-	potentialProfit[side][0].update(oddsIdx, banker->profit - int(int(banker->amount / banker->odds) * config.cut));
+	potentialProfit[side][0].deltaUpdate(oddsIdx, banker->profit - int(int(banker->amount / banker->odds) * config.cut));
 	profit[!side] += haveClosing ? banker->bought : banker->maxBought;
-	potentialProfit[side][1].update(oddsIdx, banker->maxBought - banker->bought);
+	potentialProfit[side][1].deltaUpdate(oddsIdx, banker->maxBought - banker->bought);
 	bankers[side].erase(banker);
 }
 

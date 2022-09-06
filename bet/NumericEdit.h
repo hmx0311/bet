@@ -1,7 +1,7 @@
 #pragma once
 #include "Edit.h"
 
-#include "string"
+#include <string>
 class NumericEdit :
     public Edit
 {
