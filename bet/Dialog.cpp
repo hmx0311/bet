@@ -5,9 +5,9 @@
 #include "ListBox.h"
 #include "common.h"
 
-INT_PTR CALLBACK dlgProc(HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam)
+INT_PTR CALLBACK dlgProc(HWND hDlg, UINT msg, WPARAM wParam, LPARAM lParam)
 {
-	switch (message)
+	switch (msg)
 	{
 	case WM_INITDIALOG:
 		return ((Dialog*)lParam)->initDlg(hDlg);
@@ -64,7 +64,7 @@ INT_PTR CALLBACK dlgProc(HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam)
 	{
 		return INT_PTR(FALSE);
 	}
-	return dlg->dlgProc(message, wParam, lParam);
+	return dlg->dlgProc(msg, wParam, lParam);
 }
 
 INT_PTR Dialog::initDlg(HWND hDlg)

@@ -1,6 +1,7 @@
 #include "framework.h"
 #include "ConfigDlg.h"
 
+#include "Button.h"
 #include <cmath>
 #include <fstream>
 
@@ -17,7 +18,9 @@ INT_PTR ConfigDlg::initDlg(HWND hDlg)
 	loadConfig(oldConfig);
 
 	cutEdit.attach(GetDlgItem(hDlg, IDC_CUT_EDIT));
-	defaultClosingCheck.attach(GetDlgItem(hDlg, IDC_DEFAULT_CLOSING_CHECK), oldConfig.defaultClosing);
+	defaultClosingCheck = GetDlgItem(hDlg, IDC_DEFAULT_CLOSING_CHECK);
+	SendMessage(defaultClosingCheck, WM_UPDATEUISTATE, MAKEWPARAM(UIS_SET, UISF_HIDEFOCUS), 0);
+	SetWindowSubclass(defaultClosingCheck, buttonSubclassProc, 0, 0);
 	for (int i = 0; i < 4; i++)
 	{
 		fastAddedAmountEdit[i].attach(GetDlgItem(hDlg, IDC_FAST_ADDED_AMOUNT_EDIT1 + i));
@@ -25,15 +28,16 @@ INT_PTR ConfigDlg::initDlg(HWND hDlg)
 	defaultProbErrorEdit.attach(GetDlgItem(hDlg, IDC_DEFAULT_PROBABILTY_ERROR_EDIT));
 
 
-	SendMessage(GetDlgItem(hDlg,IDOK), WM_UPDATEUISTATE, MAKEWPARAM(UIS_SET, UISF_HIDEFOCUS), 0);
-	SetWindowLongPtr(GetDlgItem(hDlg, IDOK), GWLP_WNDPROC, (LONG_PTR)buttonProc);
+	SendMessage(GetDlgItem(hDlg, IDOK), WM_UPDATEUISTATE, MAKEWPARAM(UIS_SET, UISF_HIDEFOCUS), 0);
+	SetWindowSubclass(GetDlgItem(hDlg, IDOK), buttonSubclassProc, 0, 0);
 	SendMessage(GetDlgItem(hDlg, IDCANCEL), WM_UPDATEUISTATE, MAKEWPARAM(UIS_SET, UISF_HIDEFOCUS), 0);
-	SetWindowLongPtr(GetDlgItem(hDlg, IDCANCEL), GWLP_WNDPROC, (LONG_PTR)buttonProc);
+	SetWindowSubclass(GetDlgItem(hDlg, IDCANCEL), buttonSubclassProc, 0, 0);
 
 	cutEdit.setTextLimit(3);
 	TCHAR str[6];
 	swprintf(str, 6, _T("%03d"), (int)round((1 - oldConfig.cut) * 1000));
 	cutEdit.setText(str);
+	SendMessage(defaultClosingCheck, BM_SETCHECK, oldConfig.defaultClosing, 0);
 	for (int i = 0; i < 4; i++)
 	{
 		fastAddedAmountEdit[i].setTextLimit(5);
@@ -47,17 +51,13 @@ INT_PTR ConfigDlg::initDlg(HWND hDlg)
 	return INT_PTR(TRUE);  // 除非将焦点设置到控件，否则返回 TRUE
 }
 
-INT_PTR ConfigDlg::dlgProc(UINT message, WPARAM wParam, LPARAM lParam)
+INT_PTR ConfigDlg::dlgProc(UINT msg, WPARAM wParam, LPARAM lParam)
 {
-
-	switch (message)
+	switch (msg)
 	{
 	case WM_COMMAND:
 		switch (LOWORD(wParam))
 		{
-		case IDC_DEFAULT_CLOSING_CHECK:
-			defaultClosingCheck.setCheck(!defaultClosingCheck.getCheck());
-			break;
 		case IDOK:
 			{
 				Config newConfig = { 0,0,0 };
@@ -69,7 +69,7 @@ INT_PTR ConfigDlg::dlgProc(UINT message, WPARAM wParam, LPARAM lParam)
 					newConfig.cut = (newConfig.cut + c) * 0.1;
 				}
 				newConfig.cut = 1 - newConfig.cut;
-				newConfig.defaultClosing = defaultClosingCheck.getCheck();
+				newConfig.defaultClosing = SendMessage(defaultClosingCheck, BM_GETCHECK, 0, 0);
 				for (int i = 0; i < 4; i++)
 				{
 					fastAddedAmountEdit[i].getText(str, 6);

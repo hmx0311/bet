@@ -7,7 +7,8 @@
 #include "BetDlg.h"
 #include "common.h"
 
-#pragma comment(lib, "UxTheme.lib")
+#pragma comment(lib,"comctl32.lib")
+#pragma comment(lib,"UxTheme.lib")
 
 #define MAX_LOADSTRING 100
 

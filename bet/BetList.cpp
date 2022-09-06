@@ -4,6 +4,7 @@
 #include "common.h"
 
 #include <windowsx.h>
+#include <CommCtrl.h>
 
 using namespace std;
 
@@ -15,9 +16,20 @@ int X_MOVE;
 
 int BetList::maxDisplayedItemCnt;
 
-LRESULT BetList::wndProc(UINT message, WPARAM wParam, LPARAM lParam)
+void BetList::attach(HWND hListBox, HWND hMoveSpin, HWND hAllBoughtButton, NumericEdit* boughtEdit)
 {
-	switch (message)
+	ListBox::attach(hListBox);
+	this->hMoveSpin = hMoveSpin;
+	this->hAllBoughtButton = hAllBoughtButton;
+	this->boughtEdit = boughtEdit;
+	GetWindowRect(hListBox, &rcListBox);
+	MapWindowRect(HWND_DESKTOP, GetParent(hListBox), &rcListBox);
+	resetContent();
+}
+
+LRESULT BetList::wndProc(UINT msg, WPARAM wParam, LPARAM lParam)
+{
+	switch (msg)
 	{
 	case WM_KEYDOWN:
 		switch (LOWORD(wParam))
@@ -168,9 +180,9 @@ LRESULT BetList::wndProc(UINT message, WPARAM wParam, LPARAM lParam)
 		break;
 	}
 
-	LRESULT result = CallWindowProc(defListBoxProc, hListBox, message, wParam, lParam);
+	LRESULT result = DefSubclassProc(hListBox, msg, wParam, lParam);
 
-	switch (message)
+	switch (msg)
 	{
 	case WM_KEYDOWN:
 		switch (LOWORD(wParam))
@@ -286,19 +298,6 @@ void BetList::drawItem(HDC hDC, int itemID, UINT itemState, ULONG_PTR itemData, 
 	getText(itemID, sText);
 	BYTE style = itemData & 0xff;
 	DrawText(hDC, sText, -1, &rcContent, style);
-}
-
-void BetList::attach(HWND hListBox, HWND hMoveSpin, HWND hAllBoughtButton, NumericEdit* boughtEdit)
-{
-	this->hListBox = hListBox;
-	this->hMoveSpin = hMoveSpin;
-	this->hAllBoughtButton = hAllBoughtButton;
-	this->boughtEdit = boughtEdit;
-	SetWindowLongPtr(hListBox, GWLP_USERDATA, (LONG_PTR)this);
-	SetWindowLongPtr(hListBox, GWLP_WNDPROC, (LONG_PTR)listBoxProc);
-	GetWindowRect(hListBox, &rcListBox);
-	MapWindowRect(HWND_DESKTOP, GetParent(hListBox), &rcListBox);
-	resetContent();
 }
 
 int BetList::getBetsSize()

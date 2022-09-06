@@ -1,7 +1,7 @@
 #pragma once
 #include "Dialog.h"
 
-#include "CheckBox.h"
+#include "Button.h"
 #include "NumericEdit.h"
 #include "OddsEdit.h"
 #include "BetList.h"
@@ -32,7 +32,7 @@ protected:
 	Button resetButton;
 	HWND hTotalInvestText;
 	HWND hCurrentProfitText[2];
-	CheckBox haveClosingCheck;
+	HWND haveClosingCheck;
 	BetList betList[2];
 	HWND hBankerBetSelector[10];
 	OddsEdit oddsEdit[10];
@@ -55,7 +55,7 @@ protected:
 public:
 	BetTabDlg();
 	virtual INT_PTR initDlg(HWND hDlg);
-	virtual INT_PTR dlgProc(UINT message, WPARAM wParam, LPARAM lParam);
+	virtual INT_PTR dlgProc(UINT msg, WPARAM wParam, LPARAM lParam);
 private:
 	void updateCurrentProfit();
 	void updateMinOdds();

@@ -3,7 +3,7 @@
 
 #include "common.h"
 
-WNDPROC defEditProc;
+#include <CommCtrl.h>
 
 void setVCentered(HWND hEdit)
 {
@@ -15,21 +15,21 @@ void setVCentered(HWND hEdit)
 	SendMessage(hEdit, EM_SETRECTNP, 0, (LPARAM)&rect);
 }
 
-LRESULT CALLBACK editProc(HWND hEdit, UINT message, WPARAM wParam, LPARAM lParam)
+LRESULT CALLBACK editSubclassProc(HWND hEdit, UINT msg, WPARAM wParam, LPARAM lParam, UINT_PTR uIdSubclass, DWORD_PTR dwRefData)
 {
 	Edit* edit = (Edit*)GetWindowLongPtr(hEdit, GWLP_USERDATA);
 	LRESULT result = (LRESULT)FALSE;
 	if (edit != nullptr)
 	{
-		result = edit->wndProc(message, wParam, lParam);
+		result = edit->wndProc(msg, wParam, lParam);
 	}
-	if (message == WM_COMMAND)
+	if (msg == WM_COMMAND)
 	{
 		switch (LOWORD(wParam))
 		{
 		case ID_CONFIRM:
 		case ID_CANCEL:
-			SendMessage(GetParent(hEdit), message, wParam, lParam);
+			SendMessage(GetParent(hEdit), msg, wParam, lParam);
 			break;
 		}
 	}
@@ -37,14 +37,14 @@ LRESULT CALLBACK editProc(HWND hEdit, UINT message, WPARAM wParam, LPARAM lParam
 	{
 		return result;
 	}
-	return CallWindowProc(defEditProc, hEdit, message, wParam, lParam);
+	return DefSubclassProc(hEdit, msg, wParam, lParam);
 }
 
 void Edit::attach(HWND hEdit)
 {
 	this->hEdit = hEdit;
 	SetWindowLongPtr(hEdit, GWLP_USERDATA, (LONG_PTR)this);
-	SetWindowLongPtr(hEdit, GWLP_WNDPROC, (LONG_PTR)editProc);
+	SetWindowSubclass(hEdit, editSubclassProc, 0, 0);
 	setVCentered(hEdit);
 }
 

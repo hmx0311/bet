@@ -3,16 +3,16 @@
 
 using namespace std;
 
-LRESULT NumericEdit::wndProc(UINT message, WPARAM wParam, LPARAM lParam)
+LRESULT NumericEdit::wndProc(UINT msg, WPARAM wParam, LPARAM lParam)
 {
-	switch (message)
+	switch (msg)
 	{
 	case WM_KEYDOWN:
 		switch (LOWORD(wParam))
 		{
 		case VK_UP:
 		case VK_DOWN:
-			SendMessage(GetParent(hEdit), message, wParam, lParam);
+			SendMessage(GetParent(hEdit), msg, wParam, lParam);
 			return (LRESULT)TRUE;
 		}
 		break;

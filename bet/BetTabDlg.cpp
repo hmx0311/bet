@@ -35,9 +35,8 @@ INT_PTR BetTabDlg::initDlg(HWND hDlg)
 {
 	Dialog::initDlg(hDlg);
 
-	if (defListBoxProc == nullptr)
+	if (X_MOVE == 0)
 	{
-		defListBoxProc = (WNDPROC)GetWindowLongPtr(GetDlgItem(hDlg, IDC_L_BET_LIST), GWLP_WNDPROC);
 		RECT rect;
 		GetWindowRect(GetDlgItem(hDlg, IDC_L_BET_LIST), &rect);
 		BetList::maxDisplayedItemCnt = (rect.bottom - rect.top - 4) / listItemHeight;
@@ -49,15 +48,30 @@ INT_PTR BetTabDlg::initDlg(HWND hDlg)
 	hTotalInvestText = GetDlgItem(hDlg, IDC_TOTAL_INVEST_TEXT);
 	hCurrentProfitText[0] = GetDlgItem(hDlg, IDC_L_CURRENT_PROFIT_TEXT);
 	hCurrentProfitText[1] = GetDlgItem(hDlg, IDC_R_CURRENT_PROFIT_TEXT);
-	haveClosingCheck.attach(GetDlgItem(hDlg, IDC_HAVE_CLOSING_CHECK), config.defaultClosing);
+	haveClosingCheck = GetDlgItem(hDlg, IDC_HAVE_CLOSING_CHECK);
+	SendMessage(haveClosingCheck, WM_UPDATEUISTATE, MAKEWPARAM(UIS_SET, UISF_HIDEFOCUS), 0);
+	SetWindowSubclass(haveClosingCheck, buttonSubclassProc, 0, 0);
 	hMoveSpin = GetDlgItem(hDlg, IDC_MOVE_SPIN);
 	allBoughtButton.attach(GetDlgItem(hDlg, IDC_ALL_BOUGHT_BUTTON));
+	SetWindowSubclass(allBoughtButton.getHwnd(),
+		[](HWND button, UINT msg, WPARAM wParam, LPARAM lParam, UINT_PTR uIdSubclass, DWORD_PTR dwRefData)->LRESULT
+		{
+			LRESULT result = buttonSubclassProc(button, msg, wParam, lParam, uIdSubclass, dwRefData);
+			if (msg == WM_LBUTTONUP)
+			{
+				SendMessage(GetParent(button), WM_COMMAND, MAKEWPARAM(IDC_ALL_BOUGHT_BUTTON, BN_KILLFOCUS), 0);
+			}
+			return result;
+		},
+		0, 0);
 	boughtEdit.attach(GetDlgItem(hDlg, IDC_CHANGE_BOUGHT_EDIT));
 	betList[0].attach(GetDlgItem(hDlg, IDC_L_BET_LIST), hMoveSpin, allBoughtButton.getHwnd(), &boughtEdit);
 	betList[1].attach(GetDlgItem(hDlg, IDC_R_BET_LIST), hMoveSpin, allBoughtButton.getHwnd(), &boughtEdit);
 	for (int i = 0; i < 10; i++)
 	{
 		hBankerBetSelector[i] = GetDlgItem(hDlg, IDC_L_BANKER_SELECTOR + i);
+		SendMessage(hBankerBetSelector[i], WM_UPDATEUISTATE, MAKEWPARAM(UIS_SET, UISF_HIDEFOCUS), 0);
+		SetWindowSubclass(hBankerBetSelector[i], buttonSubclassProc, 0, 0);
 		oddsEdit[i].attach(GetDlgItem(hDlg, IDC_L_BANKER_ODDS_EDIT + i));
 	}
 	amountEdit[0].attach(GetDlgItem(hDlg, IDC_L_AMOUNT_EDIT));
@@ -79,6 +93,10 @@ INT_PTR BetTabDlg::initDlg(HWND hDlg)
 	}
 	initialAmountEdit.attach(GetDlgItem(hDlg, IDC_INITIAL_AMOUNT_EDIT));
 	hWinProbSideLeftSelector = GetDlgItem(hDlg, IDC_L_WIN_PROBABILTY_SIDE_SELECTOR);
+	SendMessage(hWinProbSideLeftSelector, WM_UPDATEUISTATE, MAKEWPARAM(UIS_SET, UISF_HIDEFOCUS), 0);
+	SetWindowSubclass(hWinProbSideLeftSelector, buttonSubclassProc, 0, 0);
+	SendMessage(GetDlgItem(hDlg, IDC_R_WIN_PROBABILTY_SIDE_SELECTOR), WM_UPDATEUISTATE, MAKEWPARAM(UIS_SET, UISF_HIDEFOCUS), 0);
+	SetWindowSubclass(GetDlgItem(hDlg, IDC_R_WIN_PROBABILTY_SIDE_SELECTOR), buttonSubclassProc, 0, 0);
 	winProbEdit.attach(GetDlgItem(hDlg, IDC_WIN_PROBABILITY_EDIT));
 	winProbErrorEdit.attach(GetDlgItem(hDlg, IDC_WIN_PROBABILITY_ERROR_EDIT));
 	winProbCalculatorButton.attach(GetDlgItem(hDlg, IDC_WIN_PROBABILITY_CALCULATOR_BUTTON));
@@ -87,24 +105,10 @@ INT_PTR BetTabDlg::initDlg(HWND hDlg)
 	confirmButton[1].attach(GetDlgItem(hDlg, IDC_L_CONFIRM_BUTTON));
 	confirmButton[2].attach(GetDlgItem(hDlg, IDC_R_CONFIRM_BUTTON));
 
-	for (int i = 0; i < 10; i++)
-	{
-		SendMessage(hBankerBetSelector[i], WM_UPDATEUISTATE, MAKEWPARAM(UIS_SET, UISF_HIDEFOCUS), 0);
-		SetWindowLongPtr(hBankerBetSelector[i], GWLP_WNDPROC, (LONG_PTR)buttonProc);
-	}
-	SetWindowLongPtr(allBoughtButton.getHwnd(), GWLP_WNDPROC, (LONG_PTR)(WNDPROC)[](HWND button, UINT message, WPARAM wParam, LPARAM lParam)->LRESULT
-		{
-			LRESULT result = buttonProc(button, message, wParam, lParam);
-			if (message == WM_LBUTTONUP)
-			{
-				SendMessage(GetParent(button), WM_COMMAND, MAKEWPARAM(IDC_ALL_BOUGHT_BUTTON, BN_KILLFOCUS), 0);
-			}
-			return result;
-		});
 
 	TCHAR resetTipText[] = _T("÷ÿ÷√µ±«∞æ∫≤¬");
 	createToolTip(resetButton.getHwnd(), hDlg, resetTipText);
-
+	SendMessage(haveClosingCheck, BM_SETCHECK, config.defaultClosing, 0);
 	for (int i = 0; i < 10; i += 2)
 	{
 		SendMessage(hBankerBetSelector[i], BM_SETCHECK, 1, 0);
@@ -157,9 +161,9 @@ INT_PTR BetTabDlg::initDlg(HWND hDlg)
 	return INT_PTR(TRUE);
 }
 
-INT_PTR BetTabDlg::dlgProc(UINT message, WPARAM wParam, LPARAM lParam)
+INT_PTR BetTabDlg::dlgProc(UINT msg, WPARAM wParam, LPARAM lParam)
 {
-	switch (message)
+	switch (msg)
 	{
 	case BPC_CONNECTED:
 		if (hProbabilityCalculator == nullptr && wParam != NULL)
@@ -322,7 +326,6 @@ INT_PTR BetTabDlg::dlgProc(UINT message, WPARAM wParam, LPARAM lParam)
 			{
 				updateCurrentProfit();
 			}
-			haveClosingCheck.setCheck(!haveClosingCheck.getCheck());
 			return INT_PTR(TRUE);
 		case IDC_L_BET_LIST:
 		case IDC_R_BET_LIST:

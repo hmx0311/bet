@@ -1,9 +1,9 @@
 #include "framework.h"
 #include "OddsEdit.h"
 
-LRESULT OddsEdit::wndProc(UINT message, WPARAM wParam, LPARAM lParam)
+LRESULT OddsEdit::wndProc(UINT msg, WPARAM wParam, LPARAM lParam)
 {
-	switch (message)
+	switch (msg)
 	{
 	case WM_KILLFOCUS:
 		updateOdds();

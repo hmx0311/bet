@@ -2,18 +2,16 @@
 
 #include "bet.h"
 
-extern WNDPROC defEditProc;
-
 void setVCentered(HWND hEdit);
-LRESULT CALLBACK editProc(HWND, UINT, WPARAM, LPARAM);
+LRESULT CALLBACK editSubclassProc(HWND hEdit, UINT msg, WPARAM wParam, LPARAM lParam, UINT_PTR uIdSubclass, DWORD_PTR dwRefData);
 
 class Edit
 {
 protected:
 	HWND hEdit;
 public:
-	virtual LRESULT wndProc(UINT message, WPARAM wParam, LPARAM lParam) = 0;
 	void attach(HWND hListBox);
+	virtual LRESULT wndProc(UINT msg, WPARAM wParam, LPARAM lParam) = 0;
 	HWND getHwnd();
 	void getRect(RECT* rect);
 	void setRectNP(RECT* rect);

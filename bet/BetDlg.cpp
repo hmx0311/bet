@@ -35,8 +35,6 @@ INT_PTR BetDlg::initDlg(HWND hDlg)
 	SendMessage(hDlg, WM_SETICON, ICON_BIG, (LPARAM)hIcon);
 	SendMessage(hDlg, WM_SETICON, ICON_SMALL, (LPARAM)hIcon);
 
-	defButtonProc = (WNDPROC)GetWindowLongPtr(GetDlgItem(hDlg, IDC_SETTINGS_BUTTON), GWLP_WNDPROC);
-
 	betTab = GetDlgItem(hDlg, IDC_BET_TAB);
 	settingsButton.attach(GetDlgItem(hDlg, IDC_SETTINGS_BUTTON));
 	addTabButton.attach(GetDlgItem(hDlg, IDC_ADD_TAB_BUTTON));
@@ -60,7 +58,7 @@ INT_PTR BetDlg::initDlg(HWND hDlg)
 		nameEditPosX, nameEditPosY, TAB_WIDTH - 2 * TAB_NAME_EDIT_MARGIN_X, tabHeight - 2 * TAB_NAME_EDIT_MARGIN_Y,
 		hDlg, (HMENU)IDC_TAB_NAME_EDIT, hInst, nullptr);
 
-	defEditProc = (WNDPROC)SetWindowLongPtr(tabNameEdit, GWLP_WNDPROC, (LONG_PTR)editProc);
+	SetWindowSubclass(tabNameEdit, editSubclassProc, 0, 0);
 
 	hButtonTheme = OpenThemeData(settingsButton.getHwnd(), _T("Button"));
 
@@ -94,9 +92,9 @@ INT_PTR BetDlg::initDlg(HWND hDlg)
 	return (INT_PTR)FALSE;
 }
 
-INT_PTR BetDlg::dlgProc(UINT message, WPARAM wParam, LPARAM lParam)
+INT_PTR BetDlg::dlgProc(UINT msg, WPARAM wParam, LPARAM lParam)
 {
-	switch (message)
+	switch (msg)
 	{
 	case WM_ERASEBKGND:
 		if (!needErase)

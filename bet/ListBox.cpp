@@ -4,13 +4,12 @@
 #include "common.h"
 
 #include <windowsx.h>
+#include <CommCtrl.h>
 
-WNDPROC defListBoxProc;
-
-LRESULT CALLBACK listBoxProc(HWND hListBox, UINT message, WPARAM wParam, LPARAM lParam)
+LRESULT CALLBACK listBoxSubclassProc(HWND hListBox, UINT msg, WPARAM wParam, LPARAM lParam, UINT_PTR uIdSubclass, DWORD_PTR dwRefData)
 {
 	ListBox* listBox = (ListBox*)GetWindowLongPtr(hListBox, GWLP_USERDATA);
-	if (message == WM_ERASEBKGND)
+	if (msg == WM_ERASEBKGND)
 	{
 		RECT rect;
 		GetClientRect(hListBox, &rect);
@@ -23,14 +22,21 @@ LRESULT CALLBACK listBoxProc(HWND hListBox, UINT message, WPARAM wParam, LPARAM 
 	}
 	if (listBox == nullptr)
 	{
-		return CallWindowProc(defListBoxProc, hListBox, message, wParam, lParam);
+		return DefSubclassProc(hListBox, msg, wParam, lParam);
 	}
-	return listBox->wndProc(message, wParam, lParam);
+	return listBox->wndProc(msg, wParam, lParam);
 }
 
-LRESULT ListBox::wndProc(UINT message, WPARAM wParam, LPARAM lParam)
+void ListBox::attach(HWND hListBox)
 {
-	return CallWindowProc(defListBoxProc, hListBox, message, wParam, lParam);
+	this->hListBox = hListBox;
+	SetWindowLongPtr(hListBox, GWLP_USERDATA, (LONG_PTR)this);
+	SetWindowSubclass(hListBox, listBoxSubclassProc, 0, 0);
+}
+
+LRESULT ListBox::wndProc(UINT msg, WPARAM wParam, LPARAM lParam)
+{
+	return DefSubclassProc(hListBox, msg, wParam, lParam);
 }
 
 void ListBox::drawItem(HDC hDC, int itemID, UINT itemState, ULONG_PTR itemData, RECT& rcItem)
@@ -46,13 +52,6 @@ void ListBox::drawItem(HDC hDC, int itemID, UINT itemState, ULONG_PTR itemData, 
 	getText(itemID, sText);
 	BYTE style = itemData & 0xff;
 	DrawText(hDC, sText, -1, &rcContent, style | DT_SINGLELINE);
-}
-
-void ListBox::attach(HWND hListBox)
-{
-	this->hListBox = hListBox;
-	SetWindowLongPtr(hListBox, GWLP_USERDATA, (LONG_PTR)this);
-	SetWindowLongPtr(hListBox, GWLP_WNDPROC, (LONG_PTR)listBoxProc);
 }
 
 HWND ListBox::getHwnd()

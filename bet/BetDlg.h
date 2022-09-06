@@ -22,7 +22,7 @@ private:
 public:
 	BetDlg();
 	virtual INT_PTR initDlg(HWND hDlg);
-	virtual INT_PTR dlgProc(UINT message, WPARAM wParam, LPARAM lParam);
+	virtual INT_PTR dlgProc(UINT msg, WPARAM wParam, LPARAM lParam);
 	BetTabDlg* getCurrentTab();
 };
 
