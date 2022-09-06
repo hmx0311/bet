@@ -96,6 +96,14 @@ INT_PTR BetDlg::dlgProc(UINT msg, WPARAM wParam, LPARAM lParam)
 {
 	switch (msg)
 	{
+	case WM_THEMECHANGED:
+		//CloseThemeData(hButtonTheme);
+		//hButtonTheme = OpenThemeData(settingsButton.getHwnd(), _T("Button"));
+		ShowWindow(hDlg, SW_RESTORE);
+		SetWindowPos(hDlg, HWND_TOPMOST, 0, 0, 0, 0, SWP_NOMOVE | SWP_NOSIZE);
+		SetWindowPos(hDlg, HWND_NOTOPMOST, 0, 0, 0, 0, SWP_NOMOVE | SWP_NOSIZE);
+		MessageBox(nullptr, _T("theme changed!"), _T("bet"), MB_OK);
+		return (INT_PTR)TRUE;
 	case WM_ERASEBKGND:
 		if (!needErase)
 		{
