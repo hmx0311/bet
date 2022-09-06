@@ -1,10 +1,9 @@
 #pragma once
 #include "Dialog.h"
 
-#include "Button.h"
-#include "NumericEdit.h"
-#include "OddsEdit.h"
-#include "BetList.h"
+#include "button.h"
+#include "edit.h"
+#include "listbox.h"
 #include "model.h"
 
 class BetTabDlg :

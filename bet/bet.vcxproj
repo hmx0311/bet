@@ -147,18 +147,15 @@
   <ItemGroup>
     <ClInclude Include="bet.h" />
     <ClInclude Include="BetDlg.h" />
-    <ClInclude Include="BetList.h" />
     <ClInclude Include="BetTabDlg.h" />
-    <ClInclude Include="Button.h" />
+    <ClInclude Include="button.h" />
     <ClInclude Include="common.h" />
     <ClInclude Include="ConfigDlg.h" />
     <ClInclude Include="Dialog.h" />
-    <ClInclude Include="Edit.h" />
+    <ClInclude Include="edit.h" />
     <ClInclude Include="framework.h" />
-    <ClInclude Include="ListBox.h" />
+    <ClInclude Include="listBox.h" />
     <ClInclude Include="model.h" />
-    <ClInclude Include="NumericEdit.h" />
-    <ClInclude Include="OddsEdit.h" />
     <ClInclude Include="Resource.h" />
     <ClInclude Include="targetver.h" />
     <ClInclude Include="tooltip.h" />
@@ -166,17 +163,14 @@
   <ItemGroup>
     <ClCompile Include="bet.cpp" />
     <ClCompile Include="BetDlg.cpp" />
-    <ClCompile Include="BetList.cpp" />
     <ClCompile Include="BetTabDlg.cpp" />
-    <ClCompile Include="Button.cpp" />
+    <ClCompile Include="button.cpp" />
     <ClCompile Include="common.cpp" />
     <ClCompile Include="ConfigDlg.cpp" />
     <ClCompile Include="Dialog.cpp" />
-    <ClCompile Include="Edit.cpp" />
-    <ClCompile Include="ListBox.cpp" />
+    <ClCompile Include="edit.cpp" />
+    <ClCompile Include="listBox.cpp" />
     <ClCompile Include="model.cpp" />
-    <ClCompile Include="NumericEdit.cpp" />
-    <ClCompile Include="OddsEdit.cpp" />
     <ClCompile Include="tooltip.cpp" />
   </ItemGroup>
   <ItemGroup>

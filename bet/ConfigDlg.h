@@ -1,7 +1,7 @@
 #pragma once
 #include "Dialog.h"
 
-#include "NumericEdit.h"
+#include "edit.h"
 #include "common.h"
 
 class ConfigDlg :

@@ -1,8 +1,8 @@
 #include "framework.h"
 #include "Dialog.h"
 
-#include "Button.h"
-#include "ListBox.h"
+#include "button.h"
+#include "listBox.h"
 #include "common.h"
 
 INT_PTR CALLBACK dlgProc(HWND hDlg, UINT msg, WPARAM wParam, LPARAM lParam)

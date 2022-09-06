@@ -1,7 +1,7 @@
 #include "framework.h"
 #include "ConfigDlg.h"
 
-#include "Button.h"
+#include "button.h"
 #include <cmath>
 #include <fstream>
 

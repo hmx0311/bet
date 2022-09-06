@@ -25,18 +25,6 @@
     <Filter Include="头文件\dialogs">
       <UniqueIdentifier>{caa72f3a-98db-4e40-bbbb-145ea7e36690}</UniqueIdentifier>
     </Filter>
-    <Filter Include="源文件\controls\edits">
-      <UniqueIdentifier>{78498ded-13b3-4a18-997e-90d51a199eab}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="头文件\controls\edits">
-      <UniqueIdentifier>{b46a8652-8ecd-41ae-9ec9-2f0ff97d44e4}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="源文件\controls\listboxes">
-      <UniqueIdentifier>{2c4ef985-ee5c-43c8-8279-27f388d5e3ec}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="头文件\controls\listboxes">
-      <UniqueIdentifier>{2901f21e-ca70-4c6a-bf79-68a47cb0e240}</UniqueIdentifier>
-    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="framework.h">
@@ -69,25 +57,16 @@
     <ClInclude Include="ConfigDlg.h">
       <Filter>头文件\dialogs</Filter>
     </ClInclude>
-    <ClInclude Include="Edit.h">
-      <Filter>头文件\controls\edits</Filter>
-    </ClInclude>
-    <ClInclude Include="NumericEdit.h">
-      <Filter>头文件\controls\edits</Filter>
-    </ClInclude>
-    <ClInclude Include="OddsEdit.h">
-      <Filter>头文件\controls\edits</Filter>
-    </ClInclude>
-    <ClInclude Include="ListBox.h">
-      <Filter>头文件\controls\listboxes</Filter>
-    </ClInclude>
-    <ClInclude Include="BetList.h">
-      <Filter>头文件\controls\listboxes</Filter>
-    </ClInclude>
     <ClInclude Include="tooltip.h">
       <Filter>头文件\controls</Filter>
     </ClInclude>
-    <ClInclude Include="Button.h">
+    <ClInclude Include="button.h">
+      <Filter>头文件\controls</Filter>
+    </ClInclude>
+    <ClInclude Include="edit.h">
+      <Filter>头文件\controls</Filter>
+    </ClInclude>
+    <ClInclude Include="listBox.h">
       <Filter>头文件\controls</Filter>
     </ClInclude>
   </ItemGroup>
@@ -113,25 +92,16 @@
     <ClCompile Include="ConfigDlg.cpp">
       <Filter>源文件\dialogs</Filter>
     </ClCompile>
-    <ClCompile Include="Edit.cpp">
-      <Filter>源文件\controls\edits</Filter>
-    </ClCompile>
-    <ClCompile Include="NumericEdit.cpp">
-      <Filter>源文件\controls\edits</Filter>
-    </ClCompile>
-    <ClCompile Include="OddsEdit.cpp">
-      <Filter>源文件\controls\edits</Filter>
-    </ClCompile>
-    <ClCompile Include="ListBox.cpp">
-      <Filter>源文件\controls\listboxes</Filter>
-    </ClCompile>
-    <ClCompile Include="BetList.cpp">
-      <Filter>源文件\controls\listboxes</Filter>
-    </ClCompile>
     <ClCompile Include="tooltip.cpp">
       <Filter>源文件\controls</Filter>
     </ClCompile>
-    <ClCompile Include="Button.cpp">
+    <ClCompile Include="button.cpp">
+      <Filter>源文件\controls</Filter>
+    </ClCompile>
+    <ClCompile Include="edit.cpp">
+      <Filter>源文件\controls</Filter>
+    </ClCompile>
+    <ClCompile Include="listBox.cpp">
       <Filter>源文件\controls</Filter>
     </ClCompile>
   </ItemGroup>

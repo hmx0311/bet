@@ -1,5 +1,5 @@
 #include "framework.h"
-#include "Button.h"
+#include "button.h"
 
 #include "common.h"
 #include "bet.h"
@@ -10,7 +10,6 @@
 #define BUTTON_MARGIN_RATIO 0.1f
 
 HTHEME hButtonTheme;
-
 
 LRESULT CALLBACK buttonSubclassProc(HWND hButton, UINT msg, WPARAM wParam, LPARAM lParam, UINT_PTR uIdSubclass, DWORD_PTR dwRefData)
 {

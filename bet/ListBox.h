@@ -1,5 +1,9 @@
 #pragma once
 
+#include "edit.h"
+
+#include <utility>
+
 LRESULT CALLBACK listBoxProc(HWND, UINT, WPARAM, LPARAM);
 
 class ListBox
@@ -15,4 +19,37 @@ public:
 	void getText(int nIndex, LPWSTR str);
 	void setCurSel(int nSelect);
 	int getCurSel();
+};
+
+class BetList :
+	public ListBox
+{
+public:
+	static int maxDisplayedItemCnt;
+private:
+	HWND hMoveSpin;
+	HWND hAllBoughtButton;
+	NumericEdit* boughtEdit;
+	int betsSize = 0;
+	int bankersSize = 0;
+	RECT rcListBox;
+
+public:
+	void attach(HWND hListBox, HWND hMoveSpin, HWND hAllBoughtButton, NumericEdit* boughtEdit);
+	virtual LRESULT wndProc(UINT msg, WPARAM wParam, LPARAM lParam);
+	virtual void drawItem(HDC hDC, int itemID, UINT itemState, ULONG_PTR itemData, RECT& rcItem);
+	int getBetsSize();
+	int getBankersSize();
+	int getCurSel();
+	int getItemRect(int nIndex, LPRECT lpRect);
+	int getScrollPos();
+	void setTopIndex(int nIndex);
+	void addBet(LPCTSTR str);
+	void addBanker(LPCTSTR str);
+	void updateBanker(int nIndex, LPCTSTR lpszItem, COLORREF color = RGB(0, 0, 0));
+	int insertString(int nIndex, LPCTSTR lpszItem, BYTE style, COLORREF color = RGB(0, 0, 0));
+	int moveSel(bool direction);
+	std::pair<bool, int> deleteSel();
+	bool isEmpty();
+	void resetContent();
 };
