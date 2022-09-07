@@ -134,9 +134,6 @@ INT_PTR BetTabDlg::initDlg(HWND hDlg)
 		addAmountButton[i + 4].setText(str);
 	}
 
-	betList[0].resetContent();
-	betList[1].resetContent();
-
 	resetButton.setIcon(hResetIcon);
 	clearAmountButton[0].setIcon(hClearIcon);
 	clearAmountButton[0].setBkgBrush((HBRUSH)GetStockObject(WHITE_BRUSH));

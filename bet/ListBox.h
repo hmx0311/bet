@@ -4,8 +4,6 @@
 
 #include <utility>
 
-LRESULT CALLBACK listBoxProc(HWND, UINT, WPARAM, LPARAM);
-
 class ListBox
 {
 protected:
@@ -41,15 +39,16 @@ public:
 	int getBetsSize();
 	int getBankersSize();
 	int getCurSel();
-	int getItemRect(int nIndex, LPRECT lpRect);
-	int getScrollPos();
-	void setTopIndex(int nIndex);
 	void addBet(LPCTSTR str);
 	void addBanker(LPCTSTR str);
 	void updateBanker(int nIndex, LPCTSTR lpszItem, COLORREF color = RGB(0, 0, 0));
-	int insertString(int nIndex, LPCTSTR lpszItem, BYTE style, COLORREF color = RGB(0, 0, 0));
 	int moveSel(bool direction);
 	std::pair<bool, int> deleteSel();
 	bool isEmpty();
 	void resetContent();
+private:
+	int insertString(int nIndex, LPCTSTR lpszItem, BYTE style, COLORREF color = RGB(0, 0, 0));
+	int getItemRect(int nIndex, LPRECT lpRect);
+	void setTopIndex(int nIndex);
+	int getScrollPos();
 };

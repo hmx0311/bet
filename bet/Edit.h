@@ -27,11 +27,12 @@ class NumericEdit :
 private:
 	std::wstring curUndo = _T("");
 	std::wstring lastUndo = _T("");
-private:
-	void updateStr();
+
 public:
 	virtual LRESULT wndProc(UINT, WPARAM, LPARAM);
 	void setText(LPCWSTR str);
+private:
+	void updateStr();
 };
 
 class OddsEdit :
@@ -39,10 +40,12 @@ class OddsEdit :
 {
 private:
 	double odds = 0.1;
+
 public:
 	virtual LRESULT wndProc(UINT, WPARAM, LPARAM);
 	double getOdds();
-	void updateOdds();
 	void oddsUp();
 	void oddsDown();
+private:
+	void updateOdds();
 };

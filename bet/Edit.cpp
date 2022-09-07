@@ -267,6 +267,28 @@ double OddsEdit::getOdds()
 	return odds;
 }
 
+void OddsEdit::oddsUp()
+{
+	if (odds < 9.85)
+	{
+		odds += 0.1;
+		TCHAR str[4];
+		swprintf(str, 4, _T("%0.1f"), odds);
+		setText(str);
+	}
+}
+
+void OddsEdit::oddsDown()
+{
+	if (odds > 0.15)
+	{
+		odds -= 0.1;
+		TCHAR str[4];
+		swprintf(str, 4, _T("%0.1f"), odds);
+		setText(str);
+	}
+}
+
 void OddsEdit::updateOdds()
 {
 	TCHAR str[4];
@@ -318,26 +340,4 @@ void OddsEdit::updateOdds()
 	}
 	swprintf(str, 4, _T("%0.1f"), odds);
 	setText(str);
-}
-
-void OddsEdit::oddsUp()
-{
-	if (odds < 9.85)
-	{
-		odds += 0.1;
-		TCHAR str[4];
-		swprintf(str, 4, _T("%0.1f"), odds);
-		setText(str);
-	}
-}
-
-void OddsEdit::oddsDown()
-{
-	if (odds > 0.15)
-	{
-		odds -= 0.1;
-		TCHAR str[4];
-		swprintf(str, 4, _T("%0.1f"), odds);
-		setText(str);
-	}
 }

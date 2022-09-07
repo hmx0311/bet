@@ -407,21 +407,6 @@ int BetList::getCurSel()
 	return curSel;
 }
 
-int BetList::getItemRect(int nIndex, LPRECT lpRect)
-{
-	return (int)SendMessage(hListBox, LB_GETITEMRECT, nIndex, (LPARAM)lpRect);
-}
-
-int BetList::getScrollPos()
-{
-	return GetScrollPos(hListBox, SB_VERT);
-}
-
-void BetList::setTopIndex(int nIndex)
-{
-	SendMessage(hListBox, LB_SETTOPINDEX, nIndex, 0);
-}
-
 void BetList::addBet(LPCTSTR str)
 {
 	insertString(betsSize + 2, str, DT_CENTER);
@@ -438,17 +423,10 @@ void BetList::addBanker(LPCTSTR str)
 
 void BetList::updateBanker(int nIndex, LPCTSTR lpszItem, COLORREF color)
 {
+	SendMessage(hListBox, LB_DELETESTRING, nIndex, 0);
 	insertString(nIndex, lpszItem, DT_CENTER, color);
-	SendMessage(hListBox, LB_DELETESTRING, nIndex + 1, 0);
 	ShowWindow(hMoveSpin, SW_HIDE);
 	ShowWindow(hAllBoughtButton, SW_HIDE);
-}
-
-int BetList::insertString(int nIndex, LPCTSTR lpszItem, BYTE style, COLORREF color)
-{
-	int index = SendMessage(hListBox, LB_INSERTSTRING, nIndex, (LPARAM)lpszItem);
-	SendMessage(hListBox, LB_SETITEMDATA, index, ((color << 8) | style));
-	return index;
 }
 
 int BetList::moveSel(bool direction)
@@ -523,4 +501,26 @@ void BetList::resetContent()
 	addString(_T(""));
 	addString(_T("庄家"), DT_CENTER);
 	addString(_T("赔率  数量    已买"));
+}
+
+int BetList::insertString(int nIndex, LPCTSTR lpszItem, BYTE style, COLORREF color)
+{
+	int index = SendMessage(hListBox, LB_INSERTSTRING, nIndex, (LPARAM)lpszItem);
+	SendMessage(hListBox, LB_SETITEMDATA, index, ((color << 8) | style));
+	return index;
+}
+
+int BetList::getItemRect(int nIndex, LPRECT lpRect)
+{
+	return (int)SendMessage(hListBox, LB_GETITEMRECT, nIndex, (LPARAM)lpRect);
+}
+
+void BetList::setTopIndex(int nIndex)
+{
+	SendMessage(hListBox, LB_SETTOPINDEX, nIndex, 0);
+}
+
+int BetList::getScrollPos()
+{
+	return GetScrollPos(hListBox, SB_VERT);
 }
