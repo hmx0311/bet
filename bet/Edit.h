@@ -16,8 +16,8 @@ public:
 	void getRect(RECT* rect);
 	void setRectNP(RECT* rect);
 	void setTextLimit(int limit);
-	void setText(LPCWSTR str);
-	void getText(LPWSTR str, int nMaxCount);
+	void setText(PCTSTR str);
+	void getText(PTSTR str, int nMaxCount);
 	void setSel(int start, int end);
 };
 
@@ -30,7 +30,7 @@ private:
 
 public:
 	virtual LRESULT wndProc(UINT, WPARAM, LPARAM);
-	void setText(LPCWSTR str);
+	void setText(PCTSTR str);
 private:
 	void updateStr();
 };

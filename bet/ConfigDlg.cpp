@@ -35,17 +35,17 @@ INT_PTR ConfigDlg::initDlg(HWND hDlg)
 
 	cutEdit.setTextLimit(3);
 	TCHAR str[6];
-	swprintf(str, 6, _T("%03d"), (int)round((1 - oldConfig.cut) * 1000));
+	_stprintf(str, _T("%03d"), (int)round((1 - oldConfig.cut) * 1000));
 	cutEdit.setText(str);
 	SendMessage(defaultClosingCheck, BM_SETCHECK, oldConfig.defaultClosing, 0);
 	for (int i = 0; i < 4; i++)
 	{
 		fastAddedAmountEdit[i].setTextLimit(5);
-		swprintf(str, 6, _T("%d"), oldConfig.fastAddedAmount[i]);
+		_stprintf(str, _T("%d"), oldConfig.fastAddedAmount[i]);
 		fastAddedAmountEdit[i].setText(str);
 	}
 	defaultProbErrorEdit.setTextLimit(5);
-	swprintf(str, 6, _T("%d"), (int)round(oldConfig.defaultProbError * 100));
+	_stprintf(str, _T("%d"), (int)round(oldConfig.defaultProbError * 100));
 	defaultProbErrorEdit.setText(str);
 
 	return INT_PTR(TRUE);  // 除非将焦点设置到控件，否则返回 TRUE

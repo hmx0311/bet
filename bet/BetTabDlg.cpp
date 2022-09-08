@@ -186,7 +186,7 @@ INT_PTR BetTabDlg::dlgProc(UINT msg, WPARAM wParam, LPARAM lParam)
 			if (probabitly4decimal > 0 && probabitly4decimal < 10000)
 			{
 				TCHAR str[5];
-				swprintf(str, 5, _T("%04d"), probabitly4decimal);
+				_stprintf(str, _T("%04d"), probabitly4decimal);
 				winProbEdit.setText(str);
 				updateWinProb();
 			}
@@ -413,7 +413,7 @@ INT_PTR BetTabDlg::dlgProc(UINT msg, WPARAM wParam, LPARAM lParam)
 					}
 					int lineIdx = betList[selSide].getCurSel();
 					const Banker& banker = model.changeBought(selSide, lineIdx - betList[selSide].getBetsSize() - 5, _wtoi(str));
-					betList[selSide].updateBanker(lineIdx, banker.show, banker.maxBought == banker.bought ? RGB(0, 0, 0) : RGB(255, 0, 0));
+					betList[selSide].updateBanker(lineIdx, banker.show, banker.maxBought == banker.bought ? GetSysColor(COLOR_WINDOWTEXT) : RGB(255, 0, 0));
 					updateCurrentProfit();
 					return INT_PTR(TRUE);
 				}
@@ -504,13 +504,13 @@ INT_PTR BetTabDlg::dlgProc(UINT msg, WPARAM wParam, LPARAM lParam)
 							hr = pfd->GetResult(&psiResult);
 							if (SUCCEEDED(hr))
 							{
-								LPWSTR pszFilePath = nullptr;
+								PTSTR pszFilePath = nullptr;
 								hr = psiResult->GetDisplayName(SIGDN_FILESYSPATH,
 									&pszFilePath);
 								if (SUCCEEDED(hr))
 								{
 									TCHAR cmdLine[200];
-									swprintf(cmdLine, 200, _T("bet_probability_calculator "
+									_stprintf(cmdLine, _T("bet_probability_calculator "
 										"HWND=%p "
 										"connect_message=%d "
 										"disconnect_message=%d "
@@ -597,11 +597,11 @@ INT_PTR BetTabDlg::dlgProc(UINT msg, WPARAM wParam, LPARAM lParam)
 void BetTabDlg::updateCurrentProfit()
 {
 	TCHAR str[20];
-	swprintf(str, 20, _T("%lld"), model.getTotalInvest());
+	_stprintf(str, _T("%lld"), model.getTotalInvest());
 	SetWindowText(hTotalInvestText, str);
-	swprintf(str, 20, _T("%lld"), model.getProfit(0));
+	_stprintf(str, _T("%lld"), model.getProfit(0));
 	SetWindowText(hCurrentProfitText[0], str);
-	swprintf(str, 20, _T("%lld"), model.getProfit(1));
+	_stprintf(str, _T("%lld"), model.getProfit(1));
 	SetWindowText(hCurrentProfitText[1], str);
 	SendMessage(resultList[0].getHwnd(), LB_RESETCONTENT, 0, 0);
 	updateMinOdds();
@@ -630,7 +630,7 @@ void BetTabDlg::updateMinOdds()
 		else
 		{
 			TCHAR str[4];
-			swprintf(str, 4, _T("%.1f"), referenceOdds[i]);
+			_stprintf(str, _T("%.1f"), referenceOdds[i]);
 			SetWindowText(hReferenceOddsText[i], str);
 		}
 	}
@@ -667,7 +667,7 @@ void BetTabDlg::calcBalanceAimAmount()
 {
 	bool isBet = SendMessage(hBankerBetSelector[5], BM_GETCHECK, 0, 0);
 	TCHAR str[30];
-	swprintf(str, 30, _T("%s %0.1f"), isBet ? _T("下注") : _T("庄家"), oddsEdit[4 + isBet].getOdds());
+	_stprintf(str, _T("%s %0.1f"), isBet ? _T("下注") : _T("庄家"), oddsEdit[4 + isBet].getOdds());
 	if (SendMessage(resultList[0].getHwnd(), LB_FINDSTRING, 0, (LPARAM)str) == -1)
 	{
 		auto result = model.calcAimAmountBalance(isBet, isBet ? oddsEdit[5].getOdds() : oddsEdit[4].getOdds());
@@ -679,39 +679,39 @@ void BetTabDlg::calcBalanceAimAmount()
 		{
 			if (result.first < 100000000LL)
 			{
-				swprintf(&str[6], 24, _T(" %8lld"), result.first);
+				_stprintf(&str[6], _T(" %8lld"), result.first);
 			}
 			else if (result.first < 10000000000)
 			{
-				swprintf(&str[6], 24, _T(" %6lld万"), (long long)round(result.first * 0.0001));
+				_stprintf(&str[6], _T(" %6lld万"), (long long)round(result.first * 0.0001));
 			}
 			else if (result.first < 1000000000000)
 			{
 				int decimal = 1;
 				for (long long i = 100000000000; i > result.first; decimal++, i /= 10);
-				swprintf(&str[6], 24, _T(" %.*f亿"), decimal, result.first * 0.00000001);
+				_stprintf(&str[6], _T(" %.*f亿"), decimal, result.first * 0.00000001);
 			}
 			else
 			{
-				swprintf(&str[6], 24, _T(" %6lld亿"), (long long)round(result.first * 0.00000001));
+				_stprintf(&str[6], _T(" %6lld亿"), (long long)round(result.first * 0.00000001));
 			}
 			if (result.second < 1000000000LL && result.second > -100000000LL)
 			{
-				swprintf(&str[15], 15, _T(" %9lld"), result.second);
+				_stprintf(&str[15], _T(" %9lld"), result.second);
 			}
 			else if (result.second < 100000000000 && result.second > -1000000000)
 			{
-				swprintf(&str[15], 15, _T(" %7lld万"), (long long)round(result.second * 0.0001));
+				_stprintf(&str[15], _T(" %7lld万"), (long long)round(result.second * 0.0001));
 			}
 			else if (result.second < 10000000000000 && result.second > -100000000000)
 			{
 				int decimal = 1;
 				for (long long i = 100000000000; i * 10 > result.second && -i < result.second; decimal++, i /= 10);
-				swprintf(&str[15], 15, _T(" %.*f亿"), decimal, result.second * 0.00000001);
+				_stprintf(&str[15], _T(" %.*f亿"), decimal, result.second * 0.00000001);
 			}
 			else
 			{
-				swprintf(&str[15], 15, _T(" %7lld亿"), (long long)round(result.second * 0.00000001));
+				_stprintf(&str[15], _T(" %7lld亿"), (long long)round(result.second * 0.00000001));
 			}
 		}
 		int index = resultList[0].addString(str, DT_VCENTER);
@@ -801,27 +801,27 @@ void BetTabDlg::calcAimAmount(int side)
 		return;
 	}
 	TCHAR str[20];
-	swprintf(str, 20, _T("%s %0.1f"), isBet ? _T("下注") : _T("庄家"), oddsEdit[6 + 2 * side + isBet].getOdds());
+	_stprintf(str, _T("%s %0.1f"), isBet ? _T("下注") : _T("庄家"), oddsEdit[6 + 2 * side + isBet].getOdds());
 	if (SendMessage(resultList[side + 1].getHwnd(), LB_FINDSTRING, 0, (LPARAM)str) == -1)
 	{
 		long long aimAmount = model.calcAimAmountProb(initialAmount, winProb, winProbError, side, isBet, oddsEdit[6 + 2 * side + isBet].getOdds());
 		if (aimAmount < 10000000LL)
 		{
-			swprintf(&str[6], 14, _T(" %7lld"), aimAmount);
+			_stprintf(&str[6], _T(" %7lld"), aimAmount);
 		}
 		else if (aimAmount < 1000000000)
 		{
-			swprintf(&str[6], 14, _T(" %5lld万"), (long long)round(aimAmount * 0.0001));
+			_stprintf(&str[6], _T(" %5lld万"), (long long)round(aimAmount * 0.0001));
 		}
 		else if (aimAmount < 100000000000)
 		{
 			int decimal = 1;
 			for (long long i = 10000000000; i > aimAmount; decimal++, i /= 10);
-			swprintf(&str[6], 14, _T(" %.*f亿"), decimal, aimAmount * 0.00000001);
+			_stprintf(&str[6], _T(" %.*f亿"), decimal, aimAmount * 0.00000001);
 		}
 		else
 		{
-			swprintf(&str[6], 14, _T(" %5lld亿"), (long long)round(aimAmount * 0.00000001));
+			_stprintf(&str[6],  _T(" %5lld亿"), (long long)round(aimAmount * 0.00000001));
 		}
 		resultList[side + 1].addString(str, DT_VCENTER);
 	}

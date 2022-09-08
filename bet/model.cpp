@@ -9,19 +9,19 @@ constexpr double DBL_PRECISION_COMPENSATE = 1 + 40 * DBL_EPSILON;
 
 Bet::Bet(double odds, int amount) :amount(amount), profit(amount* config.cut* odds* DBL_PRECISION_COMPENSATE)
 {
-	swprintf(show, 13, _T("%0.1f  %7d"), odds, amount);
+	_stprintf(show, _T("%0.1f  %7d"), odds, amount);
 }
 
 Banker::Banker(double odds, int amount) : odds(odds), amount(amount), maxBought(int(amount* DBL_PRECISION_COMPENSATE / odds)* odds* DBL_PRECISION_COMPENSATE)
 {
-	swprintf(show, 20, _T("%0.1f %7d       0"), odds, amount);
+	_stprintf(show, _T("%0.1f %7d       0"), odds, amount);
 }
 
 void Banker::changeBought(int newBought)
 {
 	bought = newBought;
 	profit = bought / odds * config.cut * DBL_PRECISION_COMPENSATE;
-	swprintf(show, 20, _T("%0.1f %7d %7d"), odds, amount, bought);
+	_stprintf(show, _T("%0.1f %7d %7d"), odds, amount, bought);
 }
 
 long long Model::IntervalSumTree::getAmount(int index)

@@ -22,7 +22,7 @@ public:
 	LRESULT wndProc(UINT msg, WPARAM wParam, LPARAM lParam);
 	void drawItem(HDC hDC, UINT itemState, RECT& rcItem);
 	HWND getHwnd();
-	void setText(LPCWSTR str);
+	void setText(PCTSTR str);
 	void setIcon(HICON hIcon);
 	void setBkgBrush(HBRUSH hBkgBrush);
 private:

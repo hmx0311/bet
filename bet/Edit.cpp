@@ -73,13 +73,13 @@ void Edit::setTextLimit(int limit)
 	SendMessage(hEdit, EM_SETLIMITTEXT, limit, 0);
 }
 
-void Edit::setText(LPCWSTR str)
+void Edit::setText(PCTSTR str)
 {
 	SetWindowText(hEdit, str);
 	SendMessage(hEdit, EM_SETSEL, lstrlen(str), -1);
 }
 
-void Edit::getText(LPWSTR str, int nMaxCount)
+void Edit::getText(PTSTR str, int nMaxCount)
 {
 	GetWindowText(hEdit, str, nMaxCount);
 }
@@ -195,7 +195,7 @@ LRESULT NumericEdit::wndProc(UINT msg, WPARAM wParam, LPARAM lParam)
 	return LRESULT(FALSE);
 }
 
-void NumericEdit::setText(LPCWSTR str)
+void NumericEdit::setText(PCTSTR str)
 {
 	updateStr();
 	if (str[0] != '\0' && str != curUndo)
@@ -277,7 +277,7 @@ void OddsEdit::oddsUp(double up)
 			odds = 9.9;
 		}
 		TCHAR str[4];
-		swprintf(str, 4, _T("%0.1f"), odds);
+		_stprintf(str, _T("%0.1f"), odds);
 		setText(str);
 	}
 }
@@ -292,7 +292,7 @@ void OddsEdit::oddsDown(double down)
 			odds = 0.1;
 		}
 		TCHAR str[4];
-		swprintf(str, 4, _T("%0.1f"), odds);
+		_stprintf(str, _T("%0.1f"), odds);
 		setText(str);
 	}
 }
@@ -346,6 +346,6 @@ void OddsEdit::updateOdds()
 	{
 		odds = (c - '0') * 0.1;
 	}
-	swprintf(str, 4, _T("%0.1f"), odds);
+	_stprintf(str, _T("%0.1f"), odds);
 	setText(str);
 }

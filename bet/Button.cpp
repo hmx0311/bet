@@ -43,6 +43,7 @@ LRESULT Button::wndProc(UINT msg, WPARAM wParam, LPARAM lParam)
 	case WM_ERASEBKGND:
 		return LRESULT(TRUE);
 	case WM_MOVE:
+	case WM_SHOWWINDOW:
 		BufferedPaintStopAllAnimations(hButton);
 		break;
 	case WM_MOUSEMOVE:
@@ -72,6 +73,64 @@ LRESULT Button::wndProc(UINT msg, WPARAM wParam, LPARAM lParam)
 
 void Button::drawItem(HDC hDC, UINT itemState, RECT& rcItem)
 {
+	if (hButtonTheme == nullptr)
+	{
+		HBITMAP hBmBuffer = CreateCompatibleBitmap(hDC, rcItem.right - rcItem.left, rcItem.bottom - rcItem.top);
+		HDC hDCMem = CreateCompatibleDC(hDC);
+		SelectObject(hDCMem, hBmBuffer);
+		FillRect(hDCMem, &rcItem, hBkgBrush);
+		RECT rcContent = rcItem;
+		int margin = BUTTON_MARGIN_RATIO * min(rcContent.right - rcContent.left, rcContent.bottom - rcContent.top);
+		if (!(GetWindowLongPtr(hButton, GWL_STYLE) & BS_FLAT))
+		{
+			margin++;
+			UINT uStyle = DFCS_BUTTONPUSH;
+			if (itemState & ODS_SELECTED)
+			{
+				uStyle |= DFCS_PUSHED;
+				rcContent.left++;
+				rcContent.top++;
+				rcContent.right++;
+				rcContent.bottom++;
+			}
+			DrawFrameControl(hDCMem, &rcItem, DFC_BUTTON, uStyle);
+		}
+		rcContent.left += margin;
+		rcContent.top += margin;
+		rcContent.right -= margin;
+		rcContent.bottom -= margin;
+		if (hIcon != nullptr)
+		{
+			HDC hDCImage = CreateCompatibleDC(hDCMem);
+			int xSqueeze = 0, ySqueeze = 0;
+			if (GetWindowLongPtr(hButton, GWL_STYLE) & BS_FLAT&& itemState & ODS_SELECTED)
+			{
+				xSqueeze = PRESSED_SQUEEZE * iconWidth;
+				ySqueeze = PRESSED_SQUEEZE * iconHeight;
+			}
+			HBITMAP hBmBuffer = CreateCompatibleBitmap(hDCMem, iconWidth + 2 * xSqueeze, iconHeight + 2 * ySqueeze);
+			SelectObject(hDCImage, hBmBuffer);
+			SetStretchBltMode(hDCImage, HALFTONE);
+			StretchBlt(hDCImage, 0, 0, iconWidth + 2 * xSqueeze, iconHeight + 2 * ySqueeze,
+				hDCMem, rcContent.left, rcContent.top, rcContent.right - rcContent.left, rcContent.bottom - rcContent.top, SRCCOPY);
+			DrawIcon(hDCImage, xSqueeze, ySqueeze, hIcon);
+			SetStretchBltMode(hDCMem, HALFTONE);
+			StretchBlt(hDCMem, rcContent.left, rcContent.top, rcContent.right - rcContent.left, rcContent.bottom - rcContent.top,
+				hDCImage, 0, 0, iconWidth + 2 * xSqueeze, iconHeight + 2 * ySqueeze, SRCCOPY);
+			DeleteObject(hBmBuffer);
+			DeleteObject(hDCImage);
+		}
+		SelectObject(hDCMem, (HFONT)SendMessage(hButton, WM_GETFONT, 0, 0));
+		SetBkMode(hDCMem, TRANSPARENT);
+		SetTextColor(hDCMem, GetSysColor(COLOR_BTNTEXT));
+		TCHAR str[10];
+		GetWindowText(hButton, str, 10);
+		DrawText(hDCMem, str, wcslen(str), &rcContent, DT_SINGLELINE | DT_VCENTER | DT_CENTER);
+		BitBlt(hDC, rcItem.left, rcItem.top, rcItem.right - rcItem.left, rcItem.bottom - rcItem.top, hDCMem, 0, 0, SRCCOPY);
+		DeleteDC(hDCMem);
+		DeleteObject(hBmBuffer);
+		return;
+	}
 	PUSHBUTTONSTATES state = PBS_NORMAL;
 	if (itemState & ODS_SELECTED)
 	{
@@ -83,13 +142,11 @@ void Button::drawItem(HDC hDC, UINT itemState, RECT& rcItem)
 	}
 	if (lastState == state)
 	{
-		int width = rcItem.right - rcItem.left;
-		int height = rcItem.bottom - rcItem.top;
-		HBITMAP hBmBuffer = CreateCompatibleBitmap(hDC, width, height);
+		HBITMAP hBmBuffer = CreateCompatibleBitmap(hDC, rcItem.right - rcItem.left, rcItem.bottom - rcItem.top);
 		HDC hDCMem = CreateCompatibleDC(hDC);
 		SelectObject(hDCMem, hBmBuffer);
 		drawButton(hDCMem, state, rcItem);
-		BitBlt(hDC, rcItem.left, rcItem.top, width, height, hDCMem, 0, 0, SRCCOPY);
+		BitBlt(hDC, rcItem.left, rcItem.top, rcItem.right - rcItem.left, rcItem.bottom - rcItem.top, hDCMem, 0, 0, SRCCOPY);
 		DeleteDC(hDCMem);
 		DeleteObject(hBmBuffer);
 		return;
@@ -111,7 +168,7 @@ HWND Button::getHwnd()
 	return hButton;
 }
 
-void Button::setText(LPCWSTR str)
+void Button::setText(PCTSTR str)
 {
 	SetWindowText(hButton, str);
 }
@@ -160,13 +217,13 @@ void Button::drawButton(HDC hDC, PUSHBUTTONSTATES state, RECT& rcItem)
 		{
 			TCHAR str[100];
 			_stprintf(str, _T("hTheme=%p,error code=%x,reopen themedata?"), hButtonTheme, hr);
-			if (MessageBox(hButton, str, _T("!"), MB_YESNO) == IDYES)
+			//if (MessageBox(hButton, str, _T("!"), MB_YESNO) == IDYES)
 			{
 				CloseThemeData(hButtonTheme);
 				hButtonTheme = OpenThemeData(hButton, _T("Button"));
 			}
 			_stprintf(str, _T("hTheme=%p"), hButtonTheme);
-			MessageBox(hButton, str, _T("!"), MB_OK);
+			//MessageBox(hButton, str, _T("!"), MB_OK);
 		}
 		GetThemeBackgroundContentRect(hButtonTheme, hDC, BP_PUSHBUTTON, state, &rcItem, &rcContent);
 		margin = BUTTON_MARGIN_RATIO * min(rcContent.right - rcContent.left, rcContent.bottom - rcContent.top) - 1;

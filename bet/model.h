@@ -3,9 +3,8 @@
 
 #define INTERVAL_TREE_DEPTH 7
 
-class Bet
+struct Bet
 {
-public:
 	int amount = 0;
 	int profit = 0;
 	TCHAR show[13];
@@ -13,9 +12,8 @@ public:
 	Bet(double odds, int amount);
 };
 
-class Banker
+struct Banker
 {
-public:
 	int amount;
 	double odds;
 	int maxBought;

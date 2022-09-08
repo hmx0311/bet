@@ -60,7 +60,7 @@ INT_PTR BetDlg::initDlg(HWND hDlg)
 
 	SetWindowSubclass(tabNameEdit, editSubclassProc, 0, 0);
 
-	hButtonTheme = OpenThemeData(settingsButton.getHwnd(), _T("Button"));
+	//hButtonTheme = OpenThemeData(settingsButton.getHwnd(), _T("Button"));
 
 	settingsButton.setIcon(hSettingsIcon);
 
@@ -87,7 +87,7 @@ INT_PTR BetDlg::initDlg(HWND hDlg)
 	SetFocus(tabNameEdit);
 
 	TCHAR str[10];
-	swprintf(str, 10, _T("抽水:%.1f%%"), (1 - config.cut) * 100);
+	_stprintf(str, _T("抽水:%.1f%%"), (1 - config.cut) * 100);
 	SetDlgItemTextW(hDlg, IDC_CUT_TEXT, str);
 	return (INT_PTR)FALSE;
 }
@@ -97,12 +97,8 @@ INT_PTR BetDlg::dlgProc(UINT msg, WPARAM wParam, LPARAM lParam)
 	switch (msg)
 	{
 	case WM_THEMECHANGED:
-		//CloseThemeData(hButtonTheme);
-		//hButtonTheme = OpenThemeData(settingsButton.getHwnd(), _T("Button"));
-		ShowWindow(hDlg, SW_RESTORE);
-		SetWindowPos(hDlg, HWND_TOPMOST, 0, 0, 0, 0, SWP_NOMOVE | SWP_NOSIZE);
-		SetWindowPos(hDlg, HWND_NOTOPMOST, 0, 0, 0, 0, SWP_NOMOVE | SWP_NOSIZE);
-		MessageBox(nullptr, _T("theme changed!"), _T("bet"), MB_OK);
+		CloseThemeData(hButtonTheme);
+		hButtonTheme = OpenThemeData(settingsButton.getHwnd(), _T("Button"));
 		return (INT_PTR)TRUE;
 	case WM_ERASEBKGND:
 		if (!needErase)
@@ -141,7 +137,7 @@ INT_PTR BetDlg::dlgProc(UINT msg, WPARAM wParam, LPARAM lParam)
 				cItem.cchTextMax = 30;
 				SendMessage(betTab, TCM_GETITEM, tabId, (LPARAM)&cItem);
 				TCHAR str[50];
-				swprintf(str, 50, _T("确定要删除竞猜“%s”吗？"), tabName);
+				_stprintf(str, _T("确定要删除竞猜“%s”吗？"), tabName);
 				if (MessageBox(hDlg, str, _T("bet"), MB_YESNO | MB_ICONQUESTION) != IDYES)
 				{
 					return (INT_PTR)TRUE;

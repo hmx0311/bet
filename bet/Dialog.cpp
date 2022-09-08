@@ -13,7 +13,7 @@ INT_PTR CALLBACK dlgProc(HWND hDlg, UINT msg, WPARAM wParam, LPARAM lParam)
 		return ((Dialog*)lParam)->initDlg(hDlg);
 	case WM_DRAWITEM:
 		{
-			LPDRAWITEMSTRUCT lpDrawItemStruct = (LPDRAWITEMSTRUCT)lParam;
+			PDRAWITEMSTRUCT lpDrawItemStruct = (PDRAWITEMSTRUCT)lParam;
 			HDC hDC = lpDrawItemStruct->hDC;
 			if (BufferedPaintRenderAnimation(lpDrawItemStruct->hwndItem, hDC))
 			{
@@ -56,7 +56,7 @@ INT_PTR CALLBACK dlgProc(HWND hDlg, UINT msg, WPARAM wParam, LPARAM lParam)
 			return (INT_PTR)TRUE;
 		}
 	case WM_MEASUREITEM:
-		((LPMEASUREITEMSTRUCT)lParam)->itemHeight = listItemHeight;
+		((PMEASUREITEMSTRUCT)lParam)->itemHeight = listItemHeight;
 		return (INT_PTR)TRUE;
 	}
 	Dialog* dlg = (Dialog*)GetWindowLongPtr(hDlg, GWLP_USERDATA);
