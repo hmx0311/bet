@@ -209,8 +209,8 @@ INT_PTR BetTabDlg::dlgProc(UINT msg, WPARAM wParam, LPARAM lParam)
 		{
 			HDC hDC = (HDC)wParam;
 			SetTextColor(hDC, RGB(255, 0, 0));
-			SetBkColor(hDC, GetSysColor(CTLCOLOR_DLG));
-			return (INT_PTR)GetSysColorBrush(CTLCOLOR_DLG);
+			SetBkColor(hDC, GetSysColor(COLOR_BTNFACE));
+			return (INT_PTR)GetSysColorBrush(COLOR_BTNFACE);
 		}
 		break;
 	case WM_KEYDOWN:

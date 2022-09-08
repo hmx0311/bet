@@ -58,6 +58,10 @@ void ListBox::drawItem(HDC hDC, int itemID, UINT itemState, ULONG_PTR itemData, 
 
 	SetBkMode(hDC, TRANSPARENT);
 	COLORREF color = itemData >> 8;
+	if (color == 0)
+	{
+		color = GetSysColor(COLOR_WINDOWTEXT);
+	}
 	SetTextColor(hDC, itemState & ODS_SELECTED ? ::GetSysColor(COLOR_HIGHLIGHTTEXT) : color);
 	TCHAR sText[30];
 	getText(itemID, sText);
