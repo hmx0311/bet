@@ -374,12 +374,17 @@ void BetList::drawItem(HDC hDC, int itemID, UINT itemState, ULONG_PTR itemData, 
 	}
 	if (itemID == betsSize + 2)
 	{
-		MoveToEx(hDC, 0, rcContent.bottom / 2, nullptr);
-		LineTo(hDC, rcContent.right, rcContent.bottom / 2);
+		rcContent.top = rcContent.bottom / 2;
+		rcContent.bottom = rcContent.top + 1;
+		FillRect(hDC, &rcContent, GetSysColorBrush(COLOR_WINDOWTEXT));
 		return;
 	}
 	SetBkMode(hDC, TRANSPARENT);
 	COLORREF color = itemData >> 8;
+	if (color == 0)
+	{
+		color = GetSysColor(COLOR_WINDOWTEXT);
+	}
 	SetTextColor(hDC, itemState & ODS_SELECTED ? ::GetSysColor(COLOR_HIGHLIGHTTEXT) : color);
 	TCHAR sText[30];
 	getText(itemID, sText);

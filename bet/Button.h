@@ -15,7 +15,7 @@ protected:
 	HICON hIcon = nullptr;
 	int iconWidth;
 	int iconHeight;
-	HBRUSH hBkgBrush = GetSysColorBrush(CTLCOLOR_DLG);
+	HBRUSH hBkgBrush = GetSysColorBrush(COLOR_BTNFACE);
 	bool isTracking = false;
 public:
 	void attach(HWND hButton);

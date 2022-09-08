@@ -60,7 +60,7 @@ INT_PTR BetDlg::initDlg(HWND hDlg)
 
 	SetWindowSubclass(tabNameEdit, editSubclassProc, 0, 0);
 
-	//hButtonTheme = OpenThemeData(settingsButton.getHwnd(), _T("Button"));
+	hButtonTheme = OpenThemeData(settingsButton.getHwnd(), _T("Button"));
 
 	settingsButton.setIcon(hSettingsIcon);
 
@@ -99,6 +99,8 @@ INT_PTR BetDlg::dlgProc(UINT msg, WPARAM wParam, LPARAM lParam)
 	case WM_THEMECHANGED:
 		CloseThemeData(hButtonTheme);
 		hButtonTheme = OpenThemeData(settingsButton.getHwnd(), _T("Button"));
+		needErase = true;
+		InvalidateRect(hDlg, nullptr, TRUE);
 		return (INT_PTR)TRUE;
 	case WM_ERASEBKGND:
 		if (!needErase)

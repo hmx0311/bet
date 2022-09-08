@@ -33,6 +33,8 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
 	SetProcessDPIAware();
 	loadConfig(config);
 
+	BufferedPaintInit();
+
 	BetDlg::hIcon = LoadIcon(hInstance, MAKEINTRESOURCE(IDI_BET));
 	BetDlg::hSettingsIcon = LoadIcon(hInstance, MAKEINTRESOURCE(IDI_SETTINGS));
 	BetTabDlg::hResetIcon = LoadIcon(hInstance, MAKEINTRESOURCE(IDI_RESET));
@@ -63,6 +65,8 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
 			DispatchMessage(&msg);
 		}
 	}
+
+	BufferedPaintUnInit();
 
 	DeleteObject(BetDlg::hIcon);
 	DeleteObject(BetDlg::hSettingsIcon);

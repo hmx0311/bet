@@ -48,9 +48,9 @@ INT_PTR BetTabDlg::initDlg(HWND hDlg)
 	hTotalInvestText = GetDlgItem(hDlg, IDC_TOTAL_INVEST_TEXT);
 	hCurrentProfitText[0] = GetDlgItem(hDlg, IDC_L_CURRENT_PROFIT_TEXT);
 	hCurrentProfitText[1] = GetDlgItem(hDlg, IDC_R_CURRENT_PROFIT_TEXT);
-	haveClosingCheck = GetDlgItem(hDlg, IDC_HAVE_CLOSING_CHECK);
-	SendMessage(haveClosingCheck, WM_UPDATEUISTATE, MAKEWPARAM(UIS_SET, UISF_HIDEFOCUS), 0);
-	SetWindowSubclass(haveClosingCheck, buttonSubclassProc, 0, 0);
+	hHaveClosingCheck = GetDlgItem(hDlg, IDC_HAVE_CLOSING_CHECK);
+	SendMessage(hHaveClosingCheck, WM_UPDATEUISTATE, MAKEWPARAM(UIS_SET, UISF_HIDEFOCUS), 0);
+	SetWindowSubclass(hHaveClosingCheck, buttonSubclassProc, 0, 0);
 	hMoveSpin = GetDlgItem(hDlg, IDC_MOVE_SPIN);
 	allBoughtButton.attach(GetDlgItem(hDlg, IDC_ALL_BOUGHT_BUTTON));
 	SetWindowSubclass(allBoughtButton.getHwnd(),
@@ -108,7 +108,7 @@ INT_PTR BetTabDlg::initDlg(HWND hDlg)
 
 	TCHAR resetTipText[] = _T("重置当前竞猜");
 	createToolTip(resetButton.getHwnd(), hDlg, resetTipText);
-	SendMessage(haveClosingCheck, BM_SETCHECK, config.defaultClosing, 0);
+	SendMessage(hHaveClosingCheck, BM_SETCHECK, config.defaultClosing, 0);
 	for (int i = 0; i < 10; i += 2)
 	{
 		SendMessage(hBankerBetSelector[i], BM_SETCHECK, 1, 0);
@@ -136,9 +136,9 @@ INT_PTR BetTabDlg::initDlg(HWND hDlg)
 
 	resetButton.setIcon(hResetIcon);
 	clearAmountButton[0].setIcon(hClearIcon);
-	clearAmountButton[0].setBkgBrush((HBRUSH)GetStockObject(WHITE_BRUSH));
+	clearAmountButton[0].setBkgBrush((HBRUSH)GetSysColorBrush(COLOR_WINDOW));
 	clearAmountButton[1].setIcon(hClearIcon);
-	clearAmountButton[1].setBkgBrush((HBRUSH)GetStockObject(WHITE_BRUSH));
+	clearAmountButton[1].setBkgBrush((HBRUSH)GetSysColorBrush(COLOR_WINDOW));
 	allBoughtButton.setIcon(hTickIcon);
 	winProbCalculatorButton.setIcon(hCalculatorIcon);
 	boughtEdit.setTextLimit(7);
@@ -194,7 +194,7 @@ INT_PTR BetTabDlg::dlgProc(UINT msg, WPARAM wParam, LPARAM lParam)
 		return INT_PTR(TRUE);
 	case WM_ERASEBKGND:
 		{
-			HBRUSH brush = GetSysColorBrush(CTLCOLOR_DLG);
+			HBRUSH brush = GetSysColorBrush(COLOR_BTNFACE);
 			FillRect((HDC)wParam, &rcErase1, brush);
 			FillRect((HDC)wParam, &rcErase2, brush);
 			GetWindowRect(hMoveSpin, &rcErase1);
@@ -479,34 +479,23 @@ INT_PTR BetTabDlg::dlgProc(UINT msg, WPARAM wParam, LPARAM lParam)
 		case IDC_WIN_PROBABILITY_CALCULATOR_BUTTON:
 			if (hProbabilityCalculator == nullptr)
 			{
-				// CoCreate the File Open Dialog object.
 				IFileDialog* pfd = nullptr;
-				HRESULT hr = CoCreateInstance(CLSID_FileOpenDialog,
-					nullptr,
-					CLSCTX_INPROC_SERVER,
-					IID_PPV_ARGS(&pfd));
+				HRESULT hr = CoCreateInstance(CLSID_FileOpenDialog, nullptr, CLSCTX_INPROC_SERVER, IID_PPV_ARGS(&pfd));
 				if (SUCCEEDED(hr))
 				{
-					// Set the file types to display only. 
-					// Notice that this is a 1-based array.
-					COMDLG_FILTERSPEC c_rgSaveTypes = { _T(""),_T("*.exe") };
-					hr = pfd->SetFileTypes(1, &c_rgSaveTypes);
+					COMDLG_FILTERSPEC fileType = { _T(""),_T("*.exe") };
+					hr = pfd->SetFileTypes(1, &fileType);
 					if (SUCCEEDED(hr))
 					{
-						// Show the dialog
 						hr = pfd->Show(hDlg);
 						if (SUCCEEDED(hr))
 						{
-							// Obtain the result once the user clicks 
-							// the 'Open' button.
-							// The result is an IShellItem object.
 							IShellItem* psiResult;
 							hr = pfd->GetResult(&psiResult);
 							if (SUCCEEDED(hr))
 							{
 								PTSTR pszFilePath = nullptr;
-								hr = psiResult->GetDisplayName(SIGDN_FILESYSPATH,
-									&pszFilePath);
+								hr = psiResult->GetDisplayName(SIGDN_FILESYSPATH, &pszFilePath);
 								if (SUCCEEDED(hr))
 								{
 									TCHAR cmdLine[200];
@@ -821,7 +810,7 @@ void BetTabDlg::calcAimAmount(int side)
 		}
 		else
 		{
-			_stprintf(&str[6],  _T(" %5lld亿"), (long long)round(aimAmount * 0.00000001));
+			_stprintf(&str[6], _T(" %5lld亿"), (long long)round(aimAmount * 0.00000001));
 		}
 		resultList[side + 1].addString(str, DT_VCENTER);
 	}

@@ -31,7 +31,7 @@ protected:
 	Button resetButton;
 	HWND hTotalInvestText;
 	HWND hCurrentProfitText[2];
-	HWND haveClosingCheck;
+	HWND hHaveClosingCheck;
 	BetList betList[2];
 	HWND hBankerBetSelector[10];
 	OddsEdit oddsEdit[10];

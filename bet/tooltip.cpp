@@ -7,15 +7,13 @@
 
 HWND createToolTip(HWND hTool, HWND hDlg, PTSTR pszText)
 {
-	// Create the tooltip. hInst is the global instance handle.
-	HWND hTip = CreateWindowEx(NULL, TOOLTIPS_CLASS, NULL,
+	HWND hTip = CreateWindowEx(NULL, TOOLTIPS_CLASS, nullptr,
 		WS_POPUP | TTS_ALWAYSTIP | TTS_NOPREFIX,
 		CW_USEDEFAULT, CW_USEDEFAULT,
 		CW_USEDEFAULT, CW_USEDEFAULT,
-		hDlg, NULL,
-		hInst, NULL);
+		hDlg, nullptr,
+		hInst, nullptr);
 
-	// Associate the tooltip with the tool.
 	TOOLINFO toolInfo = { 0 };
 	toolInfo.cbSize = sizeof(toolInfo);
 	toolInfo.hwnd = hDlg;
@@ -23,7 +21,6 @@ HWND createToolTip(HWND hTool, HWND hDlg, PTSTR pszText)
 	toolInfo.uId = (UINT_PTR)hTool;
 	toolInfo.lpszText = pszText;
 	SendMessage(hTip, TTM_ADDTOOL, 0, (LPARAM)&toolInfo);
-
 	return hTip;
 }
 
