@@ -556,11 +556,11 @@ INT_PTR BetTabDlg::dlgProc(UINT msg, WPARAM wParam, LPARAM lParam)
 		case IDC_R_AIM_BET_ODDS_SPIN:
 			if (((LPNMUPDOWN)lParam)->iDelta < 0)
 			{
-				oddsEdit[((LPNMHDR)lParam)->idFrom - IDC_L_BANKER_ODDS_SPIN].oddsUp();
+				oddsEdit[((LPNMHDR)lParam)->idFrom - IDC_L_BANKER_ODDS_SPIN].oddsUp(-0.1 * ((LPNMUPDOWN)lParam)->iDelta);
 			}
-			else if (((LPNMUPDOWN)lParam)->iDelta > 0)
+			else
 			{
-				oddsEdit[((LPNMHDR)lParam)->idFrom - IDC_L_BANKER_ODDS_SPIN].oddsDown();
+				oddsEdit[((LPNMHDR)lParam)->idFrom - IDC_L_BANKER_ODDS_SPIN].oddsDown(0.1 * ((LPNMUPDOWN)lParam)->iDelta);
 			}
 			SetFocus(oddsEdit[((LPNMHDR)lParam)->idFrom - IDC_L_BANKER_ODDS_SPIN].getHwnd());
 			return INT_PTR(TRUE);
@@ -643,7 +643,7 @@ void BetTabDlg::add(int side)
 	int amount = _wtoi(str);
 	if (amount == 0)
 	{
-		amountEdit[side].setText(_T("0"));
+		amountEdit[side].setSel(0, -1);
 		SetFocus(amountEdit[side].getHwnd());
 		return;
 	}

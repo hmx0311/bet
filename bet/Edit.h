@@ -44,8 +44,8 @@ private:
 public:
 	virtual LRESULT wndProc(UINT, WPARAM, LPARAM);
 	double getOdds();
-	void oddsUp();
-	void oddsDown();
+	void oddsUp(double up = 0.1);
+	void oddsDown(double down = 0.1);
 private:
 	void updateOdds();
 };

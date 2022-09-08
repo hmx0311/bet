@@ -267,22 +267,30 @@ double OddsEdit::getOdds()
 	return odds;
 }
 
-void OddsEdit::oddsUp()
+void OddsEdit::oddsUp(double up)
 {
 	if (odds < 9.85)
 	{
-		odds += 0.1;
+		odds += up;
+		if (odds > 9.9)
+		{
+			odds = 9.9;
+		}
 		TCHAR str[4];
 		swprintf(str, 4, _T("%0.1f"), odds);
 		setText(str);
 	}
 }
 
-void OddsEdit::oddsDown()
+void OddsEdit::oddsDown(double down)
 {
 	if (odds > 0.15)
 	{
-		odds -= 0.1;
+		odds -= down;
+		if (odds < 0.1)
+		{
+			odds = 0.1;
+		}
 		TCHAR str[4];
 		swprintf(str, 4, _T("%0.1f"), odds);
 		setText(str);
