@@ -13,45 +13,29 @@ INT_PTR CALLBACK dlgProc(HWND hDlg, UINT msg, WPARAM wParam, LPARAM lParam)
 		return ((Dialog*)lParam)->initDlg(hDlg);
 	case WM_DRAWITEM:
 		{
-			PDRAWITEMSTRUCT lpDrawItemStruct = (PDRAWITEMSTRUCT)lParam;
-			HDC hDC = lpDrawItemStruct->hDC;
-			if (BufferedPaintRenderAnimation(lpDrawItemStruct->hwndItem, hDC))
-			{
-				return (INT_PTR)TRUE;
-			}
-			switch (lpDrawItemStruct->CtlType)
+			PDRAWITEMSTRUCT pDrawItemStruct = (PDRAWITEMSTRUCT)lParam;
+			HDC hDC = pDrawItemStruct->hDC;
+			switch (pDrawItemStruct->CtlType)
 			{
 			case ODT_BUTTON:
 				{
-					Button* button = (Button*)GetWindowLongPtr(lpDrawItemStruct->hwndItem, GWLP_USERDATA);
-					if (button != nullptr)
+					if (!BufferedPaintRenderAnimation(pDrawItemStruct->hwndItem, hDC))
 					{
-						button->drawItem(hDC, lpDrawItemStruct->itemState, lpDrawItemStruct->rcItem);
+						((Button*)GetWindowLongPtr(pDrawItemStruct->hwndItem, GWLP_USERDATA))->drawItem(hDC, pDrawItemStruct->itemState, pDrawItemStruct->rcItem);
 					}
 					return (INT_PTR)TRUE;
 				}
 			case ODT_LISTBOX:
-				if (lpDrawItemStruct->itemID == -1)
+				if (pDrawItemStruct->itemID == -1)
 				{
 					return (INT_PTR)TRUE;
 				}
-				ListBox* listBox = (ListBox*)GetWindowLongPtr(lpDrawItemStruct->hwndItem, GWLP_USERDATA);
-				if (listBox == nullptr)
-				{
-					return (INT_PTR)TRUE;
-				}
-				int width = lpDrawItemStruct->rcItem.right - lpDrawItemStruct->rcItem.left;
-				int height = lpDrawItemStruct->rcItem.bottom - lpDrawItemStruct->rcItem.top;
-				HBITMAP bmp = CreateCompatibleBitmap(hDC, width, height);
-				HDC hDCMem = CreateCompatibleDC(hDC);
-				SelectObject(hDCMem, bmp);
+				HDC hDCMem;
+				HPAINTBUFFER hPaintBuffer = BeginBufferedPaint(hDC, &pDrawItemStruct->rcItem, BPBF_COMPATIBLEBITMAP, nullptr, &hDCMem);
 				SelectObject(hDCMem, hFont);
-
-				listBox->drawItem(hDCMem, lpDrawItemStruct->itemID, lpDrawItemStruct->itemState, lpDrawItemStruct->itemData, lpDrawItemStruct->rcItem);
-
-				BitBlt(hDC, lpDrawItemStruct->rcItem.left, lpDrawItemStruct->rcItem.top, width, height, hDCMem, 0, 0, SRCCOPY);
-				DeleteDC(hDCMem);
-				DeleteObject(bmp);
+				((ListBox*)GetWindowLongPtr(pDrawItemStruct->hwndItem, GWLP_USERDATA))->
+					drawItem(hDCMem, pDrawItemStruct->itemID, pDrawItemStruct->itemState, pDrawItemStruct->itemData, pDrawItemStruct->rcItem);
+				EndBufferedPaint(hPaintBuffer, TRUE);
 			}
 			return (INT_PTR)TRUE;
 		}

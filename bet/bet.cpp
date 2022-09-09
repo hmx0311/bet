@@ -21,11 +21,11 @@ HINSTANCE hInst;                                // 当前实例
 
 int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
 	_In_opt_ HINSTANCE hPrevInstance,
-	_In_ PTSTR    lpCmdLine,
+	_In_ PTSTR     pCmdLine,
 	_In_ int       nCmdShow)
 {
 	UNREFERENCED_PARAMETER(hPrevInstance);
-	UNREFERENCED_PARAMETER(lpCmdLine);
+	UNREFERENCED_PARAMETER(pCmdLine);
 
 	hInst = hInstance; // 将实例句柄存储在全局变量中
 

@@ -24,8 +24,8 @@ private:
 	double winProbError = 0;
 	Model model;
 
-	HWND hProbabilityCalculator = nullptr;
-	HICON hProbabilityCalculatorIcon = nullptr;
+	HWND hProbCalculator = nullptr;
+	HICON hProbCalculatorIcon = nullptr;
 
 protected:
 	Button resetButton;

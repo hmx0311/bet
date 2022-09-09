@@ -52,9 +52,7 @@ LRESULT ListBox::wndProc(UINT msg, WPARAM wParam, LPARAM lParam)
 
 void ListBox::drawItem(HDC hDC, int itemID, UINT itemState, ULONG_PTR itemData, RECT& rcItem)
 {
-	RECT rcContent = { 0,0, rcItem.right, rcItem.bottom - rcItem.top };
-
-	FillRect(hDC, &rcContent, GetSysColorBrush(itemState & ODS_SELECTED ? COLOR_HIGHLIGHT : COLOR_WINDOW));
+	FillRect(hDC, &rcItem, GetSysColorBrush(itemState & ODS_SELECTED ? COLOR_HIGHLIGHT : COLOR_WINDOW));
 
 	SetBkMode(hDC, TRANSPARENT);
 	COLORREF color = itemData >> 8;
@@ -66,7 +64,7 @@ void ListBox::drawItem(HDC hDC, int itemID, UINT itemState, ULONG_PTR itemData, 
 	TCHAR sText[30];
 	getText(itemID, sText);
 	BYTE style = itemData & 0xff;
-	DrawText(hDC, sText, -1, &rcContent, style | DT_SINGLELINE);
+	DrawText(hDC, sText, -1, &rcItem, style | DT_SINGLELINE);
 }
 
 HWND ListBox::getHwnd()
@@ -74,9 +72,9 @@ HWND ListBox::getHwnd()
 	return hListBox;
 }
 
-int ListBox::addString(PCTSTR lpszItem, BYTE style, COLORREF color)
+int ListBox::addString(PCTSTR pszItem, BYTE style, COLORREF color)
 {
-	int index = SendMessage(hListBox, LB_ADDSTRING, 0, (LPARAM)lpszItem);
+	int index = SendMessage(hListBox, LB_ADDSTRING, 0, (LPARAM)pszItem);
 	SendMessage(hListBox, LB_SETITEMDATA, index, ((color << 8) | style));
 	return index;
 }
@@ -344,7 +342,6 @@ LRESULT BetList::wndProc(UINT msg, WPARAM wParam, LPARAM lParam)
 
 void BetList::drawItem(HDC hDC, int itemID, UINT itemState, ULONG_PTR itemData, RECT& rcItem)
 {
-	RECT rcContent = { 0,0, rcItem.right, rcItem.bottom - rcItem.top };
 	if ((itemID < 2 || betsSize + 1 < itemID && itemID < betsSize + 5) && itemState & ODS_SELECTED)
 	{
 		itemState -= ODS_SELECTED;
@@ -370,17 +367,17 @@ void BetList::drawItem(HDC hDC, int itemID, UINT itemState, ULONG_PTR itemData, 
 				ShowWindow(hAllBoughtButton, SW_HIDE);
 			}
 		}
-		FillRect(hDC, &rcContent, GetSysColorBrush(COLOR_HIGHLIGHT));
+		FillRect(hDC, &rcItem, GetSysColorBrush(COLOR_HIGHLIGHT));
 	}
 	else
 	{
-		FillRect(hDC, &rcContent, GetSysColorBrush(COLOR_WINDOW));
+		FillRect(hDC, &rcItem, GetSysColorBrush(COLOR_WINDOW));
 	}
 	if (itemID == betsSize + 2)
 	{
-		rcContent.top = rcContent.bottom / 2;
-		rcContent.bottom = rcContent.top + 1;
-		FillRect(hDC, &rcContent, GetSysColorBrush(COLOR_WINDOWTEXT));
+		rcItem.top = (rcItem.bottom- rcItem.top) / 2;
+		rcItem.bottom = rcItem.top + 1;
+		FillRect(hDC, &rcItem, GetSysColorBrush(COLOR_WINDOWTEXT));
 		return;
 	}
 	SetBkMode(hDC, TRANSPARENT);
@@ -393,7 +390,7 @@ void BetList::drawItem(HDC hDC, int itemID, UINT itemState, ULONG_PTR itemData, 
 	TCHAR sText[30];
 	getText(itemID, sText);
 	BYTE style = itemData & 0xff;
-	DrawText(hDC, sText, -1, &rcContent, style);
+	DrawText(hDC, sText, -1, &rcItem, style);
 }
 
 int BetList::getBetsSize()
@@ -430,10 +427,10 @@ void BetList::addBanker(PCTSTR str)
 	setTopIndex(betsSize + bankersSize + 6 - maxDisplayedItemCnt);
 }
 
-void BetList::updateBanker(int nIndex, PCTSTR lpszItem, COLORREF color)
+void BetList::updateBanker(int nIndex, PCTSTR pszItem, COLORREF color)
 {
 	SendMessage(hListBox, LB_DELETESTRING, nIndex, 0);
-	insertString(nIndex, lpszItem, DT_CENTER, color);
+	insertString(nIndex, pszItem, DT_CENTER, color);
 	ShowWindow(hMoveSpin, SW_HIDE);
 	ShowWindow(hAllBoughtButton, SW_HIDE);
 }
@@ -512,16 +509,16 @@ void BetList::resetContent()
 	addString(_T("赔率  数量    已买"));
 }
 
-int BetList::insertString(int nIndex, PCTSTR lpszItem, BYTE style, COLORREF color)
+int BetList::insertString(int nIndex, PCTSTR pszItem, BYTE style, COLORREF color)
 {
-	int index = SendMessage(hListBox, LB_INSERTSTRING, nIndex, (LPARAM)lpszItem);
+	int index = SendMessage(hListBox, LB_INSERTSTRING, nIndex, (LPARAM)pszItem);
 	SendMessage(hListBox, LB_SETITEMDATA, index, ((color << 8) | style));
 	return index;
 }
 
-int BetList::getItemRect(int nIndex, PRECT lpRect)
+int BetList::getItemRect(int nIndex, PRECT pRect)
 {
-	return (int)SendMessage(hListBox, LB_GETITEMRECT, nIndex, (LPARAM)lpRect);
+	return (int)SendMessage(hListBox, LB_GETITEMRECT, nIndex, (LPARAM)pRect);
 }
 
 void BetList::setTopIndex(int nIndex)

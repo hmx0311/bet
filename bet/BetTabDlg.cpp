@@ -163,30 +163,29 @@ INT_PTR BetTabDlg::dlgProc(UINT msg, WPARAM wParam, LPARAM lParam)
 	switch (msg)
 	{
 	case BPC_CONNECTED:
-		if (hProbabilityCalculator == nullptr && wParam != NULL)
+		if (hProbCalculator == nullptr && wParam != NULL)
 		{
-			hProbabilityCalculator = (HWND)wParam;
-			hProbabilityCalculatorIcon = CopyIcon((HICON)SendMessage(hProbabilityCalculator, WM_GETICON, ICON_BIG, 0));
-			winProbCalculatorButton.setIcon(hProbabilityCalculatorIcon);
+			hProbCalculator = (HWND)wParam;
+			hProbCalculatorIcon = CopyIcon((HICON)SendMessage(hProbCalculator, WM_GETICON, ICON_BIG, 0));
+			winProbCalculatorButton.setIcon(hProbCalculatorIcon);
 			TCHAR winProbCalculatorTipText[] = _T("断开胜率计算器");
 			setToolTipText(hWinProbCalculatorTip, winProbCalculatorButton.getHwnd(), hDlg, winProbCalculatorTipText);
 		}
 		return INT_PTR(TRUE);
 	case BPC_DISCONNECT:
-		if (hProbabilityCalculator != nullptr && hProbabilityCalculator == (HWND)wParam)
+		if (hProbCalculator != nullptr && hProbCalculator == (HWND)wParam)
 		{
 			disconnectCalculator();
 		}
 		return INT_PTR(TRUE);
 	case BPC_PROBABILITY:
-		if (hProbabilityCalculator != nullptr && hProbabilityCalculator == (HWND)wParam)
+		if (hProbCalculator != nullptr && hProbCalculator == (HWND)wParam)
 		{
-			double probability = *(double*)&lParam;
-			int probabitly4decimal = round(10000 * probability);
-			if (probabitly4decimal > 0 && probabitly4decimal < 10000)
+			int probDecimal = round(10000 * *(double*)&lParam);
+			if (probDecimal > 0 && probDecimal < 10000)
 			{
 				TCHAR str[5];
-				_stprintf(str, _T("%04d"), probabitly4decimal);
+				_stprintf(str, _T("%04d"), probDecimal);
 				winProbEdit.setText(str);
 				updateWinProb();
 			}
@@ -204,12 +203,11 @@ INT_PTR BetTabDlg::dlgProc(UINT msg, WPARAM wParam, LPARAM lParam)
 			return INT_PTR(TRUE);
 		}
 	case WM_CTLCOLORSTATIC:
-		if ((HWND)lParam == hCurrentProfitText[0] && model.getProfit(1) - model.getProfit(0) > MIN_AMOUNT ||
-			(HWND)lParam == hCurrentProfitText[1] && model.getProfit(0) - model.getProfit(1) > MIN_AMOUNT)
+		if ((HWND)lParam == hCurrentProfitText[LEFT_SIDE] && model.getProfit(RIGHT_SIDE) - model.getProfit(LEFT_SIDE) > MIN_AMOUNT ||
+			(HWND)lParam == hCurrentProfitText[RIGHT_SIDE] && model.getProfit(LEFT_SIDE) - model.getProfit(RIGHT_SIDE) > MIN_AMOUNT)
 		{
-			HDC hDC = (HDC)wParam;
-			SetTextColor(hDC, RGB(255, 0, 0));
-			SetBkColor(hDC, GetSysColor(COLOR_BTNFACE));
+			SetTextColor((HDC)wParam, RGB(255, 0, 0));
+			SetBkColor((HDC)wParam, GetSysColor(COLOR_BTNFACE));
 			return (INT_PTR)GetSysColorBrush(COLOR_BTNFACE);
 		}
 		break;
@@ -477,7 +475,7 @@ INT_PTR BetTabDlg::dlgProc(UINT msg, WPARAM wParam, LPARAM lParam)
 			}
 			break;
 		case IDC_WIN_PROBABILITY_CALCULATOR_BUTTON:
-			if (hProbabilityCalculator == nullptr)
+			if (hProbCalculator == nullptr)
 			{
 				IFileDialog* pfd = nullptr;
 				HRESULT hr = CoCreateInstance(CLSID_FileOpenDialog, nullptr, CLSCTX_INPROC_SERVER, IID_PPV_ARGS(&pfd));
@@ -520,7 +518,7 @@ INT_PTR BetTabDlg::dlgProc(UINT msg, WPARAM wParam, LPARAM lParam)
 			}
 			else
 			{
-				PostMessage(hProbabilityCalculator, BPC_DISCONNECT, 0, 0);
+				PostMessage(hProbCalculator, BPC_DISCONNECT, 0, 0);
 				disconnectCalculator();
 			}
 			return INT_PTR(TRUE);
@@ -573,10 +571,10 @@ INT_PTR BetTabDlg::dlgProc(UINT msg, WPARAM wParam, LPARAM lParam)
 		}
 		break;
 	case WM_DESTROY:
-		if (hProbabilityCalculator != nullptr)
+		if (hProbCalculator != nullptr)
 		{
-			PostMessage(hProbabilityCalculator, BPC_DISCONNECT, 0, 0);
-			DeleteObject(hProbabilityCalculatorIcon);
+			PostMessage(hProbCalculator, BPC_DISCONNECT, 0, 0);
+			DeleteObject(hProbCalculatorIcon);
 		}
 		break;
 	}
@@ -756,10 +754,10 @@ void BetTabDlg::updateWinProbError()
 
 void BetTabDlg::disconnectCalculator()
 {
-	hProbabilityCalculator = nullptr;
+	hProbCalculator = nullptr;
 	winProbCalculatorButton.setIcon(hCalculatorIcon);
-	DeleteObject(hProbabilityCalculatorIcon);
-	hProbabilityCalculatorIcon = nullptr;
+	DeleteObject(hProbCalculatorIcon);
+	hProbCalculatorIcon = nullptr;
 	TCHAR winProbCalculatorTipText[] = _T("加载胜率计算器");
 	setToolTipText(hWinProbCalculatorTip, winProbCalculatorButton.getHwnd(), hDlg, winProbCalculatorTipText);
 }
