@@ -14,7 +14,7 @@ int X_MOVE;
 #define Y_ALL_BOUGHT (int)roundf(-3.2f*yScale)
 #define X_CHANGE (int)(2-54.0f*xScale)
 
-LRESULT CALLBACK listBoxSubclassProc(HWND hListBox, UINT msg, WPARAM wParam, LPARAM lParam, UINT_PTR uIdSubclass, DWORD_PTR dwRefData)
+static LRESULT CALLBACK listBoxSubclassProc(HWND hListBox, UINT msg, WPARAM wParam, LPARAM lParam, UINT_PTR uIdSubclass, DWORD_PTR dwRefData)
 {
 	ListBox* listBox = (ListBox*)GetWindowLongPtr(hListBox, GWLP_USERDATA);
 	if (msg == WM_ERASEBKGND)
@@ -27,10 +27,6 @@ LRESULT CALLBACK listBoxSubclassProc(HWND hListBox, UINT msg, WPARAM wParam, LPA
 			FillRect((HDC)wParam, &rect, GetSysColorBrush(COLOR_WINDOW));
 		}
 		return (LRESULT)TRUE;
-	}
-	if (listBox == nullptr)
-	{
-		return DefSubclassProc(hListBox, msg, wParam, lParam);
 	}
 	return listBox->wndProc(msg, wParam, lParam);
 }

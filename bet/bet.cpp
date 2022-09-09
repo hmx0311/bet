@@ -30,7 +30,6 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
 	hInst = hInstance; // 将实例句柄存储在全局变量中
 
 	// 执行应用程序初始化:
-	SetProcessDPIAware();
 	loadConfig(config);
 
 	BufferedPaintInit();
