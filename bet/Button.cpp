@@ -7,7 +7,7 @@
 #define BUTTON_ANIMATION_DURATION_SHORT 150
 #define BUTTON_ANIMATION_DURATION_LONG  200
 
-#define BUTTON_MARGIN_RATIO 0.1f
+#define BUTTON_MARGIN_RATIO 0.08f
 #define PRESSED_SQUEEZE 0.0625f
 
 HTHEME hButtonTheme;
@@ -73,59 +73,6 @@ LRESULT Button::wndProc(UINT msg, WPARAM wParam, LPARAM lParam)
 
 void Button::drawItem(HDC hDC, UINT itemState, RECT& rcItem)
 {
-	if (hButtonTheme == nullptr)
-	{
-		HDC hDCMem;
-		HPAINTBUFFER hPaintBuffer = BeginBufferedPaint(hDC, &rcItem, BPBF_COMPATIBLEBITMAP, nullptr, &hDCMem);
-		FillRect(hDCMem, &rcItem, hBkgBrush);
-		RECT rcContent = rcItem;
-		int margin = BUTTON_MARGIN_RATIO * min(rcContent.right - rcContent.left, rcContent.bottom - rcContent.top);
-		if (!(GetWindowLongPtr(hButton, GWL_STYLE) & BS_FLAT))
-		{
-			margin++;
-			UINT uStyle = DFCS_BUTTONPUSH;
-			if (itemState & ODS_SELECTED)
-			{
-				uStyle |= DFCS_PUSHED;
-				rcContent.left++;
-				rcContent.top++;
-				rcContent.right++;
-				rcContent.bottom++;
-			}
-			DrawFrameControl(hDCMem, &rcItem, DFC_BUTTON, uStyle);
-		}
-		rcContent.left += margin;
-		rcContent.top += margin;
-		rcContent.right -= margin;
-		rcContent.bottom -= margin;
-		if (hIcon != nullptr)
-		{
-			HDC hDCImage = CreateCompatibleDC(hDCMem);
-			int xSqueeze = 0, ySqueeze = 0;
-			if (GetWindowLongPtr(hButton, GWL_STYLE) & BS_FLAT && itemState & ODS_SELECTED)
-			{
-				xSqueeze = PRESSED_SQUEEZE * iconWidth;
-				ySqueeze = PRESSED_SQUEEZE * iconHeight;
-			}
-			RECT rcImage = { 0,0,iconWidth + 2 * xSqueeze,iconHeight + 2 * ySqueeze };
-			HBITMAP hBmBuffer = CreateCompatibleBitmap(hDCMem, rcImage.right, rcImage.bottom);
-			SelectObject(hDCImage, hBmBuffer);
-			FillRect(hDCImage, &rcImage, (GetWindowLongPtr(hButton, GWL_STYLE) & BS_FLAT) ? hBkgBrush : GetSysColorBrush(COLOR_BTNFACE));
-			DrawIcon(hDCImage, xSqueeze, ySqueeze, hIcon);
-			SetStretchBltMode(hDCMem, HALFTONE);
-			StretchBlt(hDCMem, rcContent.left, rcContent.top, rcContent.right - rcContent.left, rcContent.bottom - rcContent.top, hDCImage, 0, 0, rcImage.right, rcImage.bottom, SRCCOPY);
-			DeleteObject(hBmBuffer);
-			DeleteObject(hDCImage);
-		}
-		SelectObject(hDCMem, (HFONT)SendMessage(hButton, WM_GETFONT, 0, 0));
-		SetBkMode(hDCMem, TRANSPARENT);
-		SetTextColor(hDCMem, GetSysColor(COLOR_BTNTEXT));
-		TCHAR str[10];
-		GetWindowText(hButton, str, 10);
-		DrawText(hDCMem, str, wcslen(str), &rcContent, DT_SINGLELINE | DT_VCENTER | DT_CENTER);
-		EndBufferedPaint(hPaintBuffer, TRUE);
-		return;
-	}
 	PUSHBUTTONSTATES state = PBS_NORMAL;
 	if (itemState & ODS_SELECTED)
 	{
@@ -135,7 +82,7 @@ void Button::drawItem(HDC hDC, UINT itemState, RECT& rcItem)
 	{
 		state = PBS_HOT;
 	}
-	if (lastState == state)
+	if (lastState == state || hButtonTheme == nullptr)
 	{
 		HDC hDCMem;
 		HPAINTBUFFER hPaintBuffer = BeginBufferedPaint(hDC, &rcItem, BPBF_COMPATIBLEBITMAP, nullptr, &hDCMem);
@@ -189,35 +136,52 @@ void Button::drawButton(HDC hDC, PUSHBUTTONSTATES state, RECT& rcItem)
 {
 	FillRect(hDC, &rcItem, hBkgBrush);
 	RECT rcContent = rcItem;
-	int margin;
+	int padding;
 	if (GetWindowLongPtr(hButton, GWL_STYLE) & BS_FLAT)
 	{
-		margin = BUTTON_MARGIN_RATIO * min(rcContent.right - rcContent.left, rcContent.bottom - rcContent.top);
+		padding = BUTTON_MARGIN_RATIO * min(rcContent.right - rcContent.left, rcContent.bottom - rcContent.top);
 		if (state == PBS_HOT || state == PBS_PRESSED)
 		{
 			HGDIOBJ oldBrush = SelectObject(hDC, GetStockObject(LTGRAY_BRUSH));
 			HGDIOBJ oldPen = SelectObject(hDC, GetStockObject(NULL_PEN));
-			RoundRect(hDC, rcItem.left, rcItem.top, rcItem.right + 1, rcItem.bottom + 1, 2 * margin, 2 * margin);
+			RoundRect(hDC, rcItem.left, rcItem.top, rcItem.right + 1, rcItem.bottom + 1, 2 * padding, 2 * padding);
 			SelectObject(hDC, oldBrush);
 			SelectObject(hDC, oldPen);
 		}
 	}
 	else
 	{
-		DrawThemeBackground(hButtonTheme, hDC, BP_PUSHBUTTON, state, &rcItem, nullptr);
-		GetThemeBackgroundContentRect(hButtonTheme, hDC, BP_PUSHBUTTON, state, &rcItem, &rcContent);
-		margin = BUTTON_MARGIN_RATIO * min(rcContent.right - rcContent.left, rcContent.bottom - rcContent.top) - 1;
+		padding = BUTTON_MARGIN_RATIO * min(rcContent.right - rcContent.left, rcContent.bottom - rcContent.top) - 1;
+		if (hButtonTheme == nullptr)
+		{
+			UINT uStyle = DFCS_BUTTONPUSH;
+			if (state == PBS_PRESSED)
+			{
+				uStyle |= DFCS_PUSHED;
+				rcContent.left++;
+				rcContent.top++;
+				rcContent.right++;
+				rcContent.bottom++;
+			}
+			DrawFrameControl(hDC, &rcItem, DFC_BUTTON, uStyle);
+			padding += 2;
+		}
+		else
+		{
+			DrawThemeBackground(hButtonTheme, hDC, BP_PUSHBUTTON, state, &rcItem, nullptr);
+			GetThemeBackgroundContentRect(hButtonTheme, hDC, BP_PUSHBUTTON, state, &rcItem, &rcContent);
+		}
 	}
-	rcContent.left += margin;
-	rcContent.top += margin;
-	rcContent.right -= margin;
-	rcContent.bottom -= margin;
+	rcContent.left += padding;
+	rcContent.top += padding;
+	rcContent.right -= padding;
+	rcContent.bottom -= padding;
 
 	if (hIcon != nullptr)
 	{
 		HDC hDCImage = CreateCompatibleDC(hDC);
 		int xSqueeze = 0, ySqueeze = 0;
-		if (state == PBS_PRESSED)
+		if (state == PBS_PRESSED && (hButtonTheme != nullptr|| GetWindowLongPtr(hButton, GWL_STYLE) & BS_FLAT))
 		{
 			xSqueeze = PRESSED_SQUEEZE * iconWidth;
 			ySqueeze = PRESSED_SQUEEZE * iconHeight;
@@ -227,7 +191,7 @@ void Button::drawButton(HDC hDC, PUSHBUTTONSTATES state, RECT& rcItem)
 		SetStretchBltMode(hDCImage, HALFTONE);
 		StretchBlt(hDCImage, 0, 0, iconWidth + 2 * xSqueeze, iconHeight + 2 * ySqueeze,
 			hDC, rcContent.left, rcContent.top, rcContent.right - rcContent.left, rcContent.bottom - rcContent.top, SRCCOPY);
-		DrawIcon(hDCImage, xSqueeze, ySqueeze, hIcon);
+		DrawIconEx(hDCImage, xSqueeze, ySqueeze, hIcon,0,0,0, nullptr, DI_NORMAL);
 		SetStretchBltMode(hDC, HALFTONE);
 		StretchBlt(hDC, rcContent.left, rcContent.top, rcContent.right - rcContent.left, rcContent.bottom - rcContent.top,
 			hDCImage, 0, 0, iconWidth + 2 * xSqueeze, iconHeight + 2 * ySqueeze, SRCCOPY);
@@ -236,6 +200,7 @@ void Button::drawButton(HDC hDC, PUSHBUTTONSTATES state, RECT& rcItem)
 	}
 	SelectObject(hDC, (HFONT)SendMessage(hButton, WM_GETFONT, 0, 0));
 	SetBkMode(hDC, TRANSPARENT);
+	SetTextColor(hDC, GetSysColor(COLOR_BTNTEXT));
 	TCHAR str[10];
 	GetWindowText(hButton, str, 10);
 	DrawText(hDC, str, wcslen(str), &rcContent, DT_SINGLELINE | DT_VCENTER | DT_CENTER);

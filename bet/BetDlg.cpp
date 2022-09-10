@@ -11,17 +11,17 @@
 #include <ctime>
 
 #define TAB_WIDTH (int)roundf(142 * xScale)
+int TAB_HEIGHT;
 #define ADD_TAB_X (TAB_WIDTH+4)
+int ADD_TAB_Y;
 #define MAX_TAB 4
 #define TAB_NAME_EDIT_MARGIN_X (int)roundf(2*xScale)
 #define TAB_NAME_EDIT_MARGIN_Y (int)roundf(3.45f*yScale)
 
-int nameEditPosX;
-int nameEditPosY;
-int addTabPosY;
+int NAME_EDIT_X;
+int NAME_EDIT_Y;
 
 HICON BetDlg::hIcon;
-HICON BetDlg::hSettingsIcon;
 
 BetDlg::BetDlg()
 {
@@ -39,30 +39,18 @@ INT_PTR BetDlg::initDlg(HWND hDlg)
 	settingsButton.attach(GetDlgItem(hDlg, IDC_SETTINGS_BUTTON));
 	addTabButton.attach(GetDlgItem(hDlg, IDC_ADD_TAB_BUTTON));
 
-	RECT pos;
-	GetWindowRect(betTab, &pos);
-	MapWindowRect(HWND_DESKTOP, hDlg, &pos);
-	xScale = pos.right / 676.0f;
-	yScale = pos.bottom / 530.0f;
-	hFont = (HFONT)SendMessage(hDlg, WM_GETFONT, 0, 0);
-	LOGFONT logFont;
-	GetObject(hFont, sizeof(LOGFONT), &logFont);
-	listItemHeight = -logFont.lfHeight;
-	int tabHeight = pos.bottom - pos.top - 3;
-	addTabPosY = pos.bottom - tabHeight - 2;
-	nameEditPosX = TAB_NAME_EDIT_MARGIN_X + 2;
-	nameEditPosY = pos.bottom - tabHeight + TAB_NAME_EDIT_MARGIN_Y - 1;
+	calcPos();
 
 	tabNameEdit = CreateWindowEx(WS_EX_STATICEDGE, _T("EDIT"), _T(""),
 		WS_CHILD | WS_VISIBLE | ES_CENTER | ES_MULTILINE,
-		nameEditPosX, nameEditPosY, TAB_WIDTH - 2 * TAB_NAME_EDIT_MARGIN_X, tabHeight - 2 * TAB_NAME_EDIT_MARGIN_Y,
+		NAME_EDIT_X, NAME_EDIT_Y, TAB_WIDTH - 2 * TAB_NAME_EDIT_MARGIN_X, TAB_HEIGHT - 2 * TAB_NAME_EDIT_MARGIN_Y,
 		hDlg, (HMENU)IDC_TAB_NAME_EDIT, hInst, nullptr);
 
 	SetWindowSubclass(tabNameEdit, editSubclassProc, 0, 0);
 
 	hButtonTheme = OpenThemeData(settingsButton.getHwnd(), _T("Button"));
 
-	settingsButton.setIcon(hSettingsIcon);
+	settingsButton.setIcon((HICON)LoadImage(hInst, MAKEINTRESOURCE(IDI_SETTINGS), IMAGE_ICON, 0, 0, LR_SHARED));
 
 	TCHAR settingsTipText[] = _T("ÉèÖÃ");
 	createToolTip(settingsButton.getHwnd(), hDlg, settingsTipText);
@@ -72,16 +60,15 @@ INT_PTR BetDlg::initDlg(HWND hDlg)
 	betTabs.push_back(currentTab);
 	ShowWindow(currentTab->getHwnd(), SW_SHOW);
 
-	SendMessage(betTab, TCM_SETITEMSIZE, 0, MAKELPARAM(TAB_WIDTH, tabHeight));
 	TCITEM tcItem;
 	tcItem.mask = TCIF_TEXT;
 	TCHAR tabName[] = _T("1");
 	tcItem.pszText = tabName;
 	SendMessage(betTab, TCM_INSERTITEM, 0, (LPARAM)&tcItem);
 
-	SetWindowPos(addTabButton.getHwnd(), nullptr, ADD_TAB_X, addTabPosY, 0, 0, SWP_NOSIZE);
+	SetWindowPos(addTabButton.getHwnd(), nullptr, ADD_TAB_X, ADD_TAB_Y, 0, 0, SWP_NOSIZE);
 	SendMessage(tabNameEdit, WM_SETFONT, (WPARAM)hFont, TRUE);
-	SetWindowPos(tabNameEdit, nullptr, nameEditPosX, nameEditPosY, 0, 0, SWP_NOSIZE | SWP_SHOWWINDOW);
+	SetWindowPos(tabNameEdit, nullptr, NAME_EDIT_X, NAME_EDIT_Y, 0, 0, SWP_NOSIZE | SWP_SHOWWINDOW);
 
 	setVCentered(tabNameEdit);
 	SetFocus(tabNameEdit);
@@ -96,6 +83,14 @@ INT_PTR BetDlg::dlgProc(UINT msg, WPARAM wParam, LPARAM lParam)
 {
 	switch (msg)
 	{
+	case WM_DPICHANGED:
+		calcPos();
+		DeleteObject(hIcon);
+		hIcon = LoadIcon(hInst, MAKEINTRESOURCE(IDI_BET));
+		SendMessage(hDlg, WM_SETICON, ICON_BIG, (LPARAM)hIcon);
+		SendMessage(hDlg, WM_SETICON, ICON_SMALL, (LPARAM)hIcon);
+		needErase = true;
+		break;
 	case WM_THEMECHANGED:
 		CloseThemeData(hButtonTheme);
 		hButtonTheme = OpenThemeData(settingsButton.getHwnd(), _T("Button"));
@@ -109,6 +104,10 @@ INT_PTR BetDlg::dlgProc(UINT msg, WPARAM wParam, LPARAM lParam)
 		}
 		needErase = false;
 		break;
+	case WM_CTLCOLORSTATIC:
+		SetTextColor((HDC)wParam, GetSysColor(COLOR_WINDOWTEXT));
+		SetBkColor((HDC)wParam, GetSysColor(COLOR_BTNFACE));
+		return (INT_PTR)GetStockBrush(NULL_BRUSH);
 	case WM_MOVE:
 	case WM_MOVING:
 		needErase = true;
@@ -150,7 +149,7 @@ INT_PTR BetDlg::dlgProc(UINT msg, WPARAM wParam, LPARAM lParam)
 				}
 				else
 				{
-					SetWindowPos(addTabButton.getHwnd(), nullptr, ADD_TAB_X + (betTabs.size() - 2) * TAB_WIDTH, addTabPosY, 0, 0, SWP_NOSIZE);
+					SetWindowPos(addTabButton.getHwnd(), nullptr, ADD_TAB_X + (betTabs.size() - 2) * TAB_WIDTH, ADD_TAB_Y, 0, 0, SWP_NOSIZE);
 				}
 				betTabs.erase(betTabs.begin() + tabId);
 				SendMessage(betTab, TCM_DELETEITEM, tabId, 0);
@@ -194,7 +193,7 @@ INT_PTR BetDlg::dlgProc(UINT msg, WPARAM wParam, LPARAM lParam)
 				}
 				else
 				{
-					SetWindowPos(addTabButton.getHwnd(), nullptr, ADD_TAB_X + tabId * TAB_WIDTH, addTabPosY, 0, 0, SWP_NOSIZE);
+					SetWindowPos(addTabButton.getHwnd(), nullptr, ADD_TAB_X + tabId * TAB_WIDTH, ADD_TAB_Y, 0, 0, SWP_NOSIZE);
 				}
 				ShowWindow(currentTab->getHwnd(), SW_HIDE);
 				currentTab = new BetTabDlg;
@@ -208,7 +207,7 @@ INT_PTR BetDlg::dlgProc(UINT msg, WPARAM wParam, LPARAM lParam)
 				tcItem.pszText = str;
 				SendMessage(betTab, TCM_INSERTITEM, tabId, (LPARAM)&tcItem);
 				SendMessage(betTab, TCM_SETCURSEL, tabId, 0);
-				SetWindowPos(tabNameEdit, nullptr, nameEditPosX + tabId * TAB_WIDTH, nameEditPosY, 0, 0, SWP_NOSIZE | SWP_SHOWWINDOW);
+				SetWindowPos(tabNameEdit, nullptr, NAME_EDIT_X + tabId * TAB_WIDTH, NAME_EDIT_Y, 0, 0, SWP_NOSIZE | SWP_SHOWWINDOW);
 				SetFocus(tabNameEdit);
 				return (INT_PTR)TRUE;
 			}
@@ -249,7 +248,7 @@ INT_PTR BetDlg::dlgProc(UINT msg, WPARAM wParam, LPARAM lParam)
 							SendMessage(betTab, TCM_GETITEM, lastSel, (LPARAM)&cItem);
 							SetWindowText(tabNameEdit, str);
 							SendMessage(tabNameEdit, EM_SETSEL, 0, -1);
-							SetWindowPos(tabNameEdit, nullptr, nameEditPosX + lastSel * TAB_WIDTH, nameEditPosY, 0, 0, SWP_NOSIZE | SWP_SHOWWINDOW);
+							SetWindowPos(tabNameEdit, nullptr, NAME_EDIT_X + lastSel * TAB_WIDTH, NAME_EDIT_Y, 0, 0, SWP_NOSIZE | SWP_SHOWWINDOW);
 							SetFocus(tabNameEdit);
 							lastSel = -1;
 							lastClickTime = -1000;
@@ -309,4 +308,23 @@ INT_PTR BetDlg::dlgProc(UINT msg, WPARAM wParam, LPARAM lParam)
 BetTabDlg* BetDlg::getCurrentTab()
 {
 	return currentTab;
+}
+
+void BetDlg::calcPos()
+{
+	RECT pos;
+	GetWindowRect(betTab, &pos);
+	MapWindowRect(HWND_DESKTOP, hDlg, &pos);
+	xScale = pos.right / 676.0f;
+	yScale = pos.bottom / 530.0f;
+	hFont = (HFONT)SendMessage(hDlg, WM_GETFONT, 0, 0);
+	LOGFONT logFont;
+	GetObject(hFont, sizeof(LOGFONT), &logFont);
+	listItemHeight = -logFont.lfHeight;
+	TAB_HEIGHT = pos.bottom - pos.top - 3;
+	ADD_TAB_Y = pos.bottom - TAB_HEIGHT - 2;
+	NAME_EDIT_X = TAB_NAME_EDIT_MARGIN_X + 2;
+	NAME_EDIT_Y = pos.bottom - TAB_HEIGHT + TAB_NAME_EDIT_MARGIN_Y - 1;
+
+	SendMessage(betTab, TCM_SETITEMSIZE, 0, MAKELPARAM(TAB_WIDTH, TAB_HEIGHT));
 }

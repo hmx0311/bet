@@ -35,11 +35,10 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
 	BufferedPaintInit();
 
 	BetDlg::hIcon = LoadIcon(hInstance, MAKEINTRESOURCE(IDI_BET));
-	BetDlg::hSettingsIcon = LoadIcon(hInstance, MAKEINTRESOURCE(IDI_SETTINGS));
-	BetTabDlg::hResetIcon = LoadIcon(hInstance, MAKEINTRESOURCE(IDI_RESET));
-	BetTabDlg::hClearIcon = LoadIcon(hInstance, MAKEINTRESOURCE(IDI_CLEAR));
-	BetTabDlg::hTickIcon = LoadIcon(hInstance, MAKEINTRESOURCE(IDI_TICK));
-	BetTabDlg::hCalculatorIcon = LoadIcon(hInstance, MAKEINTRESOURCE(IDI_CALCULATOR));
+	BetTabDlg::hResetIcon = (HICON)LoadImage(hInstance, MAKEINTRESOURCE(IDI_RESET), IMAGE_ICON, 0, 0, LR_SHARED);
+	BetTabDlg::hClearIcon = (HICON)LoadImage(hInstance, MAKEINTRESOURCE(IDI_CLEAR), IMAGE_ICON, 0, 0, LR_SHARED);
+	BetTabDlg::hTickIcon = (HICON)LoadImage(hInstance, MAKEINTRESOURCE(IDI_TICK), IMAGE_ICON, 0, 0, LR_SHARED);
+	BetTabDlg::hCalculatorIcon = (HICON)LoadImage(hInstance, MAKEINTRESOURCE(IDI_CALCULATOR), IMAGE_ICON, 0, 0, LR_SHARED);
 
 	HACCEL hAccel = LoadAccelerators(hInstance, MAKEINTRESOURCE(IDR_ACCELERATOR));
 
@@ -66,13 +65,6 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
 	}
 
 	BufferedPaintUnInit();
-
-	DeleteObject(BetDlg::hIcon);
-	DeleteObject(BetDlg::hSettingsIcon);
-	DeleteObject(BetTabDlg::hResetIcon);
-	DeleteObject(BetTabDlg::hClearIcon);
-	DeleteObject(BetTabDlg::hTickIcon);
-	DeleteObject(BetTabDlg::hCalculatorIcon);
 
 	return (int)msg.wParam;
 }
