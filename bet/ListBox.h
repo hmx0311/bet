@@ -8,6 +8,7 @@ class ListBox
 {
 protected:
 	HWND hListBox;
+	int displayedItemCnt;
 public:
 	void attach(HWND hListBox);
 	virtual LRESULT wndProc(UINT msg, WPARAM wParam, LPARAM lParam);
@@ -22,8 +23,6 @@ public:
 class BetList :
 	public ListBox
 {
-public:
-	static int maxDisplayedItemCnt;
 private:
 	RECT rcListBox;
 	HWND hMoveSpin;

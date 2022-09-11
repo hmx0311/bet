@@ -2,19 +2,24 @@
 #include "Edit.h"
 
 #include "common.h"
+#include "bet.h"
 
 #include <CommCtrl.h>
+#include <windowsx.h>
 
 using namespace std;
 
 void setVCentered(HWND hEdit)
 {
-	RECT rect;
-	GetClientRect(hEdit, &rect);
+	RECT rcEdit;
+	GetWindowRect(hEdit, &rcEdit);
+	MapWindowRect(HWND_DESKTOP, hEdit, &rcEdit);
+	RECT rcClient;
+	GetClientRect(hEdit, &rcClient);
 	LOGFONT logFont;
 	GetObject(hFont, sizeof(LOGFONT), &logFont);
-	rect.top += (rect.bottom - rect.top + logFont.lfHeight - 1.5f) / 2;
-	SendMessage(hEdit, EM_SETRECTNP, 0, (LPARAM)&rect);
+	rcClient.top = rcEdit.top + 0.5f * (rcEdit.bottom - rcEdit.top - abs(logFont.lfHeight) - 1.5f);
+	SendMessage(hEdit, EM_SETRECTNP, 0, (LPARAM)&rcClient);
 }
 
 LRESULT CALLBACK editSubclassProc(HWND hEdit, UINT msg, WPARAM wParam, LPARAM lParam, UINT_PTR uIdSubclass, DWORD_PTR dwRefData)
@@ -25,8 +30,12 @@ LRESULT CALLBACK editSubclassProc(HWND hEdit, UINT msg, WPARAM wParam, LPARAM lP
 	{
 		result = edit->wndProc(msg, wParam, lParam);
 	}
-	if (msg == WM_COMMAND)
+	switch (msg)
 	{
+	case WM_DPICHANGED_AFTERPARENT:
+		setVCentered(hEdit);
+		return (LRESULT)TRUE;
+	case WM_COMMAND:
 		switch (LOWORD(wParam))
 		{
 		case ID_CONFIRM:
@@ -34,6 +43,7 @@ LRESULT CALLBACK editSubclassProc(HWND hEdit, UINT msg, WPARAM wParam, LPARAM lP
 			SendMessage(GetParent(hEdit), msg, wParam, lParam);
 			break;
 		}
+		break;
 	}
 	if (result)
 	{
@@ -61,6 +71,9 @@ HWND Edit::getHwnd()
 void Edit::getRect(RECT* rect)
 {
 	SendMessage(hEdit, EM_GETRECT, 0, (LPARAM)rect);
+	rect->top -= rect->left;
+	rect->bottom += rect->left;
+	rect->left = 0;
 }
 
 void Edit::setRectNP(RECT* rect)

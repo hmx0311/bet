@@ -11,7 +11,7 @@ private:
 	std::vector<BetTabDlg*> betTabs;
 	BetTabDlg* currentTab;
 
-	HWND betTab;
+	HWND hBetTab;
 	Button settingsButton;
 	Button addTabButton;
 	HWND tabNameEdit;
@@ -26,5 +26,6 @@ public:
 	BetTabDlg* getCurrentTab();
 private:
 	void calcPos();
+	void calcBetTabPos();
 };
 

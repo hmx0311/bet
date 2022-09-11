@@ -19,8 +19,6 @@
 #define LEFT_SIDE 0
 #define RIGHT_SIDE 1
 
-extern int X_MOVE;
-
 HICON BetTabDlg::hResetIcon;
 HICON BetTabDlg::hClearIcon;
 HICON BetTabDlg::hTickIcon;
@@ -34,15 +32,6 @@ BetTabDlg::BetTabDlg()
 INT_PTR BetTabDlg::initDlg(HWND hDlg)
 {
 	Dialog::initDlg(hDlg);
-
-	if (X_MOVE == 0)
-	{
-		RECT rect;
-		GetWindowRect(GetDlgItem(hDlg, IDC_L_BET_LIST), &rect);
-		BetList::maxDisplayedItemCnt = (rect.bottom - rect.top - 4) / listItemHeight;
-		GetWindowRect(GetDlgItem(hDlg, IDC_MOVE_SPIN), &rect);
-		X_MOVE = rect.left - rect.right;
-	}
 
 	resetButton.attach(GetDlgItem(hDlg, IDC_RESET_BUTTON));
 	hTotalInvestText = GetDlgItem(hDlg, IDC_TOTAL_INVEST_TEXT);
@@ -75,7 +64,6 @@ INT_PTR BetTabDlg::initDlg(HWND hDlg)
 		oddsEdit[i].attach(GetDlgItem(hDlg, IDC_L_BANKER_ODDS_EDIT + i));
 	}
 	amountEdit[0].attach(GetDlgItem(hDlg, IDC_L_AMOUNT_EDIT));
-
 	amountEdit[1].attach(GetDlgItem(hDlg, IDC_R_AMOUNT_EDIT));
 	for (int i = 0; i < 8; i++)
 	{
@@ -191,6 +179,15 @@ INT_PTR BetTabDlg::dlgProc(UINT msg, WPARAM wParam, LPARAM lParam)
 			}
 		}
 		return INT_PTR(TRUE);
+	case WM_DPICHANGED_AFTERPARENT:
+		for (int i = 0; i < 2; i++)
+		{
+			RECT rect;
+			amountEdit[i].getRect(&rect);
+			rect.right -= 16 * xScale;
+			amountEdit[i].setRectNP(&rect);
+		}
+		break;
 	case WM_ERASEBKGND:
 		{
 			HBRUSH brush = GetSysColorBrush(COLOR_BTNFACE);

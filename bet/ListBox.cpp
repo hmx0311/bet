@@ -2,6 +2,7 @@
 #include "listBox.h"
 
 #include "common.h"
+#include "bet.h"
 
 #include <windowsx.h>
 #include <CommCtrl.h>
@@ -39,10 +40,25 @@ void ListBox::attach(HWND hListBox)
 	this->hListBox = hListBox;
 	SetWindowLongPtr(hListBox, GWLP_USERDATA, (LONG_PTR)this);
 	SetWindowSubclass(hListBox, listBoxSubclassProc, 0, 0);
+	RECT rect;
+	GetWindowRect(hListBox, &rect);
+	displayedItemCnt = (rect.bottom - rect.top) / listItemHeight;
 }
 
 LRESULT ListBox::wndProc(UINT msg, WPARAM wParam, LPARAM lParam)
 {
+	switch (msg)
+	{
+	case WM_DPICHANGED_AFTERPARENT:
+		{
+			SendMessage(hListBox, LB_SETITEMHEIGHT, 0, listItemHeight);
+			RECT rect;
+			GetWindowRect(hListBox, &rect);
+			MapWindowRect(HWND_DESKTOP, hListBox, &rect);
+			SetWindowPos(hListBox, nullptr, 0, 0, rect.right - rect.left, listItemHeight * displayedItemCnt - 2 * rect.top, SWP_NOMOVE | SWP_NOZORDER | SWP_NOREDRAW);
+			break;
+		}
+	}
 	return DefSubclassProc(hListBox, msg, wParam, lParam);
 }
 
@@ -93,8 +109,6 @@ int ListBox::getCurSel()
 
 //class BetList
 
-int BetList::maxDisplayedItemCnt;
-
 void BetList::attach(HWND hListBox, HWND hMoveSpin, HWND hAllBoughtButton, NumericEdit* boughtEdit)
 {
 	ListBox::attach(hListBox);
@@ -110,6 +124,15 @@ LRESULT BetList::wndProc(UINT msg, WPARAM wParam, LPARAM lParam)
 {
 	switch (msg)
 	{
+	case WM_DPICHANGED_AFTERPARENT:
+		{
+			SendMessage(hListBox, LB_SETITEMHEIGHT, 0, listItemHeight);
+			GetWindowRect(hListBox, &rcListBox);
+			MapWindowRect(HWND_DESKTOP, hListBox, &rcListBox);
+			SetWindowPos(hListBox, nullptr, 0, 0, rcListBox.right - rcListBox.left, listItemHeight * displayedItemCnt - 2 * rcListBox.top, SWP_NOMOVE | SWP_NOZORDER | SWP_NOREDRAW);
+			MapWindowRect(hListBox, GetParent(hListBox), &rcListBox);
+			break;
+		}
 	case WM_KEYDOWN:
 		switch (LOWORD(wParam))
 		{
@@ -211,7 +234,7 @@ LRESULT BetList::wndProc(UINT msg, WPARAM wParam, LPARAM lParam)
 			if (oldScroll != getScrollPos() && getCurSel() != -1)
 			{
 				int selLineIdx = getCurSel() - getScrollPos();
-				if (selLineIdx < 0 || selLineIdx >= maxDisplayedItemCnt)
+				if (selLineIdx < 0 || selLineIdx >= displayedItemCnt)
 				{
 					setCurSel(-1);
 					if (GetFocus() == boughtEdit->getHwnd())
@@ -300,7 +323,7 @@ LRESULT BetList::wndProc(UINT msg, WPARAM wParam, LPARAM lParam)
 		}
 		break;
 	case WM_MOUSEMOVE:
-		if (wParam == MK_LBUTTON && betsSize + bankersSize + 5 > maxDisplayedItemCnt)
+		if (wParam == MK_LBUTTON && betsSize + bankersSize + 5 > displayedItemCnt)
 		{
 			int y = GET_Y_LPARAM(lParam);
 			if (y < 0)
@@ -309,7 +332,7 @@ LRESULT BetList::wndProc(UINT msg, WPARAM wParam, LPARAM lParam)
 			}
 			else if (y > rcListBox.bottom - rcListBox.top)
 			{
-				setCurSel(getScrollPos() + maxDisplayedItemCnt - 1);
+				setCurSel(getScrollPos() + displayedItemCnt - 1);
 			}
 		}
 		break;
@@ -317,7 +340,7 @@ LRESULT BetList::wndProc(UINT msg, WPARAM wParam, LPARAM lParam)
 		if (getCurSel() != -1)
 		{
 			int selLineIdx = getCurSel() - getScrollPos();
-			if (selLineIdx < 0 || selLineIdx >= maxDisplayedItemCnt)
+			if (selLineIdx < 0 || selLineIdx >= displayedItemCnt)
 			{
 				setCurSel(-1);
 				if (GetFocus() == boughtEdit->getHwnd())
@@ -371,7 +394,7 @@ void BetList::drawItem(HDC hDC, int itemID, UINT itemState, ULONG_PTR itemData, 
 	}
 	if (itemID == betsSize + 2)
 	{
-		rcItem.top = (rcItem.bottom- rcItem.top) / 2;
+		rcItem.top = (rcItem.bottom - rcItem.top) / 2;
 		rcItem.bottom = rcItem.top + 1;
 		FillRect(hDC, &rcItem, GetSysColorBrush(COLOR_WINDOWTEXT));
 		return;
@@ -413,14 +436,14 @@ void BetList::addBet(PCTSTR str)
 {
 	insertString(betsSize + 2, str, DT_CENTER);
 	betsSize++;
-	setTopIndex(betsSize > maxDisplayedItemCnt - 2 ? betsSize + 2 - maxDisplayedItemCnt : 0);
+	setTopIndex(betsSize > displayedItemCnt - 2 ? betsSize + 2 - displayedItemCnt : 0);
 }
 
 void BetList::addBanker(PCTSTR str)
 {
 	int nIndex = addString(str, DT_CENTER, RGB(255, 0, 0));
 	bankersSize++;
-	setTopIndex(betsSize + bankersSize + 6 - maxDisplayedItemCnt);
+	setTopIndex(betsSize + bankersSize + 6 - displayedItemCnt);
 }
 
 void BetList::updateBanker(int nIndex, PCTSTR pszItem, COLORREF color)
@@ -478,9 +501,9 @@ pair<bool, int> BetList::deleteSel()
 		bankersSize--;
 	}
 	SendMessage(hListBox, LB_DELETESTRING, lineIdx, 0);
-	if (getScrollPos() >= betsSize + bankersSize + 5 - maxDisplayedItemCnt)
+	if (getScrollPos() >= betsSize + bankersSize + 5 - displayedItemCnt)
 	{
-		setTopIndex(betsSize + bankersSize + 5 - maxDisplayedItemCnt);
+		setTopIndex(betsSize + bankersSize + 5 - displayedItemCnt);
 	}
 	ShowWindow(hMoveSpin, SW_HIDE);
 	ShowWindow(hAllBoughtButton, SW_HIDE);

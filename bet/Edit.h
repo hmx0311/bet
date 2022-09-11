@@ -1,5 +1,5 @@
 #pragma once
-#include "bet.h"
+
 #include <string>
 
 void setVCentered(HWND hEdit);
