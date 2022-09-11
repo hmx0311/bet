@@ -103,12 +103,10 @@ INT_PTR BetTabDlg::initDlg(HWND hDlg)
 	}
 	for (int i = 0; i < 10; i++)
 	{
-		oddsEdit[i].setTextLimit(3);
 		oddsEdit[i].setText(_T("0.1"));
 	}
 	for (int i = 0; i < 2; i++)
 	{
-		amountEdit[i].setTextLimit(7);
 		RECT rect;
 		amountEdit[i].getRect(&rect);
 		rect.right -= 16 * xScale;
@@ -124,17 +122,13 @@ INT_PTR BetTabDlg::initDlg(HWND hDlg)
 
 	resetButton.setIcon(hResetIcon);
 	clearAmountButton[0].setIcon(hClearIcon);
-	clearAmountButton[0].setBkgBrush((HBRUSH)GetSysColorBrush(COLOR_WINDOW));
+	clearAmountButton[0].setBkgBrush(GetSysColorBrush(COLOR_WINDOW));
 	clearAmountButton[1].setIcon(hClearIcon);
-	clearAmountButton[1].setBkgBrush((HBRUSH)GetSysColorBrush(COLOR_WINDOW));
+	clearAmountButton[1].setBkgBrush(GetSysColorBrush(COLOR_WINDOW));
 	allBoughtButton.setIcon(hTickIcon);
 	winProbCalculatorButton.setIcon(hCalculatorIcon);
-	boughtEdit.setTextLimit(7);
-	initialAmountEdit.setTextLimit(14);
 
 	SendMessage(hWinProbSideLeftSelector, BM_SETCHECK, 1, 0);
-	winProbEdit.setTextLimit(4);
-	winProbErrorEdit.setTextLimit(2);
 	TCHAR str[3];
 	_itow((int)round(config.defaultProbError * 100), str, 10);
 	winProbErrorEdit.setText(str);

@@ -15,7 +15,6 @@ public:
 	HWND getHwnd();
 	void getRect(RECT* rect);
 	void setRectNP(RECT* rect);
-	void setTextLimit(int limit);
 	void setText(PCTSTR str);
 	void getText(PTSTR str, int nMaxCount);
 	void setSel(int start, int end);

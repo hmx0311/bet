@@ -49,12 +49,12 @@ INT_PTR BetDlg::initDlg(HWND hDlg)
 	ShowWindow(currentTab->getHwnd(), SW_SHOW);
 	calcBetTabPos();
 
-	tabNameEdit = CreateWindowEx(WS_EX_STATICEDGE, _T("EDIT"), _T(""),
+	hTabNameEdit = CreateWindowEx(WS_EX_STATICEDGE, _T("EDIT"), _T(""),
 		WS_CHILD | WS_VISIBLE | ES_CENTER | ES_MULTILINE,
 		NAME_EDIT_X, NAME_EDIT_Y, TAB_WIDTH - 2 * TAB_NAME_EDIT_MARGIN_X, TAB_HEIGHT - 2 * TAB_NAME_EDIT_MARGIN_Y,
 		hDlg, (HMENU)IDC_TAB_NAME_EDIT, hInst, nullptr);
 
-	SetWindowSubclass(tabNameEdit, editSubclassProc, 0, 0);
+	SetWindowSubclass(hTabNameEdit, editSubclassProc, 0, 0);
 
 
 	hButtonTheme = OpenThemeData(settingsButton.getHwnd(), _T("Button"));
@@ -70,11 +70,12 @@ INT_PTR BetDlg::initDlg(HWND hDlg)
 	tcItem.pszText = tabName;
 	SendMessage(hBetTab, TCM_INSERTITEM, 0, (LPARAM)&tcItem);
 
-	SetWindowPos(addTabButton.getHwnd(), nullptr, ADD_TAB_X, ADD_TAB_Y, 0, 0, SWP_NOSIZE | SWP_NOZORDER);
+	SetWindowPos(addTabButton.getHwnd(), HWND_TOP, ADD_TAB_X, ADD_TAB_Y, 0, 0, SWP_NOSIZE);
 
-	SendMessage(tabNameEdit, WM_SETFONT, (WPARAM)hFont, TRUE);
-	setVCentered(tabNameEdit);
-	SetFocus(tabNameEdit);
+	SetWindowPos(hTabNameEdit, HWND_TOP, 0, 0, 0, 0, SWP_NOMOVE | SWP_NOSIZE);
+	SendMessage(hTabNameEdit, WM_SETFONT, (WPARAM)hFont, TRUE);
+	setVCentered(hTabNameEdit);
+	SetFocus(hTabNameEdit);
 
 	TCHAR str[10];
 	_stprintf(str, _T("³éË®:%.1f%%"), (1 - config.cut) * 100);
@@ -87,7 +88,7 @@ INT_PTR BetDlg::dlgProc(UINT msg, WPARAM wParam, LPARAM lParam)
 	switch (msg)
 	{
 	case WM_DPICHANGED:
-		RECT rcTab,rcDlg;
+		RECT rcTab, rcDlg;
 		GetWindowRect(hBetTab, &rcTab);
 		MapWindowRect(HWND_DESKTOP, hDlg, &rcTab);
 		GetWindowRect(hDlg, &rcDlg);
@@ -126,15 +127,15 @@ INT_PTR BetDlg::dlgProc(UINT msg, WPARAM wParam, LPARAM lParam)
 		switch (LOWORD(wParam))
 		{
 		case ID_CONFIRM:
-			if (GetFocus() == tabNameEdit)
+			if (GetFocus() == hTabNameEdit)
 			{
 				SetFocus(currentTab->getHwnd());
 			}
 			return (INT_PTR)TRUE;
 		case ID_CANCEL:
-			if (GetFocus() == tabNameEdit)
+			if (GetFocus() == hTabNameEdit)
 			{
-				SetWindowText(tabNameEdit, _T(""));
+				SetWindowText(hTabNameEdit, _T(""));
 				SetFocus(currentTab->getHwnd());
 			}
 			return (INT_PTR)TRUE;
@@ -179,7 +180,7 @@ INT_PTR BetDlg::dlgProc(UINT msg, WPARAM wParam, LPARAM lParam)
 			if (HIWORD(wParam) == EN_KILLFOCUS)
 			{
 				TCHAR str[20];
-				GetWindowText(tabNameEdit, str, 20);
+				GetWindowText(hTabNameEdit, str, 20);
 				if (str[0] != '\0')
 				{
 					int tabId = SendMessage(hBetTab, TCM_GETCURSEL, 0, 0);
@@ -189,8 +190,8 @@ INT_PTR BetDlg::dlgProc(UINT msg, WPARAM wParam, LPARAM lParam)
 					tcItem.pszText = str;
 					SendMessage(hBetTab, TCM_INSERTITEM, tabId, (LPARAM)&tcItem);
 				}
-				SetWindowText(tabNameEdit, _T(""));
-				ShowWindow(tabNameEdit, false);
+				SetWindowText(hTabNameEdit, _T(""));
+				ShowWindow(hTabNameEdit, false);
 				return (INT_PTR)TRUE;
 			}
 			break;
@@ -217,8 +218,8 @@ INT_PTR BetDlg::dlgProc(UINT msg, WPARAM wParam, LPARAM lParam)
 				tcItem.pszText = str;
 				SendMessage(hBetTab, TCM_INSERTITEM, tabId, (LPARAM)&tcItem);
 				SendMessage(hBetTab, TCM_SETCURSEL, tabId, 0);
-				SetWindowPos(tabNameEdit, nullptr, NAME_EDIT_X + tabId * TAB_WIDTH, NAME_EDIT_Y, 0, 0, SWP_NOSIZE | SWP_SHOWWINDOW);
-				SetFocus(tabNameEdit);
+				SetWindowPos(hTabNameEdit, nullptr, NAME_EDIT_X + tabId * TAB_WIDTH, NAME_EDIT_Y, 0, 0, SWP_NOSIZE | SWP_SHOWWINDOW);
+				SetFocus(hTabNameEdit);
 				return (INT_PTR)TRUE;
 			}
 		case IDC_SETTINGS_BUTTON:
@@ -256,10 +257,10 @@ INT_PTR BetDlg::dlgProc(UINT msg, WPARAM wParam, LPARAM lParam)
 							cItem.pszText = str;
 							cItem.cchTextMax = 30;
 							SendMessage(hBetTab, TCM_GETITEM, lastSel, (LPARAM)&cItem);
-							SetWindowText(tabNameEdit, str);
-							SendMessage(tabNameEdit, EM_SETSEL, 0, -1);
-							SetWindowPos(tabNameEdit, nullptr, NAME_EDIT_X + lastSel * TAB_WIDTH, NAME_EDIT_Y, 0, 0, SWP_NOSIZE | SWP_SHOWWINDOW);
-							SetFocus(tabNameEdit);
+							SetWindowText(hTabNameEdit, str);
+							SendMessage(hTabNameEdit, EM_SETSEL, 0, -1);
+							SetWindowPos(hTabNameEdit, nullptr, NAME_EDIT_X + lastSel * TAB_WIDTH, NAME_EDIT_Y, 0, 0, SWP_NOSIZE | SWP_SHOWWINDOW);
+							SetFocus(hTabNameEdit);
 							lastSel = -1;
 							lastClickTime = -1000;
 							return (INT_PTR)TRUE;
@@ -274,7 +275,7 @@ INT_PTR BetDlg::dlgProc(UINT msg, WPARAM wParam, LPARAM lParam)
 					return (INT_PTR)TRUE;
 				}
 			case NM_RCLICK:
-				if (IsWindowVisible(tabNameEdit))
+				if (IsWindowVisible(hTabNameEdit))
 				{
 					(INT_PTR)TRUE;
 				}

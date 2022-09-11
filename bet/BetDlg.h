@@ -14,7 +14,7 @@ private:
 	HWND hBetTab;
 	Button settingsButton;
 	Button addTabButton;
-	HWND tabNameEdit;
+	HWND hTabNameEdit;
 
 	int lastSel = -1;
 	bool needErase = true;

@@ -33,18 +33,15 @@ INT_PTR ConfigDlg::initDlg(HWND hDlg)
 	SendMessage(GetDlgItem(hDlg, IDCANCEL), WM_UPDATEUISTATE, MAKEWPARAM(UIS_SET, UISF_HIDEFOCUS), 0);
 	SetWindowSubclass(GetDlgItem(hDlg, IDCANCEL), buttonSubclassProc, 0, 0);
 
-	cutEdit.setTextLimit(3);
 	TCHAR str[6];
 	_stprintf(str, _T("%03d"), (int)round((1 - oldConfig.cut) * 1000));
 	cutEdit.setText(str);
 	SendMessage(defaultClosingCheck, BM_SETCHECK, oldConfig.defaultClosing, 0);
 	for (int i = 0; i < 4; i++)
 	{
-		fastAddedAmountEdit[i].setTextLimit(5);
 		_stprintf(str, _T("%d"), oldConfig.fastAddedAmount[i]);
 		fastAddedAmountEdit[i].setText(str);
 	}
-	defaultProbErrorEdit.setTextLimit(5);
 	_stprintf(str, _T("%d"), (int)round(oldConfig.defaultProbError * 100));
 	defaultProbErrorEdit.setText(str);
 
