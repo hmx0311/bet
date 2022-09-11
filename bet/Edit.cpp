@@ -102,17 +102,8 @@ void Edit::setSel(int start, int end)
 
 LRESULT NumericEdit::wndProc(UINT msg, WPARAM wParam, LPARAM lParam)
 {
-	if (LOWORD(wParam) == IDC_L_BANKER_ODDS_SPIN)
-	{
-		int a = 1;
-	}
 	switch (msg)
 	{
-	case WM_NOTIFY:
-		if (((LPNMHDR)lParam)->idFrom == IDC_L_BANKER_ODDS_SPIN)
-		{
-			int a = 1;
-		}
 	case WM_KEYDOWN:
 		switch (LOWORD(wParam))
 		{

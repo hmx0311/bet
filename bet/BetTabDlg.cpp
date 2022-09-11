@@ -540,7 +540,6 @@ INT_PTR BetTabDlg::dlgProc(UINT msg, WPARAM wParam, LPARAM lParam)
 			{
 				oddsEdit[((LPNMHDR)lParam)->idFrom - IDC_L_BANKER_ODDS_SPIN].oddsDown(0.1 * ((LPNMUPDOWN)lParam)->iDelta);
 			}
-			SetFocus(oddsEdit[((LPNMHDR)lParam)->idFrom - IDC_L_BANKER_ODDS_SPIN].getHwnd());
 			return INT_PTR(TRUE);
 		case IDC_MOVE_SPIN:
 			{
