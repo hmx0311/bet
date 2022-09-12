@@ -30,27 +30,27 @@ private:
 protected:
 	Button resetButton;
 	HWND hTotalInvestText;
-	HWND hCurrentProfitText[2];
+	HWND hCurrentProfitTexts[2];
 	HWND hHaveClosingCheck;
-	BetList betList[2];
-	HWND hBankerBetSelector[10];
-	OddsEdit oddsEdit[10];
-	AmountEdit amountEdit[2];
-	Button clearAmountButton[2];
-	Button addAmountButton[8];
-	Button addButton[2];
+	BetList betLists[2];
+	HWND hBankerBetSelectors[10];
+	OddsEdit oddsEdits[10];
+	AmountEdit amountEdits[2];
+	Button clearAmountButtons[2];
+	Button addAmountButtons[8];
+	Button addButtons[2];
 	NumericEdit boughtEdit;
 	HWND hMoveSpin;
 	Button allBoughtButton;
-	ListBox resultList[3];
-	Button confirmButton[3];
+	ListBox resultLists[3];
+	Button confirmButtons[3];
 	NumericEdit initialAmountEdit;
 	HWND hWinProbSideLeftSelector;
 	NumericEdit winProbEdit;
 	NumericEdit winProbErrorEdit;
 	Button winProbCalculatorButton;
 	HWND hWinProbCalculatorTip;
-	HWND hReferenceOddsText[8];
+	HWND hReferenceOddsTexts[8];
 public:
 	BetTabDlg();
 	virtual INT_PTR initDlg(HWND hDlg);

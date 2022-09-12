@@ -25,14 +25,15 @@ void setVCentered(HWND hEdit)
 LRESULT CALLBACK editSubclassProc(HWND hEdit, UINT msg, WPARAM wParam, LPARAM lParam, UINT_PTR uIdSubclass, DWORD_PTR dwRefData)
 {
 	Edit* edit = (Edit*)GetWindowLongPtr(hEdit, GWLP_USERDATA);
-	LRESULT result = (LRESULT)FALSE;
-	if (edit != nullptr)
+	LRESULT result = edit == nullptr ? DefSubclassProc(hEdit, msg, wParam, lParam) : edit->wndProc(msg, wParam, lParam);
+	switch (msg)
 	{
-		result = edit->wndProc(msg, wParam, lParam);
-		if (result)
-		{
-			return result;
-		}
+	case WM_GETDLGCODE:
+		return result & ~DLGC_HASSETSEL;
+	}
+	if (result)
+	{
+		return result;
 	}
 	switch (msg)
 	{
@@ -49,7 +50,7 @@ LRESULT CALLBACK editSubclassProc(HWND hEdit, UINT msg, WPARAM wParam, LPARAM lP
 		}
 		break;
 	}
-	return DefSubclassProc(hEdit, msg, wParam, lParam);
+	return (LRESULT)FALSE;
 }
 
 
@@ -66,19 +67,6 @@ void Edit::attach(HWND hEdit)
 HWND Edit::getHwnd()
 {
 	return hEdit;
-}
-
-void Edit::getRect(RECT* rect)
-{
-	SendMessage(hEdit, EM_GETRECT, 0, (LPARAM)rect);
-	rect->top -= rect->left;
-	rect->bottom += rect->left;
-	rect->left = 0;
-}
-
-void Edit::setRectNP(RECT* rect)
-{
-	SendMessage(hEdit, EM_SETRECTNP, 0, (LPARAM)rect);
 }
 
 void Edit::setText(PCTSTR str)
@@ -126,7 +114,6 @@ LRESULT NumericEdit::wndProc(UINT msg, WPARAM wParam, LPARAM lParam)
 				lastUndo = temp;
 			}
 			Edit::setText(curUndo.c_str());
-			SendMessage(GetParent(hEdit), WM_COMMAND, MAKEWPARAM(GetDlgCtrlID(hEdit), EN_CHANGE), 0);
 			return (LRESULT)TRUE;
 		}
 	case WM_PASTE:
@@ -191,7 +178,7 @@ LRESULT NumericEdit::wndProc(UINT msg, WPARAM wParam, LPARAM lParam)
 		}
 		break;
 	}
-	return LRESULT(FALSE);
+	return DefSubclassProc(hEdit, msg, wParam, lParam);
 }
 
 void NumericEdit::setText(PCTSTR str)
@@ -220,9 +207,12 @@ void NumericEdit::updateStr()
 
 //class AmountEdit
 
-void AmountEdit::attach(HWND hEdit)
+void AmountEdit::attach(HWND hEdit, HWND hBankerOddsEdit, HWND hBetOddsEdit, HWND hBankerSelector)
 {
 	this->hEdit = hEdit;
+	this->hBankerOddsEdit = hBankerOddsEdit;
+	this->hBetOddsEdit = hBetOddsEdit;
+	this->hBankerSelector = hBankerSelector;
 	SetWindowLongPtr(hEdit, GWLP_USERDATA, (LONG_PTR)this);
 	SetWindowSubclass(hEdit, editSubclassProc, 0, 0);
 	initRect();
@@ -236,13 +226,17 @@ LRESULT AmountEdit::wndProc(UINT msg, WPARAM wParam, LPARAM lParam)
 		initRect();
 		return (LRESULT)TRUE;
 	case WM_KEYDOWN:
+	case WM_KEYUP:
 		switch (LOWORD(wParam))
 		{
 		case VK_UP:
 		case VK_DOWN:
-			SendMessage(GetParent(hEdit), msg, wParam, lParam);
+			SendMessage(SendMessage(hBankerSelector, BM_GETCHECK, 0, 0) ? hBankerOddsEdit : hBetOddsEdit, msg, wParam, lParam);
 			return (LRESULT)TRUE;
 		}
+		break;
+	case WM_KILLFOCUS:
+		SendMessage(SendMessage(hBankerSelector, BM_GETCHECK, 0, 0) ? hBankerOddsEdit : hBetOddsEdit, WM_KEYUP, VK_UP, MAKELONG(1, KF_UP | KF_REPEAT | KF_EXTENDED));
 		break;
 	}
 	return NumericEdit::wndProc(msg, wParam, lParam);
@@ -269,7 +263,15 @@ LRESULT OddsEdit::wndProc(UINT msg, WPARAM wParam, LPARAM lParam)
 {
 	switch (msg)
 	{
+	case EM_SETSEL:
+		if (wParam == 0 && isSpinSel)
+		{
+			isSpinSel = false;
+			return (LRESULT)TRUE;
+		}
+		break;
 	case WM_KILLFOCUS:
+		SendMessage(hEdit, WM_KEYUP, VK_UP, MAKELONG(1, KF_UP | KF_REPEAT | KF_EXTENDED));
 		updateOdds();
 		break;
 	case WM_MOUSEWHEEL:
@@ -283,17 +285,6 @@ LRESULT OddsEdit::wndProc(UINT msg, WPARAM wParam, LPARAM lParam)
 		}
 		SetFocus(hEdit);
 		return (LRESULT)TRUE;
-	case WM_KEYDOWN:
-		switch (wParam)
-		{
-		case VK_UP:
-			oddsUp();
-			return (LRESULT)TRUE;
-		case  VK_DOWN:
-			oddsDown();
-			return (LRESULT)TRUE;
-		}
-		break;
 	case WM_COMMAND:
 		switch (LOWORD(wParam))
 		{
@@ -303,7 +294,7 @@ LRESULT OddsEdit::wndProc(UINT msg, WPARAM wParam, LPARAM lParam)
 		}
 		break;
 	}
-	return (LRESULT)FALSE;
+	return DefSubclassProc(hEdit, msg, wParam, lParam);
 }
 
 double OddsEdit::getOdds()
@@ -311,8 +302,22 @@ double OddsEdit::getOdds()
 	return odds;
 }
 
+void OddsEdit::spinDelta(int iDelta)
+{
+	if (iDelta)
+	{
+		oddsUp(-0.1 * iDelta);
+	}
+	else
+	{
+		oddsDown(0.1 * iDelta);
+	}
+	isSpinSel = true;
+}
+
 void OddsEdit::oddsUp(double up)
 {
+	updateOdds();
 	if (odds < 9.85)
 	{
 		odds += up;
@@ -328,6 +333,7 @@ void OddsEdit::oddsUp(double up)
 
 void OddsEdit::oddsDown(double down)
 {
+	updateOdds();
 	if (odds > 0.15)
 	{
 		odds -= down;

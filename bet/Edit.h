@@ -13,8 +13,6 @@ public:
 	void attach(HWND hEdit);
 	virtual LRESULT wndProc(UINT msg, WPARAM wParam, LPARAM lParam) = 0;
 	HWND getHwnd();
-	void getRect(RECT* rect);
-	void setRectNP(RECT* rect);
 	void setText(PCTSTR str);
 	void getText(PTSTR str, int nMaxCount);
 	void setSel(int start, int end);
@@ -37,8 +35,13 @@ private:
 class AmountEdit :
 	public NumericEdit
 {
+private:
+	HWND hBankerOddsEdit;
+	HWND hBetOddsEdit;
+	HWND hBankerSelector;
+
 public:
-	void attach(HWND hEdit);
+	void attach(HWND hEdit, HWND hBankerOddsEdit, HWND hBetOddsEdit, HWND hBankerSelector);
 	virtual LRESULT wndProc(UINT msg, WPARAM wParam, LPARAM lParam);
 private:
 	void initRect();
@@ -49,12 +52,14 @@ class OddsEdit :
 {
 private:
 	double odds = 0.1;
+	bool isSpinSel = false;
 
 public:
 	virtual LRESULT wndProc(UINT msg, WPARAM wParam, LPARAM lParam);
 	double getOdds();
+	void spinDelta(int iDelta);
+private:
 	void oddsUp(double up = 0.1);
 	void oddsDown(double down = 0.1);
-private:
 	void updateOdds();
 };
