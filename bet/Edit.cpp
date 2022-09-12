@@ -304,7 +304,7 @@ double OddsEdit::getOdds()
 
 void OddsEdit::spinDelta(int iDelta)
 {
-	if (iDelta)
+	if (iDelta < 0)
 	{
 		oddsUp(-0.1 * iDelta);
 	}
