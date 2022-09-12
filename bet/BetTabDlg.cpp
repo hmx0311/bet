@@ -432,36 +432,30 @@ INT_PTR BetTabDlg::dlgProc(UINT msg, WPARAM wParam, LPARAM lParam)
 				if (SUCCEEDED(hr))
 				{
 					COMDLG_FILTERSPEC fileType = { _T(""),_T("*.exe") };
-					hr = pfd->SetFileTypes(1, &fileType);
+					pfd->SetFileTypes(1, &fileType);
+					pfd->Show(hDlg);
+					IShellItem* psiResult;
+					hr = pfd->GetResult(&psiResult);
 					if (SUCCEEDED(hr))
 					{
-						hr = pfd->Show(hDlg);
+						PTSTR pszFilePath = nullptr;
+						hr = psiResult->GetDisplayName(SIGDN_FILESYSPATH, &pszFilePath);
 						if (SUCCEEDED(hr))
 						{
-							IShellItem* psiResult;
-							hr = pfd->GetResult(&psiResult);
-							if (SUCCEEDED(hr))
-							{
-								PTSTR pszFilePath = nullptr;
-								hr = psiResult->GetDisplayName(SIGDN_FILESYSPATH, &pszFilePath);
-								if (SUCCEEDED(hr))
-								{
-									TCHAR cmdLine[200];
-									_stprintf(cmdLine, _T("bet_probability_calculator "
-										"HWND=%p "
-										"connect_message=%d "
-										"disconnect_message=%d "
-										"probability_message=%d"),
-										hDlg,
-										BPC_CONNECTED,
-										BPC_DISCONNECT,
-										BPC_PROBABILITY);
-									ShellExecute(nullptr, nullptr, pszFilePath, cmdLine, nullptr, SW_SHOWNORMAL);
-									CoTaskMemFree(pszFilePath);
-								}
-								psiResult->Release();
-							}
+							TCHAR cmdLine[200];
+							_stprintf(cmdLine, _T("bet_probability_calculator "
+								"HWND=%p "
+								"connect_message=%d "
+								"disconnect_message=%d "
+								"probability_message=%d"),
+								hDlg,
+								BPC_CONNECTED,
+								BPC_DISCONNECT,
+								BPC_PROBABILITY);
+							ShellExecute(nullptr, nullptr, pszFilePath, cmdLine, nullptr, SW_SHOWNORMAL);
+							CoTaskMemFree(pszFilePath);
 						}
+						psiResult->Release();
 					}
 					pfd->Release();
 				}
