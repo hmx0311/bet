@@ -10,7 +10,7 @@ class Edit
 protected:
 	HWND hEdit;
 public:
-	void attach(HWND hListBox);
+	void attach(HWND hEdit);
 	virtual LRESULT wndProc(UINT msg, WPARAM wParam, LPARAM lParam) = 0;
 	HWND getHwnd();
 	void getRect(RECT* rect);
@@ -28,10 +28,20 @@ private:
 	std::wstring lastUndo = _T("");
 
 public:
-	virtual LRESULT wndProc(UINT, WPARAM, LPARAM);
+	virtual LRESULT wndProc(UINT msg, WPARAM wParam, LPARAM lParam);
 	void setText(PCTSTR str);
 private:
 	void updateStr();
+};
+
+class AmountEdit :
+	public NumericEdit
+{
+public:
+	void attach(HWND hEdit);
+	virtual LRESULT wndProc(UINT msg, WPARAM wParam, LPARAM lParam);
+private:
+	void initRect();
 };
 
 class OddsEdit :
@@ -41,7 +51,7 @@ private:
 	double odds = 0.1;
 
 public:
-	virtual LRESULT wndProc(UINT, WPARAM, LPARAM);
+	virtual LRESULT wndProc(UINT msg, WPARAM wParam, LPARAM lParam);
 	double getOdds();
 	void oddsUp(double up = 0.1);
 	void oddsDown(double down = 0.1);

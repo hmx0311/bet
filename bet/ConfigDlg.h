@@ -5,7 +5,7 @@
 #include "common.h"
 
 class ConfigDlg :
-    public Dialog
+	public Dialog
 {
 private:
 	Config oldConfig;

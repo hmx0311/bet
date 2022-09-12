@@ -372,14 +372,14 @@ void BetList::drawItem(HDC hDC, int itemID, UINT itemState, ULONG_PTR itemData, 
 		int posY = rcListBox.top + rcItem.top + 2;
 		if (IsWindowVisible(boughtEdit->getHwnd()))
 		{
-			SetWindowPos(boughtEdit->getHwnd(), nullptr, rcListBox.left + rcItem.right + X_CHANGE, posY, 0, 0, SWP_NOSIZE | SWP_NOZORDER);
+			SetWindowPos(boughtEdit->getHwnd(), HWND_TOP, rcListBox.left + rcItem.right + X_CHANGE, posY, 0, 0, SWP_NOSIZE | SWP_NOZORDER);
 		}
 		else
 		{
 			SetWindowPos(hMoveSpin, nullptr, rcListBox.left + X_MOVE, posY + Y_MOVE, 0, 0, SWP_NOSIZE | SWP_SHOWWINDOW);
 			if (itemID > betsSize + 2)
 			{
-				SetWindowPos(hAllBoughtButton, nullptr, rcListBox.left + X_ALL_BOUGHT, posY + Y_ALL_BOUGHT, 0, 0, SWP_NOSIZE | SWP_SHOWWINDOW);
+				SetWindowPos(hAllBoughtButton, HWND_TOP, rcListBox.left + X_ALL_BOUGHT, posY + Y_ALL_BOUGHT, 0, 0, SWP_NOSIZE | SWP_SHOWWINDOW);
 			}
 			else
 			{

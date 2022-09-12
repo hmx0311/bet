@@ -18,7 +18,7 @@ void setVCentered(HWND hEdit)
 	GetClientRect(hEdit, &rcClient);
 	LOGFONT logFont;
 	GetObject(hFont, sizeof(LOGFONT), &logFont);
-	rcClient.top = rcEdit.top + 0.5f * (rcEdit.bottom - rcEdit.top - abs(logFont.lfHeight) - 1.5f);
+	rcClient.top = rcEdit.top + 0.5f * (rcEdit.bottom - rcEdit.top - (abs(logFont.lfHeight) + 1.5f));
 	SendMessage(hEdit, EM_SETRECTNP, 0, (LPARAM)&rcClient);
 }
 
@@ -29,6 +29,10 @@ LRESULT CALLBACK editSubclassProc(HWND hEdit, UINT msg, WPARAM wParam, LPARAM lP
 	if (edit != nullptr)
 	{
 		result = edit->wndProc(msg, wParam, lParam);
+		if (result)
+		{
+			return result;
+		}
 	}
 	switch (msg)
 	{
@@ -44,10 +48,6 @@ LRESULT CALLBACK editSubclassProc(HWND hEdit, UINT msg, WPARAM wParam, LPARAM lP
 			break;
 		}
 		break;
-	}
-	if (result)
-	{
-		return result;
 	}
 	return DefSubclassProc(hEdit, msg, wParam, lParam);
 }
@@ -104,15 +104,6 @@ LRESULT NumericEdit::wndProc(UINT msg, WPARAM wParam, LPARAM lParam)
 {
 	switch (msg)
 	{
-	case WM_KEYDOWN:
-		switch (LOWORD(wParam))
-		{
-		case VK_UP:
-		case VK_DOWN:
-			SendMessage(GetParent(hEdit), msg, wParam, lParam);
-			return (LRESULT)TRUE;
-		}
-		break;
 	case EM_UNDO:
 		{
 			TCHAR temp[10];
@@ -193,10 +184,10 @@ LRESULT NumericEdit::wndProc(UINT msg, WPARAM wParam, LPARAM lParam)
 		{
 		case ID_CONFIRM:
 			updateStr();
-			return (LRESULT)TRUE;
+			break;
 		case ID_CANCEL:
 			Edit::setText(curUndo.c_str());
-			return (LRESULT)TRUE;
+			break;
 		}
 		break;
 	}
@@ -224,6 +215,51 @@ void NumericEdit::updateStr()
 	}
 	lastUndo = curUndo;
 	curUndo = temp;
+}
+
+
+//class AmountEdit
+
+void AmountEdit::attach(HWND hEdit)
+{
+	this->hEdit = hEdit;
+	SetWindowLongPtr(hEdit, GWLP_USERDATA, (LONG_PTR)this);
+	SetWindowSubclass(hEdit, editSubclassProc, 0, 0);
+	initRect();
+}
+
+LRESULT AmountEdit::wndProc(UINT msg, WPARAM wParam, LPARAM lParam)
+{
+	switch (msg)
+	{
+	case WM_DPICHANGED_AFTERPARENT:
+		initRect();
+		return (LRESULT)TRUE;
+	case WM_KEYDOWN:
+		switch (LOWORD(wParam))
+		{
+		case VK_UP:
+		case VK_DOWN:
+			SendMessage(GetParent(hEdit), msg, wParam, lParam);
+			return (LRESULT)TRUE;
+		}
+		break;
+	}
+	return NumericEdit::wndProc(msg, wParam, lParam);
+}
+
+void AmountEdit::initRect()
+{
+	RECT rcEdit;
+	GetWindowRect(hEdit, &rcEdit);
+	MapWindowRect(HWND_DESKTOP, hEdit, &rcEdit);
+	RECT rcClient;
+	GetClientRect(hEdit, &rcClient);
+	LOGFONT logFont;
+	GetObject(hFont, sizeof(LOGFONT), &logFont);
+	rcClient.right -= rcClient.bottom - rcClient.top;
+	rcClient.top = rcEdit.top + 0.5f * (rcEdit.bottom - rcEdit.top - (abs(logFont.lfHeight) + 1.5f));
+	SendMessage(hEdit, EM_SETRECTNP, 0, (LPARAM)&rcClient);
 }
 
 
@@ -263,7 +299,7 @@ LRESULT OddsEdit::wndProc(UINT msg, WPARAM wParam, LPARAM lParam)
 		{
 		case ID_CONFIRM:
 			updateOdds();
-			return (LRESULT)TRUE;
+			break;
 		}
 		break;
 	}

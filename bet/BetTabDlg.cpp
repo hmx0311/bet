@@ -105,13 +105,6 @@ INT_PTR BetTabDlg::initDlg(HWND hDlg)
 	{
 		oddsEdit[i].setText(_T("0.1"));
 	}
-	for (int i = 0; i < 2; i++)
-	{
-		RECT rect;
-		amountEdit[i].getRect(&rect);
-		rect.right -= 16 * xScale;
-		amountEdit[i].setRectNP(&rect);
-	}
 	for (int i = 0; i < 4; i++)
 	{
 		TCHAR str[6];
@@ -173,15 +166,6 @@ INT_PTR BetTabDlg::dlgProc(UINT msg, WPARAM wParam, LPARAM lParam)
 			}
 		}
 		return (INT_PTR)TRUE;
-	case WM_DPICHANGED_AFTERPARENT:
-		for (int i = 0; i < 2; i++)
-		{
-			RECT rect;
-			amountEdit[i].getRect(&rect);
-			rect.right -= 16 * xScale;
-			amountEdit[i].setRectNP(&rect);
-		}
-		break;
 	case WM_ERASEBKGND:
 		{
 			HBRUSH brush = GetSysColorBrush(COLOR_BTNFACE);

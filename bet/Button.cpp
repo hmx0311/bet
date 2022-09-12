@@ -181,7 +181,7 @@ void Button::drawButton(HDC hDC, PUSHBUTTONSTATES state, RECT& rcItem)
 	{
 		HDC hDCImage = CreateCompatibleDC(hDC);
 		int xSqueeze = 0, ySqueeze = 0;
-		if (state == PBS_PRESSED && (hButtonTheme != nullptr|| GetWindowLongPtr(hButton, GWL_STYLE) & BS_FLAT))
+		if (state == PBS_PRESSED && (hButtonTheme != nullptr || GetWindowLongPtr(hButton, GWL_STYLE) & BS_FLAT))
 		{
 			xSqueeze = PRESSED_SQUEEZE * iconWidth;
 			ySqueeze = PRESSED_SQUEEZE * iconHeight;
@@ -191,7 +191,7 @@ void Button::drawButton(HDC hDC, PUSHBUTTONSTATES state, RECT& rcItem)
 		SetStretchBltMode(hDCImage, HALFTONE);
 		StretchBlt(hDCImage, 0, 0, iconWidth + 2 * xSqueeze, iconHeight + 2 * ySqueeze,
 			hDC, rcContent.left, rcContent.top, rcContent.right - rcContent.left, rcContent.bottom - rcContent.top, SRCCOPY);
-		DrawIconEx(hDCImage, xSqueeze, ySqueeze, hIcon,0,0,0, nullptr, DI_NORMAL);
+		DrawIconEx(hDCImage, xSqueeze, ySqueeze, hIcon, 0, 0, 0, nullptr, DI_NORMAL);
 		SetStretchBltMode(hDC, HALFTONE);
 		StretchBlt(hDC, rcContent.left, rcContent.top, rcContent.right - rcContent.left, rcContent.bottom - rcContent.top,
 			hDCImage, 0, 0, iconWidth + 2 * xSqueeze, iconHeight + 2 * ySqueeze, SRCCOPY);

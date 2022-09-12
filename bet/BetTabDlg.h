@@ -7,7 +7,7 @@
 #include "model.h"
 
 class BetTabDlg :
-    public Dialog
+	public Dialog
 {
 public:
 	static HICON hResetIcon;
@@ -35,7 +35,7 @@ protected:
 	BetList betList[2];
 	HWND hBankerBetSelector[10];
 	OddsEdit oddsEdit[10];
-	NumericEdit amountEdit[2];
+	AmountEdit amountEdit[2];
 	Button clearAmountButton[2];
 	Button addAmountButton[8];
 	Button addButton[2];

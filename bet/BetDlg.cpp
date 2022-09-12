@@ -17,9 +17,11 @@ int ADD_TAB_Y;
 #define MAX_TAB 4
 #define TAB_NAME_EDIT_MARGIN_X (int)roundf(2*xScale)
 #define TAB_NAME_EDIT_MARGIN_Y (int)roundf(3.45f*yScale)
+int TAB_NAME_EDIT_X;
+int TAB_NAME_EDIT_Y;
+#define TAB_NAME_EDIT_WIDTH (TAB_WIDTH - 2 * TAB_NAME_EDIT_MARGIN_X)
+#define TAB_NAME_EDIT_HEIGHT (TAB_HEIGHT - 2 * TAB_NAME_EDIT_MARGIN_Y)
 
-int NAME_EDIT_X;
-int NAME_EDIT_Y;
 
 extern int X_MOVE;
 
@@ -51,7 +53,7 @@ INT_PTR BetDlg::initDlg(HWND hDlg)
 
 	hTabNameEdit = CreateWindowEx(WS_EX_STATICEDGE, _T("EDIT"), _T(""),
 		WS_CHILD | WS_VISIBLE | ES_CENTER | ES_MULTILINE,
-		NAME_EDIT_X, NAME_EDIT_Y, TAB_WIDTH - 2 * TAB_NAME_EDIT_MARGIN_X, TAB_HEIGHT - 2 * TAB_NAME_EDIT_MARGIN_Y,
+		TAB_NAME_EDIT_X, TAB_NAME_EDIT_Y, TAB_NAME_EDIT_WIDTH, TAB_NAME_EDIT_HEIGHT,
 		hDlg, (HMENU)IDC_TAB_NAME_EDIT, hInst, nullptr);
 
 	SetWindowSubclass(hTabNameEdit, editSubclassProc, 0, 0);
@@ -96,6 +98,7 @@ INT_PTR BetDlg::dlgProc(UINT msg, WPARAM wParam, LPARAM lParam)
 		SetWindowPos(hDlg, nullptr, 0, 0, rcTab.right - 2 * rcDlg.left, rcTab.bottom - rcDlg.top - rcDlg.left, SWP_NOMOVE | SWP_NOZORDER | SWP_NOREDRAW);
 		calcPos();
 		calcBetTabPos();
+		SetWindowPos(hTabNameEdit, nullptr, 0, 0, TAB_NAME_EDIT_WIDTH, TAB_NAME_EDIT_HEIGHT, SWP_NOMOVE | SWP_NOZORDER | SWP_NOREDRAW);
 		DeleteObject(hIcon);
 		hIcon = LoadIcon(hInst, MAKEINTRESOURCE(IDI_BET));
 		SendMessage(hDlg, WM_SETICON, ICON_BIG, (LPARAM)hIcon);
@@ -160,7 +163,7 @@ INT_PTR BetDlg::dlgProc(UINT msg, WPARAM wParam, LPARAM lParam)
 				}
 				else
 				{
-					SetWindowPos(addTabButton.getHwnd(), nullptr, ADD_TAB_X + (betTabs.size() - 2) * TAB_WIDTH, ADD_TAB_Y, 0, 0, SWP_NOSIZE);
+					SetWindowPos(addTabButton.getHwnd(), HWND_TOP, ADD_TAB_X + (betTabs.size() - 2) * TAB_WIDTH, ADD_TAB_Y, 0, 0, SWP_NOSIZE);
 				}
 				betTabs.erase(betTabs.begin() + tabId);
 				SendMessage(hBetTab, TCM_DELETEITEM, tabId, 0);
@@ -204,7 +207,7 @@ INT_PTR BetDlg::dlgProc(UINT msg, WPARAM wParam, LPARAM lParam)
 				}
 				else
 				{
-					SetWindowPos(addTabButton.getHwnd(), nullptr, ADD_TAB_X + tabId * TAB_WIDTH, ADD_TAB_Y, 0, 0, SWP_NOSIZE);
+					SetWindowPos(addTabButton.getHwnd(), HWND_TOP, ADD_TAB_X + tabId * TAB_WIDTH, ADD_TAB_Y, 0, 0, SWP_NOSIZE);
 				}
 				ShowWindow(currentTab->getHwnd(), SW_HIDE);
 				currentTab = new BetTabDlg;
@@ -218,7 +221,7 @@ INT_PTR BetDlg::dlgProc(UINT msg, WPARAM wParam, LPARAM lParam)
 				tcItem.pszText = str;
 				SendMessage(hBetTab, TCM_INSERTITEM, tabId, (LPARAM)&tcItem);
 				SendMessage(hBetTab, TCM_SETCURSEL, tabId, 0);
-				SetWindowPos(hTabNameEdit, nullptr, NAME_EDIT_X + tabId * TAB_WIDTH, NAME_EDIT_Y, 0, 0, SWP_NOSIZE | SWP_SHOWWINDOW);
+				SetWindowPos(hTabNameEdit, HWND_TOP, TAB_NAME_EDIT_X + tabId * TAB_WIDTH, TAB_NAME_EDIT_Y, 0, 0, SWP_NOSIZE | SWP_SHOWWINDOW);
 				SetFocus(hTabNameEdit);
 				return (INT_PTR)TRUE;
 			}
@@ -259,7 +262,7 @@ INT_PTR BetDlg::dlgProc(UINT msg, WPARAM wParam, LPARAM lParam)
 							SendMessage(hBetTab, TCM_GETITEM, lastSel, (LPARAM)&cItem);
 							SetWindowText(hTabNameEdit, str);
 							SendMessage(hTabNameEdit, EM_SETSEL, 0, -1);
-							SetWindowPos(hTabNameEdit, nullptr, NAME_EDIT_X + lastSel * TAB_WIDTH, NAME_EDIT_Y, 0, 0, SWP_NOSIZE | SWP_SHOWWINDOW);
+							SetWindowPos(hTabNameEdit, HWND_TOP, TAB_NAME_EDIT_X + lastSel * TAB_WIDTH, TAB_NAME_EDIT_Y, 0, 0, SWP_NOSIZE | SWP_SHOWWINDOW);
 							SetFocus(hTabNameEdit);
 							lastSel = -1;
 							lastClickTime = -1000;
@@ -334,8 +337,8 @@ void BetDlg::calcPos()
 	listItemHeight = abs(logFont.lfHeight);
 	TAB_HEIGHT = pos.bottom - pos.top - 3;
 	ADD_TAB_Y = pos.bottom - TAB_HEIGHT - 2;
-	NAME_EDIT_X = TAB_NAME_EDIT_MARGIN_X + 2;
-	NAME_EDIT_Y = pos.bottom - TAB_HEIGHT + TAB_NAME_EDIT_MARGIN_Y - 1;
+	TAB_NAME_EDIT_X = TAB_NAME_EDIT_MARGIN_X + 2;
+	TAB_NAME_EDIT_Y = pos.bottom - TAB_HEIGHT + TAB_NAME_EDIT_MARGIN_Y - 1;
 
 	SendMessage(hBetTab, TCM_SETITEMSIZE, 0, MAKELPARAM(TAB_WIDTH, TAB_HEIGHT));
 }
