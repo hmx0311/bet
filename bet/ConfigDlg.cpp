@@ -45,7 +45,7 @@ INT_PTR ConfigDlg::initDlg(HWND hDlg)
 	_stprintf(str, _T("%d"), (int)round(oldConfig.defaultProbError * 100));
 	defaultProbErrorEdit.setText(str);
 
-	return INT_PTR(TRUE);  // 除非将焦点设置到控件，否则返回 TRUE
+	return (INT_PTR)TRUE;  // 除非将焦点设置到控件，否则返回 TRUE
 }
 
 INT_PTR ConfigDlg::dlgProc(UINT msg, WPARAM wParam, LPARAM lParam)
@@ -75,7 +75,7 @@ INT_PTR ConfigDlg::dlgProc(UINT msg, WPARAM wParam, LPARAM lParam)
 					{
 						SetFocus(fastAddedAmountEdit[i].getHwnd());
 						fastAddedAmountEdit[i].setSel(0, -1);
-						return INT_PTR(TRUE);
+						return (INT_PTR)TRUE;
 					}
 					newConfig.fastAddedAmount[i] = amount;
 				}
@@ -88,7 +88,7 @@ INT_PTR ConfigDlg::dlgProc(UINT msg, WPARAM wParam, LPARAM lParam)
 					{
 						if (MessageBox(hDlg, _T("无法写入文件\"") CONFIG_FILE_NAME _T("\""), _T("bet设置"), MB_RETRYCANCEL | MB_ICONERROR) != IDRETRY)
 						{
-							return INT_PTR(TRUE);
+							return (INT_PTR)TRUE;
 						}
 						file.open(CONFIG_FILE_NAME, ios::out | ios::binary);
 					}
@@ -104,5 +104,5 @@ INT_PTR ConfigDlg::dlgProc(UINT msg, WPARAM wParam, LPARAM lParam)
 			break;
 		}
 	}
-	return INT_PTR(FALSE);
+	return (INT_PTR)FALSE;
 }

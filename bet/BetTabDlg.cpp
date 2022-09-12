@@ -137,7 +137,7 @@ INT_PTR BetTabDlg::initDlg(HWND hDlg)
 	TCHAR winProbCalculatorTipText[] = _T("加载胜率计算器");
 	hWinProbCalculatorTip = createToolTip(winProbCalculatorButton.getHwnd(), hDlg, winProbCalculatorTipText);
 
-	return INT_PTR(TRUE);
+	return (INT_PTR)TRUE;
 }
 
 INT_PTR BetTabDlg::dlgProc(UINT msg, WPARAM wParam, LPARAM lParam)
@@ -153,13 +153,13 @@ INT_PTR BetTabDlg::dlgProc(UINT msg, WPARAM wParam, LPARAM lParam)
 			TCHAR winProbCalculatorTipText[] = _T("断开胜率计算器");
 			setToolTipText(hWinProbCalculatorTip, winProbCalculatorButton.getHwnd(), hDlg, winProbCalculatorTipText);
 		}
-		return INT_PTR(TRUE);
+		return (INT_PTR)TRUE;
 	case BPC_DISCONNECT:
 		if (hProbCalculator != nullptr && hProbCalculator == (HWND)wParam)
 		{
 			disconnectCalculator();
 		}
-		return INT_PTR(TRUE);
+		return (INT_PTR)TRUE;
 	case BPC_PROBABILITY:
 		if (hProbCalculator != nullptr && hProbCalculator == (HWND)wParam)
 		{
@@ -172,7 +172,7 @@ INT_PTR BetTabDlg::dlgProc(UINT msg, WPARAM wParam, LPARAM lParam)
 				updateWinProb();
 			}
 		}
-		return INT_PTR(TRUE);
+		return (INT_PTR)TRUE;
 	case WM_DPICHANGED_AFTERPARENT:
 		for (int i = 0; i < 2; i++)
 		{
@@ -191,7 +191,7 @@ INT_PTR BetTabDlg::dlgProc(UINT msg, WPARAM wParam, LPARAM lParam)
 			MapWindowRect(HWND_DESKTOP, hDlg, &rcErase1);
 			GetWindowRect(allBoughtButton.getHwnd(), &rcErase2);
 			MapWindowRect(HWND_DESKTOP, hDlg, &rcErase2);
-			return INT_PTR(TRUE);
+			return (INT_PTR)TRUE;
 		}
 	case WM_CTLCOLORSTATIC:
 		if ((HWND)lParam == hCurrentProfitText[LEFT_SIDE] && model.getProfit(RIGHT_SIDE) - model.getProfit(LEFT_SIDE) > MIN_AMOUNT ||
@@ -210,20 +210,20 @@ INT_PTR BetTabDlg::dlgProc(UINT msg, WPARAM wParam, LPARAM lParam)
 			{
 			case IDC_L_AMOUNT_EDIT:
 				oddsEdit[SendMessage(hBankerBetSelector[1], BM_GETCHECK, 0, 0)].oddsUp();
-				return INT_PTR(TRUE);
+				return (INT_PTR)TRUE;
 			case IDC_R_AMOUNT_EDIT:
 				oddsEdit[2 + SendMessage(hBankerBetSelector[3], BM_GETCHECK, 0, 0)].oddsUp();
-				return INT_PTR(TRUE);
+				return (INT_PTR)TRUE;
 			}
 		case VK_DOWN:
 			switch (GetDlgCtrlID(GetFocus()))
 			{
 			case IDC_L_AMOUNT_EDIT:
 				oddsEdit[SendMessage(hBankerBetSelector[1], BM_GETCHECK, 0, 0)].oddsDown();
-				return INT_PTR(TRUE);
+				return (INT_PTR)TRUE;
 			case IDC_R_AMOUNT_EDIT:
 				oddsEdit[2 + SendMessage(hBankerBetSelector[3], BM_GETCHECK, 0, 0)].oddsDown();
-				return INT_PTR(TRUE);
+				return (INT_PTR)TRUE;
 			}
 		}
 		break;
@@ -236,52 +236,52 @@ INT_PTR BetTabDlg::dlgProc(UINT msg, WPARAM wParam, LPARAM lParam)
 			case IDC_L_BANKER_ODDS_EDIT:
 			case IDC_L_BET_ODDS_EDIT:
 				SetFocus(amountEdit[LEFT_SIDE].getHwnd());
-				return INT_PTR(TRUE);
+				return (INT_PTR)TRUE;
 			case IDC_R_BANKER_ODDS_EDIT:
 			case IDC_R_BET_ODDS_EDIT:
 				SetFocus(amountEdit[RIGHT_SIDE].getHwnd());
-				return INT_PTR(TRUE);
+				return (INT_PTR)TRUE;
 			case IDC_L_AMOUNT_EDIT:
 				add(LEFT_SIDE);
-				return INT_PTR(TRUE);
+				return (INT_PTR)TRUE;
 			case IDC_R_AMOUNT_EDIT:
 				add(RIGHT_SIDE);
-				return INT_PTR(TRUE);
+				return (INT_PTR)TRUE;
 			case IDC_CHANGE_BOUGHT_EDIT:
 				SetFocus(betList[selSide].getHwnd());
-				return INT_PTR(TRUE);
+				return (INT_PTR)TRUE;
 			case IDC_BALANCE_AIM_BANKER_ODDS_EDIT:
 			case IDC_BALANCE_AIM_BET_ODDS_EDIT:
 				calcBalanceAimAmount();
-				return INT_PTR(TRUE);
+				return (INT_PTR)TRUE;
 			case IDC_INITIAL_AMOUNT_EDIT:
 				updateInitialAmount();
-				return INT_PTR(TRUE);
+				return (INT_PTR)TRUE;
 			case IDC_WIN_PROBABILITY_EDIT:
 				updateWinProb();
-				return INT_PTR(TRUE);
+				return (INT_PTR)TRUE;
 			case IDC_WIN_PROBABILITY_ERROR_EDIT:
 				updateWinProbError();
-				return INT_PTR(TRUE);
+				return (INT_PTR)TRUE;
 			case IDC_L_AIM_BANKER_ODDS_EDIT:
 			case IDC_L_AIM_BET_ODDS_EDIT:
 				calcAimAmount(LEFT_SIDE);
-				return INT_PTR(TRUE);
+				return (INT_PTR)TRUE;
 			case IDC_R_AIM_BANKER_ODDS_EDIT:
 			case IDC_R_AIM_BET_ODDS_EDIT:
 				calcAimAmount(RIGHT_SIDE);
-				return INT_PTR(TRUE);
+				return (INT_PTR)TRUE;
 			}
-			return INT_PTR(TRUE);
+			return (INT_PTR)TRUE;
 		case ID_CANCEL:
 			switch (GetDlgCtrlID(GetFocus()))
 			{
 			case IDC_CHANGE_BOUGHT_EDIT:
 				ShowWindow(boughtEdit.getHwnd(), SW_HIDE);
 				SetFocus(betList[selSide].getHwnd());
-				return INT_PTR(TRUE);
+				return (INT_PTR)TRUE;
 			}
-			return INT_PTR(TRUE);
+			return (INT_PTR)TRUE;
 		case ID_DELETE:
 			{
 				auto result = betList[selSide].deleteSel();
@@ -294,7 +294,7 @@ INT_PTR BetTabDlg::dlgProc(UINT msg, WPARAM wParam, LPARAM lParam)
 					model.deleteBanker(selSide, result.second);
 				}
 				updateCurrentProfit();
-				return INT_PTR(TRUE);
+				return (INT_PTR)TRUE;
 			}
 		case IDC_RESET_BUTTON:
 			if (!(betList[0].isEmpty() && betList[1].isEmpty()) && MessageBox(hDlg, _T("确定要重置当前竞猜吗？"), _T("bet"), MB_YESNO | MB_ICONQUESTION) == IDYES)
@@ -306,22 +306,22 @@ INT_PTR BetTabDlg::dlgProc(UINT msg, WPARAM wParam, LPARAM lParam)
 				}
 				updateCurrentProfit();
 			}
-			return INT_PTR(TRUE);
+			return (INT_PTR)TRUE;
 		case IDC_HAVE_CLOSING_CHECK:
 			if (model.changeClosing())
 			{
 				updateCurrentProfit();
 			}
-			return INT_PTR(TRUE);
+			return (INT_PTR)TRUE;
 		case IDC_L_BET_LIST:
 		case IDC_R_BET_LIST:
 			switch (HIWORD(wParam))
 			{
 			case LBN_SETFOCUS:
 				selSide = LOWORD(wParam) == IDC_R_BET_LIST;
-				return INT_PTR(TRUE);
+				return (INT_PTR)TRUE;
 			}
-			return INT_PTR(TRUE);
+			return (INT_PTR)TRUE;
 		case IDC_L_BANKER_SELECTOR:
 		case IDC_L_BET_SELECTOR:
 		case IDC_R_BANKER_SELECTOR:
@@ -333,7 +333,7 @@ INT_PTR BetTabDlg::dlgProc(UINT msg, WPARAM wParam, LPARAM lParam)
 		case IDC_R_AIM_BANKER_SELECTOR:
 		case IDC_R_AIM_BET_SELECTOR:
 			SetFocus(oddsEdit[LOWORD(wParam) - IDC_L_BANKER_SELECTOR].getHwnd());
-			return INT_PTR(TRUE);
+			return (INT_PTR)TRUE;
 		case IDC_L_BANKER_ODDS_EDIT:
 		case IDC_L_BET_ODDS_EDIT:
 		case IDC_R_BANKER_ODDS_EDIT:
@@ -349,7 +349,7 @@ INT_PTR BetTabDlg::dlgProc(UINT msg, WPARAM wParam, LPARAM lParam)
 			case EN_SETFOCUS:
 				SendMessage(hBankerBetSelector[(LOWORD(wParam) - IDC_L_BANKER_ODDS_EDIT) ^ 1], BM_SETCHECK, 0, 0);
 				SendMessage(hBankerBetSelector[LOWORD(wParam) - IDC_L_BANKER_ODDS_EDIT], BM_SETCHECK, 1, 0);
-				return INT_PTR(TRUE);
+				return (INT_PTR)TRUE;
 			}
 			break;
 		case IDC_L_ADD_AMOUNT_BUTTON1:
@@ -372,17 +372,17 @@ INT_PTR BetTabDlg::dlgProc(UINT msg, WPARAM wParam, LPARAM lParam)
 				_itow(amount, str, 10);
 				amountEdit[side].setText(str);
 				SetFocus(amountEdit[side].getHwnd());
-				return INT_PTR(TRUE);
+				return (INT_PTR)TRUE;
 			}
 		case IDC_L_CLEAR_AMOUNT_BUTTON:
 		case IDC_R_CLEAR_AMOUNT_BUTTON:
 			amountEdit[LOWORD(wParam) - IDC_L_CLEAR_AMOUNT_BUTTON].setText(_T(""));
 			SetFocus(amountEdit[LOWORD(wParam) - IDC_L_CLEAR_AMOUNT_BUTTON].getHwnd());
-			return INT_PTR(TRUE);
+			return (INT_PTR)TRUE;
 		case IDC_L_ADD_BUTTON:
 		case IDC_R_ADD_BUTTON:
 			add(LOWORD(wParam) - IDC_L_ADD_BUTTON);
-			return INT_PTR(TRUE);
+			return (INT_PTR)TRUE;
 		case IDC_CHANGE_BOUGHT_EDIT:
 			switch (HIWORD(wParam))
 			{
@@ -390,7 +390,7 @@ INT_PTR BetTabDlg::dlgProc(UINT msg, WPARAM wParam, LPARAM lParam)
 				{
 					if (!IsWindowVisible(boughtEdit.getHwnd()))
 					{
-						return INT_PTR(TRUE);
+						return (INT_PTR)TRUE;
 					}
 					TCHAR str[8];
 					boughtEdit.getText(str, 8);
@@ -398,13 +398,13 @@ INT_PTR BetTabDlg::dlgProc(UINT msg, WPARAM wParam, LPARAM lParam)
 					if (str[0] == '\0')
 					{
 						betList[selSide].setCurSel(-1);
-						return INT_PTR(TRUE);
+						return (INT_PTR)TRUE;
 					}
 					int lineIdx = betList[selSide].getCurSel();
 					const Banker& banker = model.changeBought(selSide, lineIdx - betList[selSide].getBetsSize() - 5, _wtoi(str));
 					betList[selSide].updateBanker(lineIdx, banker.show, banker.maxBought == banker.bought ? GetSysColor(COLOR_WINDOWTEXT) : RGB(255, 0, 0));
 					updateCurrentProfit();
-					return INT_PTR(TRUE);
+					return (INT_PTR)TRUE;
 				}
 				break;
 			}
@@ -417,24 +417,24 @@ INT_PTR BetTabDlg::dlgProc(UINT msg, WPARAM wParam, LPARAM lParam)
 					betList[selSide].updateBanker(lineIdx, model.allBought(selSide, lineIdx - betList[selSide].getBetsSize() - 5).show);
 					SetFocus(betList[selSide].getHwnd());
 					updateCurrentProfit();
-					return INT_PTR(TRUE);
+					return (INT_PTR)TRUE;
 				}
 			case BN_KILLFOCUS:
 				SetFocus(betList[selSide].getHwnd());
-				return INT_PTR(TRUE);
+				return (INT_PTR)TRUE;
 			}
 			break;
 		case IDC_BALANCE_CONFIRM_BUTTON:
 			{
 				calcBalanceAimAmount();
-				return INT_PTR(TRUE);
+				return (INT_PTR)TRUE;
 			}
 		case IDC_INITIAL_AMOUNT_EDIT:
 			switch (HIWORD(wParam))
 			{
 			case EN_KILLFOCUS:
 				updateInitialAmount();
-				return INT_PTR(TRUE);
+				return (INT_PTR)TRUE;
 			}
 			break;
 		case IDC_L_WIN_PROBABILTY_SIDE_SELECTOR:
@@ -448,13 +448,13 @@ INT_PTR BetTabDlg::dlgProc(UINT msg, WPARAM wParam, LPARAM lParam)
 					updateMinOdds();
 				}
 			}
-			return INT_PTR(TRUE);
+			return (INT_PTR)TRUE;
 		case IDC_WIN_PROBABILITY_EDIT:
 			switch (HIWORD(wParam))
 			{
 			case EN_KILLFOCUS:
 				updateWinProb();
-				return INT_PTR(TRUE);
+				return (INT_PTR)TRUE;
 			}
 			break;
 		case IDC_WIN_PROBABILITY_ERROR_EDIT:
@@ -462,7 +462,7 @@ INT_PTR BetTabDlg::dlgProc(UINT msg, WPARAM wParam, LPARAM lParam)
 			{
 			case EN_KILLFOCUS:
 				updateWinProbError();
-				return INT_PTR(TRUE);
+				return (INT_PTR)TRUE;
 			}
 			break;
 		case IDC_WIN_PROBABILITY_CALCULATOR_BUTTON:
@@ -512,11 +512,11 @@ INT_PTR BetTabDlg::dlgProc(UINT msg, WPARAM wParam, LPARAM lParam)
 				PostMessage(hProbCalculator, BPC_DISCONNECT, 0, 0);
 				disconnectCalculator();
 			}
-			return INT_PTR(TRUE);
+			return (INT_PTR)TRUE;
 		case IDC_L_CONFIRM_BUTTON:
 		case IDC_R_CONFIRM_BUTTON:
 			calcAimAmount(LOWORD(wParam) - IDC_L_CONFIRM_BUTTON);
-			return INT_PTR(TRUE);
+			return (INT_PTR)TRUE;
 		}
 		break;
 	case WM_NOTIFY:
@@ -540,13 +540,13 @@ INT_PTR BetTabDlg::dlgProc(UINT msg, WPARAM wParam, LPARAM lParam)
 			{
 				oddsEdit[((LPNMHDR)lParam)->idFrom - IDC_L_BANKER_ODDS_SPIN].oddsDown(0.1 * ((LPNMUPDOWN)lParam)->iDelta);
 			}
-			return INT_PTR(TRUE);
+			return (INT_PTR)TRUE;
 		case IDC_MOVE_SPIN:
 			{
 				int itemIdx = betList[selSide].moveSel(((LPNMUPDOWN)lParam)->iDelta < 0);
 				if (itemIdx == -1)
 				{
-					return INT_PTR(TRUE);
+					return (INT_PTR)TRUE;
 				}
 				if (IsWindowVisible(allBoughtButton.getHwnd()))
 				{
@@ -556,7 +556,7 @@ INT_PTR BetTabDlg::dlgProc(UINT msg, WPARAM wParam, LPARAM lParam)
 				{
 					model.moveBackBet(selSide, itemIdx);
 				}
-				return INT_PTR(TRUE);
+				return (INT_PTR)TRUE;
 			}
 		}
 		break;
@@ -568,7 +568,7 @@ INT_PTR BetTabDlg::dlgProc(UINT msg, WPARAM wParam, LPARAM lParam)
 		}
 		break;
 	}
-	return INT_PTR(FALSE);
+	return (INT_PTR)FALSE;
 }
 
 void BetTabDlg::updateCurrentProfit()

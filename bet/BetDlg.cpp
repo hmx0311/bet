@@ -313,7 +313,7 @@ INT_PTR BetDlg::dlgProc(UINT msg, WPARAM wParam, LPARAM lParam)
 		PostQuitMessage(0);
 		break;
 	}
-	return INT_PTR(FALSE);
+	return (INT_PTR)FALSE;
 }
 
 BetTabDlg* BetDlg::getCurrentTab()
