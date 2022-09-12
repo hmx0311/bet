@@ -51,6 +51,8 @@ INT_PTR BetDlg::initDlg(HWND hDlg)
 	ShowWindow(currentTab->getHwnd(), SW_SHOW);
 	calcBetTabPos();
 
+	INITCOMMONCONTROLSEX icex = { sizeof(icex),ICC_STANDARD_CLASSES };
+	InitCommonControlsEx(&icex);
 	hTabNameEdit = CreateWindowEx(WS_EX_STATICEDGE, _T("EDIT"), _T(""),
 		WS_CHILD | WS_VISIBLE | ES_CENTER | ES_MULTILINE,
 		TAB_NAME_EDIT_X, TAB_NAME_EDIT_Y, TAB_NAME_EDIT_WIDTH, TAB_NAME_EDIT_HEIGHT,
