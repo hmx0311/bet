@@ -120,10 +120,6 @@ INT_PTR BetDlg::dlgProc(UINT msg, WPARAM wParam, LPARAM lParam)
 		}
 		needErase = false;
 		break;
-	case WM_CTLCOLORSTATIC:
-		SetTextColor((HDC)wParam, GetSysColor(COLOR_WINDOWTEXT));
-		SetBkColor((HDC)wParam, GetSysColor(COLOR_BTNFACE));
-		return (INT_PTR)GetStockBrush(NULL_BRUSH);
 	case WM_MOVE:
 	case WM_MOVING:
 		needErase = true;

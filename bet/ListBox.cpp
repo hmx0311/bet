@@ -10,7 +10,7 @@
 using namespace std;
 
 int X_MOVE;
-#define Y_MOVE (int)(-5.5f*yScale)
+#define Y_MOVE (int)(-5.9f*yScale)
 #define X_ALL_BOUGHT (int)roundf(157.7f*xScale)
 #define Y_ALL_BOUGHT (int)roundf(-3.2f*yScale)
 #define X_CHANGE (int)(2-54.0f*xScale)
