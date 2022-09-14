@@ -264,9 +264,8 @@ LRESULT OddsEdit::wndProc(UINT msg, WPARAM wParam, LPARAM lParam)
 	switch (msg)
 	{
 	case EM_SETSEL:
-		if (wParam == 0 && isSpinSel)
+		if (wParam == 0 && lParam == -1)
 		{
-			isSpinSel = false;
 			return (LRESULT)TRUE;
 		}
 		break;
@@ -274,17 +273,6 @@ LRESULT OddsEdit::wndProc(UINT msg, WPARAM wParam, LPARAM lParam)
 		SendMessage(hEdit, WM_KEYUP, VK_UP, MAKELONG(1, KF_UP | KF_REPEAT | KF_EXTENDED));
 		updateOdds();
 		break;
-	case WM_MOUSEWHEEL:
-		if ((short)(HIWORD(wParam)) < 0)
-		{
-			oddsDown();
-		}
-		else
-		{
-			oddsUp();
-		}
-		SetFocus(hEdit);
-		return (LRESULT)TRUE;
 	case WM_COMMAND:
 		switch (LOWORD(wParam))
 		{
@@ -312,7 +300,6 @@ void OddsEdit::spinDelta(int iDelta)
 	{
 		oddsDown(0.1 * iDelta);
 	}
-	isSpinSel = true;
 }
 
 void OddsEdit::oddsUp(double up)

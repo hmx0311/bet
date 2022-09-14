@@ -52,7 +52,6 @@ class OddsEdit :
 {
 private:
 	double odds = 0.1;
-	bool isSpinSel = false;
 
 public:
 	virtual LRESULT wndProc(UINT msg, WPARAM wParam, LPARAM lParam);
