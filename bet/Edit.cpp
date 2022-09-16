@@ -123,6 +123,7 @@ LRESULT NumericEdit::wndProc(UINT msg, WPARAM wParam, LPARAM lParam)
 			char* text = (char*)GetClipboardData(CF_TEXT);
 			if (text == nullptr)
 			{
+				CloseClipboard();
 				return (INT_PTR)TRUE;
 			}
 			for (; *text != '\0'; text++)
