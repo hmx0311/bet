@@ -2,8 +2,10 @@
 #include "ConfigDlg.h"
 
 #include "button.h"
+
 #include <cmath>
 #include <fstream>
+#include <windowsx.h>
 
 using namespace std;
 
@@ -36,7 +38,7 @@ INT_PTR ConfigDlg::initDlg(HWND hDlg)
 	TCHAR str[6];
 	_stprintf(str, _T("%03d"), (int)round((1 - oldConfig.cut) * 1000));
 	cutEdit.setText(str);
-	SendMessage(defaultClosingCheck, BM_SETCHECK, oldConfig.defaultClosing, 0);
+	Button_SetCheck(defaultClosingCheck, oldConfig.defaultClosing);
 	for (int i = 0; i < 4; i++)
 	{
 		_stprintf(str, _T("%d"), oldConfig.fastAddedAmount[i]);
@@ -66,7 +68,7 @@ INT_PTR ConfigDlg::dlgProc(UINT msg, WPARAM wParam, LPARAM lParam)
 					newConfig.cut = (newConfig.cut + c) * 0.1;
 				}
 				newConfig.cut = 1 - newConfig.cut;
-				newConfig.defaultClosing = SendMessage(defaultClosingCheck, BM_GETCHECK, 0, 0);
+				newConfig.defaultClosing = Button_GetCheck(defaultClosingCheck);
 				for (int i = 0; i < 4; i++)
 				{
 					fastAddedAmountEdit[i].getText(str, 6);

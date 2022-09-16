@@ -4,6 +4,8 @@
 #include "common.h"
 #include "bet.h"
 
+#include <windowsx.h>
+
 #define BUTTON_ANIMATION_DURATION_SHORT 150
 #define BUTTON_ANIMATION_DURATION_LONG  200
 
@@ -198,7 +200,7 @@ void Button::drawButton(HDC hDC, PUSHBUTTONSTATES state, RECT& rcItem)
 		DeleteObject(hBmBuffer);
 		DeleteObject(hDCImage);
 	}
-	SelectObject(hDC, (HFONT)SendMessage(hButton, WM_GETFONT, 0, 0));
+	SelectObject(hDC, GetWindowFont(hButton));
 	SetBkMode(hDC, TRANSPARENT);
 	SetTextColor(hDC, GetSysColor(COLOR_BTNTEXT));
 	TCHAR str[10];

@@ -22,7 +22,7 @@ static LRESULT CALLBACK listBoxSubclassProc(HWND hListBox, UINT msg, WPARAM wPar
 	{
 		RECT rect;
 		GetClientRect(hListBox, &rect);
-		rect.top += (SendMessage(hListBox, LB_GETCOUNT, 0, 0) - GetScrollPos(hListBox, SB_VERT)) * listItemHeight;
+		rect.top += (ListBox_GetCount(hListBox) - GetScrollPos(hListBox, SB_VERT)) * listItemHeight;
 		if (rect.top < rect.bottom)
 		{
 			FillRect((HDC)wParam, &rect, GetSysColorBrush(COLOR_WINDOW));
@@ -51,7 +51,7 @@ LRESULT ListBox::wndProc(UINT msg, WPARAM wParam, LPARAM lParam)
 	{
 	case WM_DPICHANGED_AFTERPARENT:
 		{
-			SendMessage(hListBox, LB_SETITEMHEIGHT, 0, listItemHeight);
+			ListBox_SetItemHeight(hListBox, 0, listItemHeight);
 			RECT rect;
 			GetWindowRect(hListBox, &rect);
 			MapWindowRect(HWND_DESKTOP, hListBox, &rect);
@@ -86,24 +86,24 @@ HWND ListBox::getHwnd()
 
 int ListBox::addString(PCTSTR pszItem, BYTE style, COLORREF color)
 {
-	int index = SendMessage(hListBox, LB_ADDSTRING, 0, (LPARAM)pszItem);
-	SendMessage(hListBox, LB_SETITEMDATA, index, ((color << 8) | style));
+	int index = ListBox_AddString(hListBox, pszItem);
+	ListBox_SetItemData(hListBox, index, ((color << 8) | style));
 	return index;
 }
 
 void ListBox::getText(int nIndex, PTSTR str)
 {
-	SendMessage(hListBox, LB_GETTEXT, nIndex, (LPARAM)str);
+	ListBox_GetText(hListBox, nIndex, str);
 }
 
 void ListBox::setCurSel(int nSelect)
 {
-	SendMessage(hListBox, LB_SETCURSEL, nSelect, 0);
+	ListBox_SetCurSel(hListBox, nSelect);
 }
 
 int ListBox::getCurSel()
 {
-	return (int)SendMessage(hListBox, LB_GETCURSEL, 0, 0);
+	return ListBox_GetCurSel(hListBox);
 }
 
 
@@ -126,7 +126,7 @@ LRESULT BetList::wndProc(UINT msg, WPARAM wParam, LPARAM lParam)
 	{
 	case WM_DPICHANGED_AFTERPARENT:
 		{
-			SendMessage(hListBox, LB_SETITEMHEIGHT, 0, listItemHeight);
+			ListBox_SetItemHeight(hListBox, 0, listItemHeight);
 			GetWindowRect(hListBox, &rcListBox);
 			MapWindowRect(HWND_DESKTOP, hListBox, &rcListBox);
 			SetWindowPos(hListBox, nullptr, 0, 0, rcListBox.right - rcListBox.left, listItemHeight * displayedItemCnt - 2 * rcListBox.top, SWP_NOMOVE | SWP_NOZORDER | SWP_NOREDRAW);
@@ -448,7 +448,7 @@ void BetList::addBanker(PCTSTR str)
 
 void BetList::updateBanker(int nIndex, PCTSTR pszItem, COLORREF color)
 {
-	SendMessage(hListBox, LB_DELETESTRING, nIndex, 0);
+	ListBox_DeleteString(hListBox, nIndex);
 	insertString(nIndex, pszItem, DT_CENTER, color);
 	ShowWindow(hMoveSpin, SW_HIDE);
 	ShowWindow(hAllBoughtButton, SW_HIDE);
@@ -467,7 +467,7 @@ int BetList::moveSel(bool direction)
 		TCHAR str[20];
 		getText(swapIdx + 1, str);
 		insertString(swapIdx, str, -1);
-		SendMessage(hListBox, LB_DELETESTRING, swapIdx + 2, 0);
+		ListBox_DeleteString(hListBox, swapIdx + 2);
 		setCurSel(targetLineIdx);
 		return swapIdx - 2;
 	}
@@ -476,9 +476,9 @@ int BetList::moveSel(bool direction)
 	{
 		TCHAR str[20];
 		getText(swapIdx + 1, str);
-		COLORREF color = SendMessage(hListBox, LB_GETITEMDATA, swapIdx + 1, 0) >> 8;
+		COLORREF color = ListBox_GetItemData(hListBox, swapIdx + 1) >> 8;
 		insertString(swapIdx, str, -1, color);
-		SendMessage(hListBox, LB_DELETESTRING, swapIdx + 2, 0);
+		ListBox_DeleteString(hListBox, swapIdx + 2);
 		setCurSel(targetLineIdx);
 		return bankerIdx;
 	}
@@ -500,7 +500,7 @@ pair<bool, int> BetList::deleteSel()
 		result.second = lineIdx - betsSize - 5;
 		bankersSize--;
 	}
-	SendMessage(hListBox, LB_DELETESTRING, lineIdx, 0);
+	ListBox_DeleteString(hListBox, lineIdx);
 	if (getScrollPos() >= betsSize + bankersSize + 5 - displayedItemCnt)
 	{
 		setTopIndex(betsSize + bankersSize + 5 - displayedItemCnt);
@@ -518,7 +518,7 @@ bool BetList::isEmpty()
 
 void BetList::resetContent()
 {
-	SendMessage(hListBox, LB_RESETCONTENT, 0, 0);
+	ListBox_ResetContent(hListBox);
 	betsSize = 0;
 	bankersSize = 0;
 	addString(_T("ÏÂ×¢"), DT_CENTER);
@@ -530,19 +530,19 @@ void BetList::resetContent()
 
 int BetList::insertString(int nIndex, PCTSTR pszItem, BYTE style, COLORREF color)
 {
-	int index = SendMessage(hListBox, LB_INSERTSTRING, nIndex, (LPARAM)pszItem);
-	SendMessage(hListBox, LB_SETITEMDATA, index, ((color << 8) | style));
+	int index = ListBox_InsertString(hListBox, nIndex, pszItem);
+	ListBox_SetItemData(hListBox, index, ((color << 8) | style));
 	return index;
 }
 
 int BetList::getItemRect(int nIndex, PRECT pRect)
 {
-	return (int)SendMessage(hListBox, LB_GETITEMRECT, nIndex, (LPARAM)pRect);
+	return ListBox_GetItemRect(hListBox, nIndex, pRect);
 }
 
 void BetList::setTopIndex(int nIndex)
 {
-	SendMessage(hListBox, LB_SETTOPINDEX, nIndex, 0);
+	ListBox_SetTopIndex(hListBox, nIndex);
 }
 
 int BetList::getScrollPos()

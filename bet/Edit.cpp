@@ -19,7 +19,7 @@ void setVCentered(HWND hEdit)
 	LOGFONT logFont;
 	GetObject(hFont, sizeof(LOGFONT), &logFont);
 	rcClient.top = rcEdit.top + 0.5f * (rcEdit.bottom - rcEdit.top - (abs(logFont.lfHeight) + 1.5f));
-	SendMessage(hEdit, EM_SETRECTNP, 0, (LPARAM)&rcClient);
+	Edit_SetRectNoPaint(hEdit, &rcClient);
 }
 
 LRESULT CALLBACK editSubclassProc(HWND hEdit, UINT msg, WPARAM wParam, LPARAM lParam, UINT_PTR uIdSubclass, DWORD_PTR dwRefData)
@@ -72,7 +72,7 @@ HWND Edit::getHwnd()
 void Edit::setText(PCTSTR str)
 {
 	SetWindowText(hEdit, str);
-	SendMessage(hEdit, EM_SETSEL, lstrlen(str), -1);
+	Edit_SetSel(hEdit, lstrlen(str), -1);
 }
 
 void Edit::getText(PTSTR str, int nMaxCount)
@@ -82,7 +82,7 @@ void Edit::getText(PTSTR str, int nMaxCount)
 
 void Edit::setSel(int start, int end)
 {
-	SendMessage(hEdit, EM_SETSEL, start, end);
+	Edit_SetSel(hEdit, start, end);
 }
 
 
@@ -156,7 +156,7 @@ LRESULT NumericEdit::wndProc(UINT msg, WPARAM wParam, LPARAM lParam)
 				}
 			}
 			CloseClipboard();
-			SendMessage(hEdit, EM_REPLACESEL, (WPARAM)0, (LPARAM)str.c_str());
+			Edit_ReplaceSel(hEdit, str.c_str());
 			return (LRESULT)TRUE;
 		}
 	case WM_KILLFOCUS:
@@ -231,12 +231,12 @@ LRESULT AmountEdit::wndProc(UINT msg, WPARAM wParam, LPARAM lParam)
 		{
 		case VK_UP:
 		case VK_DOWN:
-			SendMessage(SendMessage(hBankerSelector, BM_GETCHECK, 0, 0) ? hBankerOddsEdit : hBetOddsEdit, msg, wParam, lParam);
+			SendMessage(Button_GetCheck(hBankerSelector) ? hBankerOddsEdit : hBetOddsEdit, msg, wParam, lParam);
 			return (LRESULT)TRUE;
 		}
 		break;
 	case WM_KILLFOCUS:
-		SendMessage(SendMessage(hBankerSelector, BM_GETCHECK, 0, 0) ? hBankerOddsEdit : hBetOddsEdit, WM_KEYUP, VK_UP, MAKELONG(1, KF_UP | KF_REPEAT | KF_EXTENDED));
+		SendMessage(Button_GetCheck(hBankerSelector) ? hBankerOddsEdit : hBetOddsEdit, WM_KEYUP, VK_UP, MAKELONG(1, KF_UP | KF_REPEAT | KF_EXTENDED));
 		break;
 	}
 	return NumericEdit::wndProc(msg, wParam, lParam);
@@ -253,7 +253,7 @@ void AmountEdit::initRect()
 	GetObject(hFont, sizeof(LOGFONT), &logFont);
 	rcClient.right -= rcClient.bottom - rcClient.top;
 	rcClient.top = rcEdit.top + 0.5f * (rcEdit.bottom - rcEdit.top - (abs(logFont.lfHeight) + 1.5f));
-	SendMessage(hEdit, EM_SETRECTNP, 0, (LPARAM)&rcClient);
+	Edit_SetRectNoPaint(hEdit, &rcClient);
 }
 
 

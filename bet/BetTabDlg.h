@@ -19,7 +19,7 @@ private:
 	RECT rcErase1 = { 0 };
 	RECT rcErase2 = { 0 };
 	long long initialAmount = 0;
-	BOOL winProbSide = 0;
+	bool winProbSide = 0;
 	double winProb = 0;
 	double winProbError = 0;
 	Model model;

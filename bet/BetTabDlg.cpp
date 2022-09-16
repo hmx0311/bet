@@ -96,10 +96,10 @@ INT_PTR BetTabDlg::initDlg(HWND hDlg)
 
 	TCHAR resetTipText[] = _T("重置当前竞猜");
 	createToolTip(resetButton.getHwnd(), hDlg, resetTipText);
-	SendMessage(hHaveClosingCheck, BM_SETCHECK, config.defaultClosing, 0);
+	Button_SetCheck(hHaveClosingCheck, config.defaultClosing);
 	for (int i = 0; i < 10; i += 2)
 	{
-		SendMessage(hBankerBetSelectors[i], BM_SETCHECK, 1, 0);
+		Button_SetCheck(hBankerBetSelectors[i], 1);
 	}
 	for (int i = 0; i < 10; i++)
 	{
@@ -121,7 +121,7 @@ INT_PTR BetTabDlg::initDlg(HWND hDlg)
 	allBoughtButton.setIcon(hTickIcon);
 	winProbCalculatorButton.setIcon(hCalculatorIcon);
 
-	SendMessage(hWinProbSideLeftSelector, BM_SETCHECK, 1, 0);
+	Button_SetCheck(hWinProbSideLeftSelector, 1);
 	TCHAR str[3];
 	_itow((int)round(config.defaultProbError * 100), str, 10);
 	winProbErrorEdit.setText(str);
@@ -306,8 +306,8 @@ INT_PTR BetTabDlg::dlgProc(UINT msg, WPARAM wParam, LPARAM lParam)
 			switch (HIWORD(wParam))
 			{
 			case EN_SETFOCUS:
-				SendMessage(hBankerBetSelectors[(LOWORD(wParam) - IDC_L_BANKER_ODDS_EDIT) ^ 1], BM_SETCHECK, 0, 0);
-				SendMessage(hBankerBetSelectors[LOWORD(wParam) - IDC_L_BANKER_ODDS_EDIT], BM_SETCHECK, 1, 0);
+				Button_SetCheck(hBankerBetSelectors[(LOWORD(wParam) - IDC_L_BANKER_ODDS_EDIT) ^ 1], 0);
+				Button_SetCheck(hBankerBetSelectors[LOWORD(wParam) - IDC_L_BANKER_ODDS_EDIT], 1);
 				return (INT_PTR)TRUE;
 			}
 			break;
@@ -398,7 +398,7 @@ INT_PTR BetTabDlg::dlgProc(UINT msg, WPARAM wParam, LPARAM lParam)
 			break;
 		case IDC_L_WIN_PROBABILTY_SIDE_SELECTOR:
 		case IDC_R_WIN_PROBABILTY_SIDE_SELECTOR:
-			if (winProbSide == SendMessage(hWinProbSideLeftSelector, BM_GETCHECK, 0, 0))
+			if (winProbSide == Button_GetCheck(hWinProbSideLeftSelector))
 			{
 				winProbSide = !winProbSide;
 				if (winProb != 0)
@@ -527,14 +527,14 @@ void BetTabDlg::updateCurrentProfit()
 	SetWindowText(hCurrentProfitTexts[0], str);
 	_stprintf(str, _T("%lld"), model.getProfit(1));
 	SetWindowText(hCurrentProfitTexts[1], str);
-	SendMessage(resultLists[0].getHwnd(), LB_RESETCONTENT, 0, 0);
+	ListBox_ResetContent(resultLists[0].getHwnd());
 	updateMinOdds();
 }
 
 void BetTabDlg::updateMinOdds()
 {
-	SendMessage(resultLists[1].getHwnd(), LB_RESETCONTENT, 0, 0);
-	SendMessage(resultLists[2].getHwnd(), LB_RESETCONTENT, 0, 0);
+	ListBox_ResetContent(resultLists[1].getHwnd());
+	ListBox_ResetContent(resultLists[2].getHwnd());
 	if (initialAmount < model.getTotalInvest() + MIN_AMOUNT || winProb == 0)
 	{
 		for (int i = 0; i < 8; i++)
@@ -571,7 +571,7 @@ void BetTabDlg::add(int side)
 		SetFocus(amountEdits[side].getHwnd());
 		return;
 	}
-	if (SendMessage(hBankerBetSelectors[2 * side + 1], BM_GETCHECK, 0, 0))
+	if (Button_GetCheck(hBankerBetSelectors[2 * side + 1]))
 	{
 		Bet bet(oddsEdits[2 * side + 1].getOdds(), amount);
 		model.addBet(side, bet);
@@ -589,10 +589,10 @@ void BetTabDlg::add(int side)
 
 void BetTabDlg::calcBalanceAimAmount()
 {
-	bool isBet = SendMessage(hBankerBetSelectors[5], BM_GETCHECK, 0, 0);
+	bool isBet = Button_GetCheck(hBankerBetSelectors[5]);
 	TCHAR str[30];
 	_stprintf(str, _T("%s %0.1f"), isBet ? _T("下注") : _T("庄家"), oddsEdits[4 + isBet].getOdds());
-	if (SendMessage(resultLists[0].getHwnd(), LB_FINDSTRING, 0, (LPARAM)str) == -1)
+	if (ListBox_FindString(resultLists[0].getHwnd(), 0, str) == -1)
 	{
 		auto result = model.calcAimAmountBalance(isBet, isBet ? oddsEdits[5].getOdds() : oddsEdits[4].getOdds());
 		if (result.first <= MIN_AMOUNT)
@@ -640,7 +640,7 @@ void BetTabDlg::calcBalanceAimAmount()
 		}
 		int index = resultLists[0].addString(str, DT_VCENTER);
 	}
-	SendMessage(resultLists[0].getHwnd(), LB_SELECTSTRING, 0, (LPARAM)str);
+	ListBox_SelectString(resultLists[0].getHwnd(), 0, str);
 	SetFocus(oddsEdits[4 + isBet].getHwnd());
 }
 
@@ -701,10 +701,10 @@ void BetTabDlg::disconnectCalculator()
 
 void BetTabDlg::calcAimAmount(int side)
 {
-	bool isBet = SendMessage(hBankerBetSelectors[2 * side + 7], BM_GETCHECK, 0, 0);
+	bool isBet = Button_GetCheck(hBankerBetSelectors[2 * side + 7]);
 	if (initialAmount < model.getTotalInvest() + MIN_AMOUNT)
 	{
-		if (SendMessage(resultLists[side + 1].getHwnd(), LB_FINDSTRING, 0, (LPARAM)_T("初始数量过低")) == -1)
+		if (ListBox_FindString(resultLists[side + 1].getHwnd(), 0, _T("初始数量过低")) == -1)
 		{
 			resultLists[side + 1].addString(_T("初始数量过低"), DT_VCENTER | DT_CENTER);
 		}
@@ -715,7 +715,7 @@ void BetTabDlg::calcAimAmount(int side)
 	}
 	if (winProb == 0)
 	{
-		if (SendMessage(resultLists[side + 1].getHwnd(), LB_FINDSTRING, 0, (LPARAM)_T("输入胜率为0")) == -1)
+		if (ListBox_FindString(resultLists[side + 1].getHwnd(), 0, _T("输入胜率为0")) == -1)
 		{
 			resultLists[side + 1].addString(_T("输入胜率为0"), DT_VCENTER | DT_CENTER);
 		}
@@ -726,7 +726,7 @@ void BetTabDlg::calcAimAmount(int side)
 	}
 	TCHAR str[20];
 	_stprintf(str, _T("%s %0.1f"), isBet ? _T("下注") : _T("庄家"), oddsEdits[6 + 2 * side + isBet].getOdds());
-	if (SendMessage(resultLists[side + 1].getHwnd(), LB_FINDSTRING, 0, (LPARAM)str) == -1)
+	if (ListBox_FindString(resultLists[side + 1].getHwnd(), 0, str) == -1)
 	{
 		long long aimAmount = model.calcAimAmountProb(initialAmount, winProb, winProbError, side, isBet, oddsEdits[6 + 2 * side + isBet].getOdds());
 		if (aimAmount < 10000000LL)
@@ -749,6 +749,6 @@ void BetTabDlg::calcAimAmount(int side)
 		}
 		resultLists[side + 1].addString(str, DT_VCENTER);
 	}
-	SendMessage(resultLists[side + 1].getHwnd(), LB_SELECTSTRING, 0, (LPARAM)str);
+	ListBox_SelectString(resultLists[side + 1].getHwnd(), 0, str);
 	SetFocus(oddsEdits[6 + 2 * side + isBet].getHwnd());
 }
