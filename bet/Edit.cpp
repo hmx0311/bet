@@ -9,17 +9,19 @@
 
 using namespace std;
 
-void setVCentered(HWND hEdit)
+void getVCenteredRect(HWND hEdit, PRECT pRect)
 {
-	RECT rcEdit;
-	GetWindowRect(hEdit, &rcEdit);
-	MapWindowRect(HWND_DESKTOP, hEdit, &rcEdit);
-	RECT rcClient;
-	GetClientRect(hEdit, &rcClient);
+	GetClientRect(hEdit, pRect);
 	LOGFONT logFont;
 	GetObject(hFont, sizeof(LOGFONT), &logFont);
-	rcClient.top = rcEdit.top + 0.5f * (rcEdit.bottom - rcEdit.top - (abs(logFont.lfHeight) + 1.5f));
-	Edit_SetRectNoPaint(hEdit, &rcClient);
+	pRect->top = 0.5f * (pRect->bottom - pRect->top - (abs(logFont.lfHeight) + 1.5f));
+}
+
+void setVCentered(HWND hEdit)
+{
+	RECT rcVCentered;
+	getVCenteredRect(hEdit, &rcVCentered);
+	Edit_SetRectNoPaint(hEdit, &rcVCentered);
 }
 
 LRESULT CALLBACK editSubclassProc(HWND hEdit, UINT msg, WPARAM wParam, LPARAM lParam, UINT_PTR uIdSubclass, DWORD_PTR dwRefData)
@@ -245,16 +247,10 @@ LRESULT AmountEdit::wndProc(UINT msg, WPARAM wParam, LPARAM lParam)
 
 void AmountEdit::initRect()
 {
-	RECT rcEdit;
-	GetWindowRect(hEdit, &rcEdit);
-	MapWindowRect(HWND_DESKTOP, hEdit, &rcEdit);
-	RECT rcClient;
-	GetClientRect(hEdit, &rcClient);
-	LOGFONT logFont;
-	GetObject(hFont, sizeof(LOGFONT), &logFont);
-	rcClient.right -= rcClient.bottom - rcClient.top;
-	rcClient.top = rcEdit.top + 0.5f * (rcEdit.bottom - rcEdit.top - (abs(logFont.lfHeight) + 1.5f));
-	Edit_SetRectNoPaint(hEdit, &rcClient);
+	RECT reVCentered;
+	getVCenteredRect(hEdit, &reVCentered);
+	reVCentered.right -= reVCentered.bottom - reVCentered.top;
+	Edit_SetRectNoPaint(hEdit, &reVCentered);
 }
 
 

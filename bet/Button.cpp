@@ -139,7 +139,7 @@ void Button::drawButton(HDC hDC, PUSHBUTTONSTATES state, RECT& rcItem)
 	FillRect(hDC, &rcItem, hBkgBrush);
 	RECT rcContent = rcItem;
 	int padding;
-	if (GetWindowLongPtr(hButton, GWL_STYLE) & BS_FLAT)
+	if (GetWindowStyle(hButton) & BS_FLAT)
 	{
 		padding = BUTTON_MARGIN_RATIO * min(rcContent.right - rcContent.left, rcContent.bottom - rcContent.top);
 		if (state == PBS_HOT || state == PBS_PRESSED)
@@ -183,7 +183,7 @@ void Button::drawButton(HDC hDC, PUSHBUTTONSTATES state, RECT& rcItem)
 	{
 		HDC hDCImage = CreateCompatibleDC(hDC);
 		int xSqueeze = 0, ySqueeze = 0;
-		if (state == PBS_PRESSED && (hButtonTheme != nullptr || GetWindowLongPtr(hButton, GWL_STYLE) & BS_FLAT))
+		if (state == PBS_PRESSED && (hButtonTheme != nullptr || GetWindowStyle(hButton) & BS_FLAT))
 		{
 			xSqueeze = PRESSED_SQUEEZE * iconWidth;
 			ySqueeze = PRESSED_SQUEEZE * iconHeight;

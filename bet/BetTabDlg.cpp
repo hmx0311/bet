@@ -486,7 +486,8 @@ INT_PTR BetTabDlg::dlgProc(UINT msg, WPARAM wParam, LPARAM lParam)
 		case IDC_R_AIM_BANKER_ODDS_SPIN:
 		case IDC_R_AIM_BET_ODDS_SPIN:
 			oddsEdits[((LPNMHDR)lParam)->idFrom - IDC_L_BANKER_ODDS_SPIN].spinDelta(((LPNMUPDOWN)lParam)->iDelta);
-			SetFocus(oddsEdits[((LPNMHDR)lParam)->idFrom - IDC_L_BANKER_ODDS_SPIN].getHwnd());
+			Button_SetCheck(hBankerBetSelectors[((LPNMHDR)lParam)->idFrom - IDC_L_BANKER_ODDS_SPIN], 1);
+			Button_SetCheck(hBankerBetSelectors[(((LPNMHDR)lParam)->idFrom - IDC_L_BANKER_ODDS_SPIN)^1], 0);
 			return (INT_PTR)TRUE;
 		case IDC_MOVE_SPIN:
 			{
