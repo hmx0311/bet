@@ -592,7 +592,7 @@ void BetTabDlg::calcBalanceAimAmount()
 	bool isBet = Button_GetCheck(hBankerBetSelectors[5]);
 	TCHAR str[30];
 	_stprintf(str, _T("%s %0.1f"), isBet ? _T("下注") : _T("庄家"), oddsEdits[4 + isBet].getOdds());
-	if (ListBox_FindString(resultLists[0].getHwnd(), 0, str) == -1)
+	if (ListBox_FindString(resultLists[0].getHwnd(), -1, str) == -1)
 	{
 		auto result = model.calcAimAmountBalance(isBet, isBet ? oddsEdits[5].getOdds() : oddsEdits[4].getOdds());
 		if (result.first <= MIN_AMOUNT)
@@ -640,7 +640,7 @@ void BetTabDlg::calcBalanceAimAmount()
 		}
 		int index = resultLists[0].addString(str, DT_VCENTER);
 	}
-	ListBox_SelectString(resultLists[0].getHwnd(), 0, str);
+	ListBox_SelectString(resultLists[0].getHwnd(), -1, str);
 	SetFocus(oddsEdits[4 + isBet].getHwnd());
 }
 
@@ -704,7 +704,7 @@ void BetTabDlg::calcAimAmount(int side)
 	bool isBet = Button_GetCheck(hBankerBetSelectors[2 * side + 7]);
 	if (initialAmount < model.getTotalInvest() + MIN_AMOUNT)
 	{
-		if (ListBox_FindString(resultLists[side + 1].getHwnd(), 0, _T("初始数量过低")) == -1)
+		if (ListBox_FindString(resultLists[side + 1].getHwnd(), -1, _T("初始数量过低")) == -1)
 		{
 			resultLists[side + 1].addString(_T("初始数量过低"), DT_VCENTER | DT_CENTER);
 		}
@@ -715,7 +715,7 @@ void BetTabDlg::calcAimAmount(int side)
 	}
 	if (winProb == 0)
 	{
-		if (ListBox_FindString(resultLists[side + 1].getHwnd(), 0, _T("输入胜率为0")) == -1)
+		if (ListBox_FindString(resultLists[side + 1].getHwnd(), -1, _T("输入胜率为0")) == -1)
 		{
 			resultLists[side + 1].addString(_T("输入胜率为0"), DT_VCENTER | DT_CENTER);
 		}
@@ -726,7 +726,7 @@ void BetTabDlg::calcAimAmount(int side)
 	}
 	TCHAR str[20];
 	_stprintf(str, _T("%s %0.1f"), isBet ? _T("下注") : _T("庄家"), oddsEdits[6 + 2 * side + isBet].getOdds());
-	if (ListBox_FindString(resultLists[side + 1].getHwnd(), 0, str) == -1)
+	if (ListBox_FindString(resultLists[side + 1].getHwnd(), -1, str) == -1)
 	{
 		long long aimAmount = model.calcAimAmountProb(initialAmount, winProb, winProbError, side, isBet, oddsEdits[6 + 2 * side + isBet].getOdds());
 		if (aimAmount < 10000000LL)
@@ -749,6 +749,6 @@ void BetTabDlg::calcAimAmount(int side)
 		}
 		resultLists[side + 1].addString(str, DT_VCENTER);
 	}
-	ListBox_SelectString(resultLists[side + 1].getHwnd(), 0, str);
+	ListBox_SelectString(resultLists[side + 1].getHwnd(), -1, str);
 	SetFocus(oddsEdits[6 + 2 * side + isBet].getHwnd());
 }
