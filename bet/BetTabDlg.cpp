@@ -12,6 +12,8 @@
 #include <shellapi.h>
 #include <windowsx.h>
 
+#define MAX_BET_COUNT 50000
+
 #define BPC_CONNECTED (WM_APP)
 #define BPC_DISCONNECT (WM_APP+1)
 #define BPC_PROBABILITY (WM_APP+2)
@@ -487,7 +489,7 @@ INT_PTR BetTabDlg::dlgProc(UINT msg, WPARAM wParam, LPARAM lParam)
 		case IDC_R_AIM_BET_ODDS_SPIN:
 			oddsEdits[((LPNMHDR)lParam)->idFrom - IDC_L_BANKER_ODDS_SPIN].spinDelta(((LPNMUPDOWN)lParam)->iDelta);
 			Button_SetCheck(hBankerBetSelectors[((LPNMHDR)lParam)->idFrom - IDC_L_BANKER_ODDS_SPIN], 1);
-			Button_SetCheck(hBankerBetSelectors[(((LPNMHDR)lParam)->idFrom - IDC_L_BANKER_ODDS_SPIN)^1], 0);
+			Button_SetCheck(hBankerBetSelectors[(((LPNMHDR)lParam)->idFrom - IDC_L_BANKER_ODDS_SPIN) ^ 1], 0);
 			return (INT_PTR)TRUE;
 		case IDC_MOVE_SPIN:
 			{
@@ -563,6 +565,10 @@ void BetTabDlg::updateMinOdds()
 
 void BetTabDlg::add(int side)
 {
+	if (betLists[side].getBetsSize() + betLists[side].getBankersSize() >= MAX_BET_COUNT)
+	{
+		return;
+	}
 	TCHAR str[8];
 	amountEdits[side].getText(str, 8);
 	int amount = _wtoi(str);
@@ -593,7 +599,7 @@ void BetTabDlg::calcBalanceAimAmount()
 	bool isBet = Button_GetCheck(hBankerBetSelectors[5]);
 	TCHAR str[30];
 	_stprintf(str, _T("%s %0.1f"), isBet ? _T("下注") : _T("庄家"), oddsEdits[4 + isBet].getOdds());
-	if (ListBox_FindString(resultLists[0].getHwnd(), -1, str) == -1)
+	if (ListBox_FindString(resultLists[0].getHwnd(), -1, str) == LB_ERR)
 	{
 		auto result = model.calcAimAmountBalance(isBet, isBet ? oddsEdits[5].getOdds() : oddsEdits[4].getOdds());
 		if (result.first <= MIN_AMOUNT)
@@ -602,41 +608,42 @@ void BetTabDlg::calcBalanceAimAmount()
 		}
 		else
 		{
-			if (result.first < 100000000LL)
+			int i = 6;
+			if (result.first < 10000000LL)
 			{
-				_stprintf(&str[6], _T(" %8lld"), result.first);
+				i += _stprintf(&str[i], _T("  %7lld"), result.first);
 			}
-			else if (result.first < 10000000000)
+			else if (result.first < 1000000000LL)
 			{
-				_stprintf(&str[6], _T(" %6lld万"), (long long)round(result.first * 0.0001));
+				i += _stprintf(&str[i], _T("  %5lld万"), (long long)round(result.first * 1e-4));
 			}
-			else if (result.first < 1000000000000)
+			else if (result.first < 1000000000000LL)
 			{
 				int decimal = 1;
-				for (long long i = 100000000000; i > result.first; decimal++, i /= 10);
-				_stprintf(&str[6], _T(" %.*f亿"), decimal, result.first * 0.00000001);
+				for (long long j = 100000000000LL; j > result.first; decimal++, j /= 10);
+				i += _stprintf(&str[i], _T(" %.*f亿"), decimal, result.first * 1e-8);
 			}
 			else
 			{
-				_stprintf(&str[6], _T(" %6lld亿"), (long long)round(result.first * 0.00000001));
+				i += _stprintf(&str[i], _T(" %6lld亿"), (long long)round(result.first * 1e-8));
 			}
 			if (result.second < 1000000000LL && result.second > -100000000LL)
 			{
-				_stprintf(&str[15], _T(" %9lld"), result.second);
+				_stprintf(&str[i], _T(" %9lld"), result.second);
 			}
-			else if (result.second < 100000000000 && result.second > -1000000000)
+			else if (result.second < 100000000000LL && result.second > -10000000000LL)
 			{
-				_stprintf(&str[15], _T(" %7lld万"), (long long)round(result.second * 0.0001));
+				_stprintf(&str[i], _T(" %7lld万"), (long long)round(result.second * 1e-4));
 			}
-			else if (result.second < 10000000000000 && result.second > -100000000000)
+			else if (result.second < 10000000000000LL && result.second > -1000000000000LL)
 			{
 				int decimal = 1;
-				for (long long i = 100000000000; i * 10 > result.second && -i < result.second; decimal++, i /= 10);
-				_stprintf(&str[15], _T(" %.*f亿"), decimal, result.second * 0.00000001);
+				for (long long j = 100000000000LL; j * 10 > result.second && -j < result.second; decimal++, j /= 10);
+				_stprintf(&str[i], _T(" %.*f亿"), decimal, result.second * 1e-8);
 			}
 			else
 			{
-				_stprintf(&str[15], _T(" %7lld亿"), (long long)round(result.second * 0.00000001));
+				_stprintf(&str[i], _T(" %7lld亿"), (long long)round(result.second * 1e-8));
 			}
 		}
 		int index = resultLists[0].addString(str, DT_VCENTER);
@@ -727,26 +734,26 @@ void BetTabDlg::calcAimAmount(int side)
 	}
 	TCHAR str[20];
 	_stprintf(str, _T("%s %0.1f"), isBet ? _T("下注") : _T("庄家"), oddsEdits[6 + 2 * side + isBet].getOdds());
-	if (ListBox_FindString(resultLists[side + 1].getHwnd(), -1, str) == -1)
+	if (ListBox_FindString(resultLists[side + 1].getHwnd(), -1, str) == LB_ERR)
 	{
 		long long aimAmount = model.calcAimAmountProb(initialAmount, winProb, winProbError, side, isBet, oddsEdits[6 + 2 * side + isBet].getOdds());
 		if (aimAmount < 10000000LL)
 		{
 			_stprintf(&str[6], _T(" %7lld"), aimAmount);
 		}
-		else if (aimAmount < 1000000000)
+		else if (aimAmount < 1000000000LL)
 		{
-			_stprintf(&str[6], _T(" %5lld万"), (long long)round(aimAmount * 0.0001));
+			_stprintf(&str[6], _T(" %5lld万"), (long long)round(aimAmount * 1e-4));
 		}
-		else if (aimAmount < 100000000000)
+		else if (aimAmount < 10000000000LL)
 		{
 			int decimal = 1;
-			for (long long i = 10000000000; i > aimAmount; decimal++, i /= 10);
-			_stprintf(&str[6], _T(" %.*f亿"), decimal, aimAmount * 0.00000001);
+			for (long long i = 10000000000LL; i > aimAmount; decimal++, i /= 10);
+			_stprintf(&str[6], _T(" %.*f亿"), decimal, aimAmount * 1e-8);
 		}
 		else
 		{
-			_stprintf(&str[6], _T(" %5lld亿"), (long long)round(aimAmount * 0.00000001));
+			_stprintf(&str[6], _T(" %5lld亿"), (long long)round(aimAmount * 1e-8));
 		}
 		resultLists[side + 1].addString(str, DT_VCENTER);
 	}

@@ -434,7 +434,7 @@ int BetList::getCurSel()
 
 void BetList::addBet(PCTSTR str)
 {
-	insertString(betsSize + 2, str, DT_CENTER);
+	int a = insertString(betsSize + 2, str, DT_CENTER);
 	betsSize++;
 	setTopIndex(betsSize > displayedItemCnt - 2 ? betsSize + 2 - displayedItemCnt : 0);
 }

@@ -185,9 +185,9 @@ pair<long long, long long> Model::calcAimAmountBalance(bool isBet, double odds)
 	{
 		if (haveClosing)
 		{
-			difference -= potentialProfit[!side][1].getSum(round(10 * odds) + 1, 100);
+			difference -= potentialProfit[!side][1].getSum(round(10 * odds), 100);
 		}
-		balancedProfit += potentialProfit[!side][0].getSum(round(10 * odds) + 1, 100);
+		balancedProfit += potentialProfit[!side][0].getSum(round(10 * odds), 100);
 	}
 	else
 	{
@@ -203,70 +203,12 @@ pair<long long, long long> Model::calcAimAmountBalance(bool isBet, double odds)
 	{
 		return { 0,0 };
 	}
-	if (isBet)
-	{
-		if (haveClosing)
-		{
-			difference += potentialProfit[!side][0].getAmount(round(10 * odds)) - potentialProfit[!side][1].getAmount(round(10 * odds));
-		}
-		balancedProfit += potentialProfit[!side][0].getAmount(round(10 * odds));
-		aimAmount = round(difference / (config.cut * (isBet ? odds : 1 / odds) + 1));
-		balancedProfit -= aimAmount;
-	}
-	else
-	{
-		balancedProfit -= aimAmount;
-		for (long long temp = aimAmount; long long(long long(aimAmount / odds * DBL_PRECISION_COMPENSATE) * odds) < temp; aimAmount++);
-	}
-	return { aimAmount, balancedProfit };
-}
-
-long long Model::calcAimAmountProb(long long initialAmount, double winProb, double winProbError, bool side, bool isBet, double odds)
-{
-	winProb = side ? 1 - winProb : winProb;
-	winProbError *= (winProb > 0.5 ? 1 - winProb : winProb);
-	double lowerWinProb = winProb - winProbError;
-	double upperWinProb = winProb;
-	long long winAmount = initialAmount + profit[side];
-	long long loseAmount = initialAmount + profit[!side];
-	if (isBet)
-	{
-		if (haveClosing)
-		{
-			winAmount += potentialProfit[!side][1].getSum(round(10 * odds), 100);
-		}
-		loseAmount += potentialProfit[!side][0].getSum(round(10 * odds), 100);
-	}
-	else
-	{
-		winAmount += potentialProfit[side][0].getSum(round(10 * odds), 100);
-		if (haveClosing)
-		{
-			loseAmount += potentialProfit[side][1].getSum(round(10 * odds), 100);
-		}
-	}
-	double equivalentOdds = config.cut * (isBet ? odds : 1 / odds);
-	long long aimAmount;
-	if (loseAmount - winAmount <= MIN_AMOUNT)
-	{
-		aimAmount = round(lowerWinProb * loseAmount - (1 - lowerWinProb) / equivalentOdds * winAmount);
-	}
-	else
-	{
-		long long lowerAmount = round(lowerWinProb * loseAmount - (1 - lowerWinProb) / equivalentOdds * winAmount);
-		long long upperAmount = round(upperWinProb * loseAmount - (1 - upperWinProb) / equivalentOdds * winAmount);
-		long long balanceAmount = round((loseAmount - winAmount) / (equivalentOdds + 1));
-		aimAmount = lowerAmount > balanceAmount ? lowerAmount : upperAmount > balanceAmount ? balanceAmount : upperAmount;
-	}
-	if (aimAmount < 0)
-	{
-		return 0;
-	}
+	balancedProfit -= aimAmount;
 	if (!isBet)
 	{
 		for (long long temp = aimAmount; long long(long long(aimAmount / odds * DBL_PRECISION_COMPENSATE) * odds) < temp; aimAmount++);
 	}
-	return aimAmount;
+	return { aimAmount, balancedProfit };
 }
 
 void Model::calcReferenceOdds(long long initialAmount, double winProb, double winProbError, double* __restrict referenceOdds)
@@ -336,6 +278,54 @@ void Model::calcReferenceOdds(long long initialAmount, double winProb, double wi
 		}
 		winProb = 1 - winProb;
 	}
+}
+
+long long Model::calcAimAmountProb(long long initialAmount, double winProb, double winProbError, bool side, bool isBet, double odds)
+{
+	winProb = side ? 1 - winProb : winProb;
+	winProbError *= (winProb > 0.5 ? 1 - winProb : winProb);
+	double lowerWinProb = winProb - winProbError;
+	double upperWinProb = winProb;
+	long long winAmount = initialAmount + profit[side];
+	long long loseAmount = initialAmount + profit[!side];
+	if (isBet)
+	{
+		if (haveClosing)
+		{
+			winAmount += potentialProfit[!side][1].getSum(round(10 * odds), 100);
+		}
+		loseAmount += potentialProfit[!side][0].getSum(round(10 * odds), 100);
+	}
+	else
+	{
+		winAmount += potentialProfit[side][0].getSum(round(10 * odds), 100);
+		if (haveClosing)
+		{
+			loseAmount += potentialProfit[side][1].getSum(round(10 * odds), 100);
+		}
+	}
+	double equivalentOdds = config.cut * (isBet ? odds : 1 / odds);
+	long long aimAmount;
+	if (loseAmount - winAmount <= MIN_AMOUNT)
+	{
+		aimAmount = round(lowerWinProb * loseAmount - (1 - lowerWinProb) / equivalentOdds * winAmount);
+	}
+	else
+	{
+		long long lowerAmount = round(lowerWinProb * loseAmount - (1 - lowerWinProb) / equivalentOdds * winAmount);
+		long long upperAmount = round(upperWinProb * loseAmount - (1 - upperWinProb) / equivalentOdds * winAmount);
+		long long balanceAmount = round((loseAmount - winAmount) / (equivalentOdds + 1));
+		aimAmount = lowerAmount > balanceAmount ? lowerAmount : upperAmount > balanceAmount ? balanceAmount : upperAmount;
+	}
+	if (aimAmount < 0)
+	{
+		return 0;
+	}
+	if (!isBet)
+	{
+		for (long long temp = aimAmount; long long(long long(aimAmount / odds * DBL_PRECISION_COMPENSATE) * odds) < temp; aimAmount++);
+	}
+	return aimAmount;
 }
 
 long long Model::getProfit(bool side)

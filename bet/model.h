@@ -62,8 +62,8 @@ public:
 	void reset();
 	bool changeClosing();
 	std::pair<long long, long long> calcAimAmountBalance(bool isBet, double odds);
-	long long calcAimAmountProb(long long initialAmount, double winningProb, double winProbError, bool side, bool isBet, double odds);
 	void calcReferenceOdds(long long initialAmount, double winningProb, double winProbError, double* __restrict referenceOdds);
+	long long calcAimAmountProb(long long initialAmount, double winningProb, double winProbError, bool side, bool isBet, double odds);
 	long long getProfit(bool side);
 	long long getTotalInvest();
 };

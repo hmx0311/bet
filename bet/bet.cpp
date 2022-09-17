@@ -16,9 +16,6 @@
 // 全局变量:
 HINSTANCE hInst;                                // 当前实例
 
-// 此代码模块中包含的函数的前向声明:
-//INT_PTR CALLBACK    betDlgProc(HWND, UINT, WPARAM, LPARAM);
-
 int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
 	_In_opt_ HINSTANCE hPrevInstance,
 	_In_ PTSTR     pCmdLine,
@@ -31,7 +28,6 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
 
 	// 执行应用程序初始化:
 	loadConfig(config);
-
 	BufferedPaintInit();
 
 	BetDlg::hIcon = LoadIcon(hInstance, MAKEINTRESOURCE(IDI_BET));
