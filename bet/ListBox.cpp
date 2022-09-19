@@ -394,7 +394,7 @@ void BetList::drawItem(HDC hDC, int itemID, UINT itemState, ULONG_PTR itemData, 
 	}
 	if (itemID == betsSize + 2)
 	{
-		rcItem.top = (rcItem.bottom - rcItem.top) / 2;
+		rcItem.top += (rcItem.bottom - rcItem.top) / 2;
 		rcItem.bottom = rcItem.top + 1;
 		FillRect(hDC, &rcItem, GetSysColorBrush(COLOR_WINDOWTEXT));
 		return;
@@ -522,10 +522,10 @@ void BetList::resetContent()
 	betsSize = 0;
 	bankersSize = 0;
 	addString(_T("下注"), DT_CENTER);
-	addString(_T("赔率   数量  "), DT_CENTER);
+	addString(_T("赔率  已投入 "), DT_CENTER);
 	addString(_T(""));
 	addString(_T("庄家"), DT_CENTER);
-	addString(_T("赔率  数量    已买"));
+	addString(_T("赔率 已投入   已买"));
 }
 
 int BetList::insertString(int nIndex, PCTSTR pszItem, BYTE style, COLORREF color)

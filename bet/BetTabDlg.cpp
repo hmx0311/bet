@@ -613,19 +613,19 @@ void BetTabDlg::calcBalanceAimAmount()
 			{
 				i += _stprintf(&str[i], _T("  %7lld"), result.first);
 			}
+			else if (result.first < 100000000LL)
+			{
+				i += _stprintf(&str[i], _T(" %.1f万"), result.first * 1e-4);
+			}
 			else if (result.first < 1000000000LL)
 			{
-				i += _stprintf(&str[i], _T("  %5lld万"), (long long)round(result.first * 1e-4));
-			}
-			else if (result.first < 1000000000000LL)
-			{
-				int decimal = 1;
-				for (long long j = 100000000000LL; j > result.first; decimal++, j /= 10);
-				i += _stprintf(&str[i], _T(" %.*f亿"), decimal, result.first * 1e-8);
+				i += _stprintf(&str[i], _T("  %lld万"), (long long)round(result.first * 1e-4));
 			}
 			else
 			{
-				i += _stprintf(&str[i], _T(" %6lld亿"), (long long)round(result.first * 1e-8));
+				int decimal = 0;
+				for (long long j = 1000000000000LL; j > result.first; decimal++, j /= 10);
+				i += _stprintf(&str[i], _T(" %6.*f亿"), decimal, result.first * 1e-8);
 			}
 			if (result.second < 1000000000LL && result.second > -100000000LL)
 			{
@@ -637,13 +637,9 @@ void BetTabDlg::calcBalanceAimAmount()
 			}
 			else if (result.second < 10000000000000LL && result.second > -1000000000000LL)
 			{
-				int decimal = 1;
-				for (long long j = 100000000000LL; j * 10 > result.second && -j < result.second; decimal++, j /= 10);
-				_stprintf(&str[i], _T(" %.*f亿"), decimal, result.second * 1e-8);
-			}
-			else
-			{
-				_stprintf(&str[i], _T(" %7lld亿"), (long long)round(result.second * 1e-8));
+				int decimal = 0;
+				for (long long j = 1000000000000LL; j * 10 > result.second && -j < result.second; decimal++, j /= 10);
+				_stprintf(&str[i], _T(" %7.*f亿"), decimal, result.second * 1e-8);
 			}
 		}
 		int index = resultLists[0].addString(str, DT_VCENTER);
@@ -737,7 +733,11 @@ void BetTabDlg::calcAimAmount(int side)
 	if (ListBox_FindString(resultLists[side + 1].getHwnd(), -1, str) == LB_ERR)
 	{
 		long long aimAmount = model.calcAimAmountProb(initialAmount, winProb, winProbError, side, isBet, oddsEdits[6 + 2 * side + isBet].getOdds());
-		if (aimAmount < 10000000LL)
+		if (aimAmount > initialAmount - model.getTotalInvest())
+		{
+			lstrcat(&str[6], _T("   全部"));
+		}
+		else if (aimAmount < 10000000LL)
 		{
 			_stprintf(&str[6], _T(" %7lld"), aimAmount);
 		}
@@ -745,15 +745,11 @@ void BetTabDlg::calcAimAmount(int side)
 		{
 			_stprintf(&str[6], _T(" %5lld万"), (long long)round(aimAmount * 1e-4));
 		}
-		else if (aimAmount < 10000000000LL)
-		{
-			int decimal = 1;
-			for (long long i = 10000000000LL; i > aimAmount; decimal++, i /= 10);
-			_stprintf(&str[6], _T(" %.*f亿"), decimal, aimAmount * 1e-8);
-		}
 		else
 		{
-			_stprintf(&str[6], _T(" %5lld亿"), (long long)round(aimAmount * 1e-8));
+			int decimal = 0;
+			for (long long i = 100000000000LL; i > aimAmount; decimal++, i /= 10);
+			_stprintf(&str[6], _T(" %5.*f亿"), decimal, aimAmount * 1e-8);
 		}
 		resultLists[side + 1].addString(str, DT_VCENTER);
 	}
