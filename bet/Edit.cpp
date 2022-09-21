@@ -95,6 +95,7 @@ LRESULT NumericEdit::wndProc(UINT msg, WPARAM wParam, LPARAM lParam)
 	switch (msg)
 	{
 	case EM_UNDO:
+	case WM_UNDO:
 		{
 			TCHAR temp[10];
 			getText(temp, 10);

@@ -406,6 +406,10 @@ void BetList::drawItem(HDC hDC, int itemID, UINT itemState, ULONG_PTR itemData, 
 		color = GetSysColor(COLOR_WINDOWTEXT);
 	}
 	SetTextColor(hDC, itemState & ODS_SELECTED ? ::GetSysColor(COLOR_HIGHLIGHTTEXT) : color);
+	if (itemID == 0 || itemID == betsSize + 3)
+	{
+		SelectObject(hDC, hBoldFont);
+	}
 	TCHAR sText[30];
 	getText(itemID, sText);
 	BYTE style = itemData & 0xff;

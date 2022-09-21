@@ -16,6 +16,7 @@ extern float xScale;
 extern float yScale;
 extern int listItemHeight;
 extern HFONT hFont;
+extern HFONT hBoldFont;
 
 extern HINSTANCE hInst;
 

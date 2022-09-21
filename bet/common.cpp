@@ -15,6 +15,7 @@ float xScale = 1;
 float yScale = 1;
 int listItemHeight;
 HFONT hFont;
+HFONT hBoldFont;
 
 void loadConfig(Config& cfg)
 {

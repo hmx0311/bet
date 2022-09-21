@@ -10,7 +10,7 @@
 #define BUTTON_ANIMATION_DURATION_LONG  200
 
 #define BUTTON_MARGIN_RATIO 0.08f
-#define PRESSED_SQUEEZE 0.0625f
+#define PRESSED_SQUEEZE 0.03125f
 
 HTHEME hButtonTheme;
 
@@ -185,8 +185,8 @@ void Button::drawButton(HDC hDC, PUSHBUTTONSTATES state, RECT& rcItem)
 		int xSqueeze = 0, ySqueeze = 0;
 		if (state == PBS_PRESSED && (hButtonTheme != nullptr || GetWindowStyle(hButton) & BS_FLAT))
 		{
-			xSqueeze = PRESSED_SQUEEZE * iconWidth;
-			ySqueeze = PRESSED_SQUEEZE * iconHeight;
+			xSqueeze = PRESSED_SQUEEZE * iconWidth + 1;
+			ySqueeze = PRESSED_SQUEEZE * iconHeight + 1;
 		}
 		HBITMAP hBmBuffer = CreateCompatibleBitmap(hDC, iconWidth + 2 * xSqueeze, iconHeight + 2 * ySqueeze);
 		SelectObject(hDCImage, hBmBuffer);

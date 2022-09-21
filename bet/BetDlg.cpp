@@ -332,6 +332,9 @@ void BetDlg::calcPos()
 	LOGFONT logFont;
 	GetObject(hFont, sizeof(LOGFONT), &logFont);
 	listItemHeight = abs(logFont.lfHeight);
+	logFont.lfWeight = FW_BOLD;
+	DeleteObject(hBoldFont);
+	hBoldFont = CreateFontIndirect(&logFont);
 	TAB_HEIGHT = pos.bottom - pos.top - 3;
 	ADD_TAB_Y = pos.bottom - TAB_HEIGHT - 2;
 	TAB_NAME_EDIT_X = TAB_NAME_EDIT_MARGIN_X + 2;
