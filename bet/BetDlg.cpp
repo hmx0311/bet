@@ -213,7 +213,7 @@ INT_PTR BetDlg::dlgProc(UINT msg, WPARAM wParam, LPARAM lParam)
 				currentTab->createDialog(hDlg);
 				ShowWindow(currentTab->getHwnd(), SW_SHOW);
 				TCHAR str[2];
-				_itow(tabId + 1, str, 10);
+				_itot(tabId + 1, str, 10);
 				TCITEM tcItem;
 				tcItem.mask = TCIF_TEXT;
 				tcItem.pszText = str;

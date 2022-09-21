@@ -111,7 +111,7 @@ INT_PTR BetTabDlg::initDlg(HWND hDlg)
 	for (int i = 0; i < 4; i++)
 	{
 		TCHAR str[6];
-		_itow(config.fastAddedAmount[i], str, 10);
+		_itot(config.fastAddedAmount[i], str, 10);
 		addAmountButtons[i].setText(str);
 		addAmountButtons[i + 4].setText(str);
 	}
@@ -126,7 +126,7 @@ INT_PTR BetTabDlg::initDlg(HWND hDlg)
 
 	Button_SetCheck(hWinProbSideLeftSelector, 1);
 	TCHAR str[3];
-	_itow((int)round(config.defaultProbError * 100), str, 10);
+	_itot((int)round(config.defaultProbError * 100), str, 10);
 	winProbErrorEdit.setText(str);
 	winProbError = config.defaultProbError;
 
@@ -331,7 +331,7 @@ INT_PTR BetTabDlg::dlgProc(UINT msg, WPARAM wParam, LPARAM lParam)
 				{
 					amount = 9999999;
 				}
-				_itow(amount, str, 10);
+				_itot(amount, str, 10);
 				amountEdits[side].setText(str);
 				SetFocus(amountEdits[side].getHwnd());
 				return (INT_PTR)TRUE;
