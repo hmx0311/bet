@@ -41,10 +41,10 @@ INT_PTR ConfigDlg::initDlg(HWND hDlg)
 	Button_SetCheck(defaultClosingCheck, oldConfig.defaultClosing);
 	for (int i = 0; i < 4; i++)
 	{
-		_stprintf(str, _T("%d"), oldConfig.fastAddedAmount[i]);
+		_itot(oldConfig.fastAddedAmount[i], str, 10);
 		fastAddedAmountEdit[i].setText(str);
 	}
-	_stprintf(str, _T("%d"), (int)round(oldConfig.defaultProbError * 100));
+	_itot((int)round(oldConfig.defaultProbError * 100), str, 10);
 	defaultProbErrorEdit.setText(str);
 
 	return (INT_PTR)TRUE;  // 除非将焦点设置到控件，否则返回 TRUE
