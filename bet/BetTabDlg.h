@@ -45,6 +45,7 @@ protected:
 	ListBox resultLists[3];
 	Button confirmButtons[3];
 	NumericEdit initialAmountEdit;
+	HWND hRemainingAmountText;
 	HWND hWinProbSideLeftSelector;
 	NumericEdit winProbEdit;
 	NumericEdit winProbErrorEdit;

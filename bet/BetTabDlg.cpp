@@ -82,6 +82,7 @@ INT_PTR BetTabDlg::initDlg(HWND hDlg)
 		hReferenceOddsTexts[i] = GetDlgItem(hDlg, IDC_L_RECOMMEND_BANKER_ODDS_TEXT + i);
 	}
 	initialAmountEdit.attach(GetDlgItem(hDlg, IDC_INITIAL_AMOUNT_EDIT));
+	hRemainingAmountText = GetDlgItem(hDlg, IDC_REMAINING_AMOUNT_TEXT);
 	hWinProbSideLeftSelector = GetDlgItem(hDlg, IDC_L_WIN_PROBABILTY_SIDE_SELECTOR);
 	SendMessage(hWinProbSideLeftSelector, WM_UPDATEUISTATE, MAKEWPARAM(UIS_SET, UISF_HIDEFOCUS), 0);
 	SetWindowSubclass(hWinProbSideLeftSelector, buttonSubclassProc, 0, 0);
@@ -180,8 +181,8 @@ INT_PTR BetTabDlg::dlgProc(UINT msg, WPARAM wParam, LPARAM lParam)
 			return (INT_PTR)TRUE;
 		}
 	case WM_CTLCOLORSTATIC:
-		if ((HWND)lParam == hCurrentProfitTexts[LEFT_SIDE] && model.getProfit(RIGHT_SIDE) - model.getProfit(LEFT_SIDE) > MIN_AMOUNT ||
-			(HWND)lParam == hCurrentProfitTexts[RIGHT_SIDE] && model.getProfit(LEFT_SIDE) - model.getProfit(RIGHT_SIDE) > MIN_AMOUNT)
+		if ((HWND)lParam == hCurrentProfitTexts[LEFT_SIDE] && model.getProfit(RIGHT_SIDE) - model.getProfit(LEFT_SIDE) > 1 ||
+			(HWND)lParam == hCurrentProfitTexts[RIGHT_SIDE] && model.getProfit(LEFT_SIDE) - model.getProfit(RIGHT_SIDE) > 1)
 		{
 			SetTextColor((HDC)wParam, RGB(255, 0, 0));
 			SetBkColor((HDC)wParam, GetSysColor(COLOR_BTNFACE));
@@ -524,11 +525,11 @@ INT_PTR BetTabDlg::dlgProc(UINT msg, WPARAM wParam, LPARAM lParam)
 void BetTabDlg::updateCurrentProfit()
 {
 	TCHAR str[20];
-	_stprintf(str, _T("%lld"), model.getTotalInvest());
+	_i64tot(model.getTotalInvest(), str, 10);
 	SetWindowText(hTotalInvestText, str);
-	_stprintf(str, _T("%lld"), model.getProfit(0));
+	_i64tot(model.getProfit(0), str, 10);
 	SetWindowText(hCurrentProfitTexts[0], str);
-	_stprintf(str, _T("%lld"), model.getProfit(1));
+	_i64tot(model.getProfit(1), str, 10);
 	SetWindowText(hCurrentProfitTexts[1], str);
 	ListBox_ResetContent(resultLists[0].getHwnd());
 	updateMinOdds();
@@ -538,28 +539,37 @@ void BetTabDlg::updateMinOdds()
 {
 	ListBox_ResetContent(resultLists[1].getHwnd());
 	ListBox_ResetContent(resultLists[2].getHwnd());
-	if (initialAmount < model.getTotalInvest() + MIN_AMOUNT || winProb == 0)
+	if (initialAmount > model.getTotalInvest())
 	{
-		for (int i = 0; i < 8; i++)
+		TCHAR str[14];
+		_i64tot(initialAmount - model.getTotalInvest(), str, 10);
+		SetWindowText(hRemainingAmountText, str);
+		if (winProb > 0)
 		{
-			SetWindowText(hReferenceOddsTexts[i], _T("N/A"));
+			double referenceOdds[8]{};
+			model.calcReferenceOdds(initialAmount, winProb, winProbError, referenceOdds);
+			for (int i = 0; i < 8; i++)
+			{
+				if (referenceOdds[i] == 0)
+				{
+					SetWindowText(hReferenceOddsTexts[i], _T("-"));
+				}
+				else
+				{
+					_stprintf(str, _T("%.1f"), referenceOdds[i]);
+					SetWindowText(hReferenceOddsTexts[i], str);
+				}
+			}
+			return;
 		}
-		return;
 	}
-	double referenceOdds[8]{};
-	model.calcReferenceOdds(initialAmount, winProb, winProbError, referenceOdds);
+	else
+	{
+		SetWindowText(hRemainingAmountText, _T("N/A"));
+	}
 	for (int i = 0; i < 8; i++)
 	{
-		if (referenceOdds[i] == 0)
-		{
-			SetWindowText(hReferenceOddsTexts[i], _T("-"));
-		}
-		else
-		{
-			TCHAR str[4];
-			_stprintf(str, _T("%.1f"), referenceOdds[i]);
-			SetWindowText(hReferenceOddsTexts[i], str);
-		}
+		SetWindowText(hReferenceOddsTexts[i], _T("N/A"));
 	}
 }
 
@@ -602,7 +612,7 @@ void BetTabDlg::calcBalanceAimAmount()
 	if (ListBox_FindString(resultLists[0].getHwnd(), -1, str) == LB_ERR)
 	{
 		auto result = model.calcAimAmountBalance(isBet, isBet ? oddsEdits[5].getOdds() : oddsEdits[4].getOdds());
-		if (result.first <= MIN_AMOUNT)
+		if (result.first <= 0)
 		{
 			lstrcat(str, _T("     收益已平衡"));
 		}
@@ -706,7 +716,7 @@ void BetTabDlg::disconnectCalculator()
 void BetTabDlg::calcAimAmount(int side)
 {
 	bool isBet = Button_GetCheck(hBankerBetSelectors[2 * side + 7]);
-	if (initialAmount < model.getTotalInvest() + MIN_AMOUNT)
+	if (initialAmount <= model.getTotalInvest())
 	{
 		if (ListBox_FindString(resultLists[side + 1].getHwnd(), -1, _T("初始数量过低")) == -1)
 		{

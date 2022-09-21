@@ -100,6 +100,7 @@
 #define IDC_FAST_ADDED_AMOUNT_EDIT4     1084
 #define IDC_DEFAULT_PROBABILTY_ERROR_EDIT 1085
 #define IDC_WIN_PROBABILITY_CALCULATOR_BUTTON 1086
+#define IDC_REMAINING_AMOUNT_TEXT       1087
 #define ID_CONFIRM                      32771
 #define ID_CANCEL                       32772
 #define ID_DELETE                       32773
@@ -112,7 +113,7 @@
 #define _APS_NO_MFC                     1
 #define _APS_NEXT_RESOURCE_VALUE        134
 #define _APS_NEXT_COMMAND_VALUE         32774
-#define _APS_NEXT_CONTROL_VALUE         1086
+#define _APS_NEXT_CONTROL_VALUE         1088
 #define _APS_NEXT_SYMED_VALUE           101
 #endif
 #endif

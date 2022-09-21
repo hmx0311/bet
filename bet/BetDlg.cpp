@@ -218,7 +218,7 @@ INT_PTR BetDlg::dlgProc(UINT msg, WPARAM wParam, LPARAM lParam)
 				tcItem.mask = TCIF_TEXT;
 				tcItem.pszText = str;
 				TabCtrl_InsertItem(hBetTab, tabId, &tcItem);
-				TabCtrl_SetCurSel(hBetTab, tabId, 0);
+				TabCtrl_SetCurSel(hBetTab, tabId);
 				SetWindowPos(hTabNameEdit, HWND_TOP, TAB_NAME_EDIT_X + tabId * TAB_WIDTH, TAB_NAME_EDIT_Y, 0, 0, SWP_NOSIZE | SWP_SHOWWINDOW);
 				SetFocus(hTabNameEdit);
 				return (INT_PTR)TRUE;

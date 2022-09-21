@@ -1,7 +1,6 @@
 #pragma once
 
 #define CONFIG_FILE_NAME _T("bet.cfg")
-#define MIN_AMOUNT 10
 
 struct Config
 {
