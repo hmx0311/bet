@@ -121,6 +121,8 @@ INT_PTR BetTabDlg::initDlg(HWND hDlg)
 	clearAmountButtons[0].setBkgBrush(GetSysColorBrush(COLOR_WINDOW));
 	clearAmountButtons[1].setIcon(hClearIcon);
 	clearAmountButtons[1].setBkgBrush(GetSysColorBrush(COLOR_WINDOW));
+	Edit_LimitText(amountEdits[0].getHwnd(), 7);
+	Edit_LimitText(amountEdits[1].getHwnd(), 7);
 	allBoughtButton.setIcon(hTickIcon);
 	winProbCalculatorButton.setIcon(hCalculatorIcon);
 

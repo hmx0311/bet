@@ -200,23 +200,23 @@ LRESULT BetList::wndProc(UINT msg, WPARAM wParam, LPARAM lParam)
 			SetFocus(boughtEdit->getHwnd());
 			return (LRESULT)TRUE;
 		}
-	case WM_RBUTTONDOWN:
+	case WM_CONTEXTMENU:
 		{
 			int curSel = getCurSel();
-			if (wParam & MK_LBUTTON || getCurSel() < 0)
+			if (curSel < 0)
 			{
 				return (LRESULT)TRUE;
 			}
 			RECT rect;
 			getItemRect(curSel, &rect);
-			POINT pos = { GET_X_LPARAM(lParam),GET_Y_LPARAM(lParam) };
+			MapWindowRect(hListBox, HWND_DESKTOP, &rect);
+			POINT pos = { lParam == -1 ? (rect.left + rect.right) / 2 : GET_X_LPARAM(lParam),lParam == -1 ? (rect.top + rect.bottom) / 2 : GET_Y_LPARAM(lParam) };
 			if (!PtInRect(&rect, pos))
 			{
 				return (LRESULT)TRUE;
 			}
-			ClientToScreen(hListBox, &pos);
 			HMENU menu = CreatePopupMenu();
-			AppendMenu(menu, 0, ID_DELETE, _T("É¾³ý"));
+			AppendMenu(menu, 0, ID_DELETE, _T("É¾³ý(&D)"));
 			TrackPopupMenu(menu, 0, pos.x, pos.y, 0, GetParent(hListBox), nullptr);
 			DestroyMenu(menu);
 			return (LRESULT)TRUE;

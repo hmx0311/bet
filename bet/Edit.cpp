@@ -9,23 +9,62 @@
 
 using namespace std;
 
-void getVCenteredRect(HWND hEdit, PRECT pRect)
-{
-	GetClientRect(hEdit, pRect);
-	LOGFONT logFont;
-	GetObject(hFont, sizeof(LOGFONT), &logFont);
-	pRect->top = 0.5f * (pRect->bottom - pRect->top - (abs(logFont.lfHeight) + 1.5f));
-}
-
 void setVCentered(HWND hEdit)
 {
 	RECT rcVCentered;
-	getVCenteredRect(hEdit, &rcVCentered);
+	GetClientRect(hEdit, &rcVCentered);
+	LOGFONT logFont;
+	GetObject(hFont, sizeof(LOGFONT), &logFont);
+	rcVCentered.top = 0.5f * (rcVCentered.bottom - rcVCentered.top - (abs(logFont.lfHeight) + 1.5f));
 	Edit_SetRectNoPaint(hEdit, &rcVCentered);
 }
 
 LRESULT CALLBACK editSubclassProc(HWND hEdit, UINT msg, WPARAM wParam, LPARAM lParam, UINT_PTR uIdSubclass, DWORD_PTR dwRefData)
 {
+	switch (msg)
+	{
+	case WM_CONTEXTMENU:
+		{
+			RECT rect;
+			GetWindowRect(hEdit, &rect);
+			POINT pos = { lParam == -1 ? (rect.left + rect.right) / 2 : GET_X_LPARAM(lParam),lParam == -1 ? (rect.top + rect.bottom) / 2 : GET_Y_LPARAM(lParam) };
+			HMENU hMenu = CreatePopupMenu();
+			DWORD sel = Edit_GetSel(hEdit);
+			AppendMenu(hMenu, Edit_CanUndo(hEdit) ? MF_ENABLED : MF_GRAYED, 1, _T("³·Ïú(&U)"));
+			AppendMenu(hMenu, MF_SEPARATOR, 0, nullptr);
+			AppendMenu(hMenu, HIWORD(sel) == LOWORD(sel) ? MF_GRAYED : MF_ENABLED, 2, _T("¼ôÇÐ(&T)"));
+			AppendMenu(hMenu, HIWORD(sel) == LOWORD(sel) ? MF_GRAYED : MF_ENABLED, 3, _T("¸´ÖÆ(&C)"));
+			OpenClipboard(hEdit);
+			AppendMenu(hMenu, GetClipboardData(CF_TEXT) == nullptr ? MF_GRAYED : MF_ENABLED, 4, _T("Õ³Ìù(&P)"));
+			CloseClipboard();
+			AppendMenu(hMenu, HIWORD(sel) == LOWORD(sel) ? MF_GRAYED : MF_ENABLED, 5, _T("É¾³ý(&D)"));
+			AppendMenu(hMenu, MF_SEPARATOR, 0, nullptr);
+			AppendMenu(hMenu, LOWORD(sel) == 0 && HIWORD(sel) == GetWindowTextLength(hEdit) ? MF_GRAYED : MF_ENABLED, 6, _T("È«Ñ¡(&A)"));
+			switch (TrackPopupMenu(hMenu, TPM_NONOTIFY | TPM_RETURNCMD, pos.x, pos.y, 0, hEdit, nullptr))
+			{
+			case 1:
+				Edit_Undo(hEdit);
+				break;
+			case 2:
+				SendMessage(hEdit, WM_CUT, 0, 0);
+				break;
+			case 3:
+				SendMessage(hEdit, WM_COPY, 0, 0);
+				break;
+			case 4:
+				SendMessage(hEdit, WM_PASTE, 0, 0);
+				break;
+			case 5:
+				Edit_ReplaceSel(hEdit, _T(""));
+				break;
+			case 6:
+				Edit_SetSel(hEdit, 0, INT_MAX);
+				break;
+			}
+			DestroyMenu(hMenu);
+			return (LRESULT)TRUE;
+		}
+	}
 	Edit* edit = (Edit*)GetWindowLongPtr(hEdit, GWLP_USERDATA);
 	LRESULT result = edit == nullptr ? DefSubclassProc(hEdit, msg, wParam, lParam) : edit->wndProc(msg, wParam, lParam);
 	switch (msg)
@@ -94,11 +133,16 @@ LRESULT NumericEdit::wndProc(UINT msg, WPARAM wParam, LPARAM lParam)
 {
 	switch (msg)
 	{
-	case EM_UNDO:
-	case WM_UNDO:
+	case EM_CANUNDO:
 		{
-			TCHAR temp[10];
-			getText(temp, 10);
+			TCHAR temp[20];
+			getText(temp, 20);
+			return (!curUndo.empty() && (lstrcmp(temp, curUndo.c_str()) != 0 || !lastUndo.empty()));
+		}
+	case EM_UNDO:
+		{
+			TCHAR temp[20];
+			getText(temp, 20);
 			if (curUndo.empty())
 			{
 				curUndo = temp;
@@ -219,16 +263,13 @@ void AmountEdit::attach(HWND hEdit, HWND hBankerOddsEdit, HWND hBetOddsEdit, HWN
 	this->hBankerSelector = hBankerSelector;
 	SetWindowLongPtr(hEdit, GWLP_USERDATA, (LONG_PTR)this);
 	SetWindowSubclass(hEdit, editSubclassProc, 0, 0);
-	initRect();
+	setVCentered(hEdit);
 }
 
 LRESULT AmountEdit::wndProc(UINT msg, WPARAM wParam, LPARAM lParam)
 {
 	switch (msg)
 	{
-	case WM_DPICHANGED_AFTERPARENT:
-		initRect();
-		return (LRESULT)TRUE;
 	case WM_KEYDOWN:
 	case WM_KEYUP:
 		switch (LOWORD(wParam))
@@ -244,14 +285,6 @@ LRESULT AmountEdit::wndProc(UINT msg, WPARAM wParam, LPARAM lParam)
 		break;
 	}
 	return NumericEdit::wndProc(msg, wParam, lParam);
-}
-
-void AmountEdit::initRect()
-{
-	RECT reVCentered;
-	getVCenteredRect(hEdit, &reVCentered);
-	reVCentered.right -= reVCentered.bottom - reVCentered.top;
-	Edit_SetRectNoPaint(hEdit, &reVCentered);
 }
 
 

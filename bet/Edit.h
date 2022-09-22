@@ -43,8 +43,6 @@ private:
 public:
 	void attach(HWND hEdit, HWND hBankerOddsEdit, HWND hBetOddsEdit, HWND hBankerSelector);
 	virtual LRESULT wndProc(UINT msg, WPARAM wParam, LPARAM lParam);
-private:
-	void initRect();
 };
 
 class OddsEdit :

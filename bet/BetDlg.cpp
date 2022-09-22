@@ -140,43 +140,6 @@ INT_PTR BetDlg::dlgProc(UINT msg, WPARAM wParam, LPARAM lParam)
 				SetFocus(currentTab->getHwnd());
 			}
 			return (INT_PTR)TRUE;
-		case ID_DELETE:
-			{
-				int tabId = TabCtrl_GetCurSel(hBetTab);
-				TCITEM cItem;
-				TCHAR tabName[30];
-				cItem.mask = TCIF_TEXT;
-				cItem.pszText = tabName;
-				cItem.cchTextMax = 30;
-				TabCtrl_GetItem(hBetTab, tabId, &cItem);
-				TCHAR str[50];
-				_stprintf(str, _T("È·¶¨ÒªÉ¾³ý¾º²Â¡°%s¡±Âð£¿"), tabName);
-				if (MessageBox(hDlg, str, _T("bet"), MB_YESNO | MB_ICONQUESTION) != IDYES)
-				{
-					return (INT_PTR)TRUE;
-				}
-				if (betTabs.size() == MAX_TAB)
-				{
-					ShowWindow(addTabButton.getHwnd(), SW_SHOW);
-				}
-				else
-				{
-					SetWindowPos(addTabButton.getHwnd(), HWND_TOP, ADD_TAB_X + (betTabs.size() - 2) * TAB_WIDTH, ADD_TAB_Y, 0, 0, SWP_NOSIZE);
-				}
-				betTabs.erase(betTabs.begin() + tabId);
-				TabCtrl_DeleteItem(hBetTab, tabId);
-				if (tabId == betTabs.size())
-				{
-					tabId--;
-				}
-				DestroyWindow(currentTab->getHwnd());
-				delete currentTab;
-				currentTab = betTabs[tabId];
-				ShowWindow(currentTab->getHwnd(), SW_SHOW);
-				SetFocus(currentTab->getHwnd());
-				TabCtrl_SetCurSel(hBetTab, tabId);
-				return (INT_PTR)TRUE;
-			}
 		case IDC_TAB_NAME_EDIT:
 			if (HIWORD(wParam) == EN_KILLFOCUS)
 			{
@@ -281,19 +244,51 @@ INT_PTR BetDlg::dlgProc(UINT msg, WPARAM wParam, LPARAM lParam)
 				}
 				POINT cursorPos;
 				GetCursorPos(&cursorPos);
+				int tabId = TabCtrl_GetCurSel(hBetTab);
 				RECT rcSelTab;
-				TabCtrl_GetItemRect(hBetTab, TabCtrl_GetCurSel(hBetTab), &rcSelTab);
-				ScreenToClient(hBetTab, &cursorPos);
-
+				TabCtrl_GetItemRect(hBetTab, tabId, &rcSelTab);
+				MapWindowRect(hBetTab, HWND_DESKTOP, &rcSelTab);
 				if (PtInRect(&rcSelTab, cursorPos))
 				{
-					ClientToScreen(hBetTab, &cursorPos);
-					HMENU menu = CreatePopupMenu();
-					AppendMenu(menu, (betTabs.size() > 1 ? MF_ENABLED : MF_GRAYED), ID_DELETE, _T("É¾³ý¾º²Â"));
-					TrackPopupMenu(menu, TPM_BOTTOMALIGN, cursorPos.x, cursorPos.y, 0, hDlg, nullptr);
-					DestroyMenu(menu);
+					HMENU hMenu = CreatePopupMenu();
+					AppendMenu(hMenu, (betTabs.size() > 1 ? MF_ENABLED : MF_GRAYED), 1, _T("É¾³ý¾º²Â(&D)"));
+					if (TrackPopupMenu(hMenu, TPM_BOTTOMALIGN | TPM_NONOTIFY | TPM_RETURNCMD, cursorPos.x, cursorPos.y, 0, hDlg, nullptr) == 1)
+					{
+						TCITEM cItem;
+						TCHAR tabName[30];
+						cItem.mask = TCIF_TEXT;
+						cItem.pszText = tabName;
+						cItem.cchTextMax = 30;
+						TabCtrl_GetItem(hBetTab, tabId, &cItem);
+						TCHAR str[50];
+						_stprintf(str, _T("È·¶¨ÒªÉ¾³ý¾º²Â¡°%s¡±Âð£¿"), tabName);
+						if (MessageBox(hDlg, str, _T("bet"), MB_YESNO | MB_ICONQUESTION) == IDYES)
+						{
+							if (betTabs.size() == MAX_TAB)
+							{
+								ShowWindow(addTabButton.getHwnd(), SW_SHOW);
+							}
+							else
+							{
+								SetWindowPos(addTabButton.getHwnd(), HWND_TOP, ADD_TAB_X + (betTabs.size() - 2) * TAB_WIDTH, ADD_TAB_Y, 0, 0, SWP_NOSIZE);
+							}
+							betTabs.erase(betTabs.begin() + tabId);
+							TabCtrl_DeleteItem(hBetTab, tabId);
+							if (tabId == betTabs.size())
+							{
+								tabId--;
+							}
+							DestroyWindow(currentTab->getHwnd());
+							delete currentTab;
+							currentTab = betTabs[tabId];
+							ShowWindow(currentTab->getHwnd(), SW_SHOW);
+							SetFocus(currentTab->getHwnd());
+							TabCtrl_SetCurSel(hBetTab, tabId);
+						}
+					}
+					DestroyMenu(hMenu);
 				}
-				(INT_PTR)TRUE;
+				return (INT_PTR)TRUE;
 			}
 		}
 		break;
