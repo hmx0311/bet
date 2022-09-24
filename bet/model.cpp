@@ -7,7 +7,7 @@ using namespace std;
 
 constexpr double DBL_PRECISION_COMPENSATE = 1 + 40 * DBL_EPSILON;
 
-Bet::Bet(double odds, int amount) :amount(amount), profit(amount* config.cut* odds* DBL_PRECISION_COMPENSATE)
+Bet::Bet(double odds, int amount, double cut) :amount(amount), profit(amount* cut* odds* DBL_PRECISION_COMPENSATE)
 {
 	_stprintf(show, _T("%0.1f  %7d"), odds, amount);
 }
@@ -17,10 +17,10 @@ Banker::Banker(double odds, int amount) : odds(odds), amount(amount), maxBought(
 	_stprintf(show, _T("%0.1f %7d       0"), odds, amount);
 }
 
-void Banker::changeBought(int newBought)
+void Banker::changeBought(int newBought, double cut)
 {
 	bought = newBought;
-	profit = bought / odds * config.cut * DBL_PRECISION_COMPENSATE;
+	profit = bought / odds * cut * DBL_PRECISION_COMPENSATE;
 	_stprintf(show, _T("%0.1f %7d %7d"), odds, amount, bought);
 }
 
@@ -62,21 +62,23 @@ long long Model::IntervalSumTree::total()
 	return amount[1];
 }
 
-Model::Model() :haveClosing(config.defaultClosing) {}
+Model::Model(double cut) :cut(cut), haveClosing(config.defaultClosing) {}
 
-void Model::addBet(bool side, Bet& bet)
+Bet& Model::addBet(bool side, double odds, int amount)
 {
-	totalInvest += bet.amount;
+	bets[side].emplace_back(odds, amount, cut);
+	Bet& bet = bets[side].back();
+	totalInvest += amount;
 	profit[side] += bet.profit;
 	profit[!side] -= bet.amount;
-	bets[side].push_back(bet);
+	return bet;
 }
 
 void Model::addBanker(bool side, Banker& banker)
 {
 	totalInvest += banker.amount;
 	int oddsIdx = round(10 * banker.odds);
-	potentialProfit[side][0].deltaUpdate(oddsIdx, banker.maxBought / banker.odds * config.cut * DBL_PRECISION_COMPENSATE);
+	potentialProfit[side][0].deltaUpdate(oddsIdx, banker.maxBought / banker.odds * cut * DBL_PRECISION_COMPENSATE);
 	potentialProfit[side][1].deltaUpdate(oddsIdx, -banker.maxBought);
 	if (!haveClosing)
 	{
@@ -108,7 +110,7 @@ const Banker& Model::changeBought(bool side, int index, int amount)
 	}
 	potentialProfit[side][1].deltaUpdate(oddsIdx, amount - banker.bought);
 	int porfitDiff = -banker.profit;
-	banker.changeBought(amount);
+	banker.changeBought(amount, cut);
 	porfitDiff += banker.profit;
 	profit[side] += porfitDiff;
 	potentialProfit[side][0].deltaUpdate(oddsIdx, -porfitDiff);
@@ -140,7 +142,7 @@ void Model::deleteBanker(bool side, int index)
 	totalInvest -= banker->amount;
 	int oddsIdx = round(10 * banker->odds);
 	profit[side] -= banker->profit;
-	potentialProfit[side][0].deltaUpdate(oddsIdx, banker->profit - int(int(banker->amount / banker->odds) * config.cut));
+	potentialProfit[side][0].deltaUpdate(oddsIdx, banker->profit - int(int(banker->amount / banker->odds) * cut));
 	profit[!side] += haveClosing ? banker->bought : banker->maxBought;
 	potentialProfit[side][1].deltaUpdate(oddsIdx, banker->maxBought - banker->bought);
 	bankers[side].erase(banker);
@@ -198,7 +200,7 @@ pair<long long, long long> Model::calcAimAmountBalance(bool isBet, double odds)
 		}
 	}
 	difference += balancedProfit;
-	long long aimAmount = round(difference / (config.cut * (isBet ? odds : 1 / odds) + 1));
+	long long aimAmount = round(difference / (cut * (isBet ? odds : 1 / odds) + 1));
 	if (aimAmount <= 0)
 	{
 		return { 0,0 };
@@ -222,7 +224,7 @@ void Model::calcReferenceOdds(long long initialAmount, double winProb, double wi
 		double correctedWinProb = winProb - winProbError;
 		for (int j = 0; j < 2;)
 		{
-			int odds10 = 10 / DBL_PRECISION_COMPENSATE * config.cut * (correctedWinProb * loseAmount) / ((1 - correctedWinProb) * winAmount);
+			int odds10 = 10 / DBL_PRECISION_COMPENSATE * cut * (correctedWinProb * loseAmount) / ((1 - correctedWinProb) * winAmount);
 			if (odds10 > 99)
 			{
 				odds10 = 99;
@@ -251,7 +253,7 @@ void Model::calcReferenceOdds(long long initialAmount, double winProb, double wi
 		correctedWinProb = winProb - winProbError;
 		for (int j = 2; j < 4;)
 		{
-			int odds10 = ceil(10 / config.cut * ((1 - correctedWinProb) * winAmount) / (correctedWinProb * loseAmount));
+			int odds10 = ceil(10 / cut * ((1 - correctedWinProb) * winAmount) / (correctedWinProb * loseAmount));
 			if (odds10 > 99)
 			{
 				j++;
@@ -304,7 +306,7 @@ long long Model::calcAimAmountProb(long long initialAmount, double winProb, doub
 			loseAmount += potentialProfit[side][1].getSum(round(10 * odds), 100);
 		}
 	}
-	double equivalentOdds = config.cut * (isBet ? odds : 1 / odds);
+	double equivalentOdds = cut * (isBet ? odds : 1 / odds);
 	long long aimAmount;
 	if (loseAmount - winAmount <= 1)
 	{

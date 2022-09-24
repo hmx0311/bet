@@ -69,6 +69,9 @@
     <ClInclude Include="listBox.h">
       <Filter>头文件\controls</Filter>
     </ClInclude>
+    <ClInclude Include="CutInputDlg.h">
+      <Filter>头文件\dialogs</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="bet.cpp">
@@ -103,6 +106,9 @@
     </ClCompile>
     <ClCompile Include="listBox.cpp">
       <Filter>源文件\controls</Filter>
+    </ClCompile>
+    <ClCompile Include="CutInputDlg.cpp">
+      <Filter>源文件\dialogs</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

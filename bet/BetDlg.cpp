@@ -45,28 +45,31 @@ INT_PTR BetDlg::initDlg(HWND hDlg)
 
 	calcPos();
 
-	currentTab = new BetTabDlg;
-	currentTab->createDialog(hDlg);
-	betTabs.push_back(currentTab);
-	ShowWindow(currentTab->getHwnd(), SW_SHOW);
-	calcBetTabPos();
-
 	INITCOMMONCONTROLSEX icex = { sizeof(icex),ICC_STANDARD_CLASSES };
 	InitCommonControlsEx(&icex);
 	hTabNameEdit = CreateWindowEx(WS_EX_STATICEDGE, WC_EDIT, _T(""),
 		WS_CHILD | WS_VISIBLE | ES_CENTER | ES_MULTILINE,
 		TAB_NAME_EDIT_X, TAB_NAME_EDIT_Y, TAB_NAME_EDIT_WIDTH, TAB_NAME_EDIT_HEIGHT,
 		hDlg, (HMENU)IDC_TAB_NAME_EDIT, hInst, nullptr);
-
 	SetWindowSubclass(hTabNameEdit, editSubclassProc, 0, 0);
-
 
 	hButtonTheme = OpenThemeData(settingsButton.getHwnd(), _T("Button"));
 
 	settingsButton.setIcon((HICON)LoadImage(hInst, MAKEINTRESOURCE(IDI_SETTINGS), IMAGE_ICON, 0, 0, LR_SHARED));
-
 	TCHAR settingsTipText[] = _T("设置");
 	createToolTip(settingsButton.getHwnd(), hDlg, settingsTipText);
+
+
+	SetWindowPos(hTabNameEdit, HWND_TOP, 0, 0, 0, 0, SWP_NOMOVE | SWP_NOSIZE);
+	SetWindowFont(hTabNameEdit, (WPARAM)hFont, FALSE);
+	setVCentered(hTabNameEdit);
+
+	ShowWindow(hDlg, SW_SHOW);
+
+	currentTab = new BetTabDlg();
+	currentTab->createDialog(hDlg);
+	betTabs.push_back(currentTab);
+	calcBetTabPos();
 
 	TCITEM tcItem;
 	tcItem.mask = TCIF_TEXT;
@@ -74,16 +77,10 @@ INT_PTR BetDlg::initDlg(HWND hDlg)
 	tcItem.pszText = tabName;
 	TabCtrl_InsertItem(hBetTab, 0, &tcItem);
 
-	SetWindowPos(addTabButton.getHwnd(), HWND_TOP, ADD_TAB_X, ADD_TAB_Y, 0, 0, SWP_NOSIZE);
+	SetWindowPos(addTabButton.getHwnd(), HWND_TOP, ADD_TAB_X, ADD_TAB_Y, 0, 0, SWP_NOSIZE | SWP_SHOWWINDOW);
 
-	SetWindowPos(hTabNameEdit, HWND_TOP, 0, 0, 0, 0, SWP_NOMOVE | SWP_NOSIZE);
-	SetWindowFont(hTabNameEdit, (WPARAM)hFont, FALSE);
-	setVCentered(hTabNameEdit);
+	ShowWindow(hTabNameEdit, SW_SHOW);
 	SetFocus(hTabNameEdit);
-
-	TCHAR str[10];
-	_stprintf(str, _T("抽水:%.1f%%"), (1 - config.cut) * 100);
-	SetDlgItemTextW(hDlg, IDC_CUT_TEXT, str);
 	return (INT_PTR)FALSE;
 }
 
@@ -171,7 +168,7 @@ INT_PTR BetDlg::dlgProc(UINT msg, WPARAM wParam, LPARAM lParam)
 					SetWindowPos(addTabButton.getHwnd(), HWND_TOP, ADD_TAB_X + tabId * TAB_WIDTH, ADD_TAB_Y, 0, 0, SWP_NOSIZE);
 				}
 				ShowWindow(currentTab->getHwnd(), SW_HIDE);
-				currentTab = new BetTabDlg;
+				currentTab = new BetTabDlg();
 				betTabs.push_back(currentTab);
 				currentTab->createDialog(hDlg);
 				ShowWindow(currentTab->getHwnd(), SW_SHOW);
@@ -264,14 +261,7 @@ INT_PTR BetDlg::dlgProc(UINT msg, WPARAM wParam, LPARAM lParam)
 						_stprintf(str, _T("确定要删除竞猜“%s”吗？"), tabName);
 						if (MessageBox(hDlg, str, _T("bet"), MB_YESNO | MB_ICONQUESTION) == IDYES)
 						{
-							if (betTabs.size() == MAX_TAB)
-							{
-								ShowWindow(addTabButton.getHwnd(), SW_SHOW);
-							}
-							else
-							{
-								SetWindowPos(addTabButton.getHwnd(), HWND_TOP, ADD_TAB_X + (betTabs.size() - 2) * TAB_WIDTH, ADD_TAB_Y, 0, 0, SWP_NOSIZE);
-							}
+							SetWindowPos(addTabButton.getHwnd(), HWND_TOP, ADD_TAB_X + (betTabs.size() - 2) * TAB_WIDTH, ADD_TAB_Y, 0, 0, SWP_NOSIZE | SWP_SHOWWINDOW);
 							betTabs.erase(betTabs.begin() + tabId);
 							TabCtrl_DeleteItem(hBetTab, tabId);
 							if (tabId == betTabs.size())

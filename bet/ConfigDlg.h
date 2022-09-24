@@ -8,9 +8,9 @@ class ConfigDlg :
 	public Dialog
 {
 private:
-	Config oldConfig;
-	NumericEdit cutEdit;
-	HWND defaultClosingCheck;
+	HWND hDefaultCutCombo;
+	NumericEdit defaultCutEdit;
+	HWND hDefaultClosingCheck;
 	NumericEdit fastAddedAmountEdit[4];
 	NumericEdit defaultProbErrorEdit;
 public:

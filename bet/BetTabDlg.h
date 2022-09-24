@@ -22,7 +22,7 @@ private:
 	bool winProbSide = 0;
 	double winProb = 0;
 	double winProbError = 0;
-	Model model;
+	Model* model=nullptr;
 
 	HWND hProbCalculator = nullptr;
 	HICON hProbCalculatorIcon = nullptr;

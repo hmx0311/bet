@@ -14,6 +14,8 @@
 #define IDI_TICK                        131
 #define IDI_CALCULATOR                  132
 #define IDI_SETTINGS                    133
+#define IDD_CUT_INPUT_DIALOG            134
+#define IDD_INPUT_CUT_DIALOG            134
 #define IDC_SETTINGS_BUTTON             1000
 #define IDC_CUT_TEXT                    1001
 #define IDC_BET_TAB                     1002
@@ -92,7 +94,7 @@
 #define IDC_R_RESULT_LIST               1076
 #define IDC_L_CONFIRM_BUTTON            1077
 #define IDC_R_CONFIRM_BUTTON            1078
-#define IDC_CUT_EDIT                    1079
+#define IDC_DEFAULT_CUT_EDIT            1079
 #define IDC_DEFAULT_CLOSING_CHECK       1080
 #define IDC_FAST_ADDED_AMOUNT_EDIT1     1081
 #define IDC_FAST_ADDED_AMOUNT_EDIT2     1082
@@ -101,6 +103,8 @@
 #define IDC_DEFAULT_PROBABILTY_ERROR_EDIT 1085
 #define IDC_WIN_PROBABILITY_CALCULATOR_BUTTON 1086
 #define IDC_REMAINING_AMOUNT_TEXT       1087
+#define IDC_DEFAULT_CUT_COMBO           1088
+#define IDC_CUT_EDIT                    1089
 #define ID_CONFIRM                      32771
 #define ID_CANCEL                       32772
 #define ID_DELETE                       32773
@@ -111,9 +115,9 @@
 #ifdef APSTUDIO_INVOKED
 #ifndef APSTUDIO_READONLY_SYMBOLS
 #define _APS_NO_MFC                     1
-#define _APS_NEXT_RESOURCE_VALUE        134
+#define _APS_NEXT_RESOURCE_VALUE        135
 #define _APS_NEXT_COMMAND_VALUE         32774
-#define _APS_NEXT_CONTROL_VALUE         1088
+#define _APS_NEXT_CONTROL_VALUE         1090
 #define _APS_NEXT_SYMED_VALUE           101
 #endif
 #endif

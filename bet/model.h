@@ -9,7 +9,7 @@ struct Bet
 	int profit = 0;
 	TCHAR show[13];
 
-	Bet(double odds, int amount);
+	Bet(double odds, int amount, double cut);
 };
 
 struct Banker
@@ -22,7 +22,7 @@ struct Banker
 	TCHAR show[20];
 
 	Banker(double odds, int amount);
-	void changeBought(int newBought);
+	void changeBought(int newBought, double cut);
 };
 
 class Model
@@ -40,6 +40,7 @@ private:
 		long long total();
 	};
 
+	double cut;
 	long long totalInvest = 0;
 	long long profit[2] = { 0,0 };
 	std::vector<Bet> bets[2];
@@ -50,8 +51,8 @@ private:
 	IntervalSumTree potentialProfit[2][2];
 
 public:
-	Model();
-	void addBet(bool side, Bet& bet);
+	Model(double cut);
+	Bet& addBet(bool side, double odds, int amount);
 	void addBanker(bool side, Banker& banker);
 	const Banker& allBought(bool side, int index);
 	const Banker& changeBought(bool side, int index, int amount);

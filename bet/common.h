@@ -4,7 +4,8 @@
 
 struct Config
 {
-	double cut;
+	double defaultCut;
+	bool useDefaultCut;
 	bool defaultClosing;
 	int fastAddedAmount[4];
 	double defaultProbError;

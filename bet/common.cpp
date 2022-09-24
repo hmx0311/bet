@@ -7,6 +7,7 @@ using namespace std;
 
 #define DEFAULT_CONFIG {1,\
 						false,\
+						false,\
 						1000,5000,10000,50000,\
 						0}
 
@@ -23,7 +24,7 @@ void loadConfig(Config& cfg)
 	if (file.good())
 	{
 		if (file.read((char*)&cfg, sizeof(Config)).good() &&
-			cfg.cut > 0 && cfg.cut <= 1 &&
+			cfg.defaultCut > 0 && cfg.defaultCut <= 1 &&
 			cfg.fastAddedAmount[0] > 0 && cfg.fastAddedAmount[0] < 100000 &&
 			cfg.fastAddedAmount[1] > 0 && cfg.fastAddedAmount[1] < 100000 &&
 			cfg.fastAddedAmount[2] > 0 && cfg.fastAddedAmount[2] < 100000 &&
