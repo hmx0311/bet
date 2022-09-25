@@ -85,7 +85,7 @@ INT_PTR ConfigDlg::dlgProc(UINT msg, WPARAM wParam, LPARAM lParam)
 				for (int i = 0; i < 4; i++)
 				{
 					fastAddedAmountEdit[i].getText(str, 6);
-					int amount = _wtoi(str);
+					int amount = _ttoi(str);
 					if (amount == 0)
 					{
 						SetFocus(fastAddedAmountEdit[i].getHwnd());
@@ -95,22 +95,19 @@ INT_PTR ConfigDlg::dlgProc(UINT msg, WPARAM wParam, LPARAM lParam)
 					newConfig.fastAddedAmount[i] = amount;
 				}
 				defProbErrorEdit.getText(str, 6);
-				newConfig.defProbError = _wtoi(str) / 100.0;
-				if (memcmp(&newConfig, &config, sizeof(Config)) != 0)
+				newConfig.defProbError = _ttoi(str) / 100.0;
+				ofstream file(CONFIG_FILE_NAME, ios::out | ios::binary);
+				while (file.fail())
 				{
-					ofstream file(CONFIG_FILE_NAME, ios::out | ios::binary);
-					while (file.fail())
+					if (MessageBox(hDlg, _T("无法写入文件\"") CONFIG_FILE_NAME _T("\""), _T("bet设置"), MB_RETRYCANCEL | MB_ICONERROR) != IDRETRY)
 					{
-						if (MessageBox(hDlg, _T("无法写入文件\"") CONFIG_FILE_NAME _T("\""), _T("bet设置"), MB_RETRYCANCEL | MB_ICONERROR) != IDRETRY)
-						{
-							return (INT_PTR)TRUE;
-						}
-						file.open(CONFIG_FILE_NAME, ios::out | ios::binary);
+						return (INT_PTR)TRUE;
 					}
-					file.write((char*)&newConfig, sizeof(Config));
-					file.close();
-					config = newConfig;
+					file.open(CONFIG_FILE_NAME, ios::out | ios::binary);
 				}
+				file.write((char*)&newConfig, sizeof(Config));
+				file.close();
+				config = newConfig;
 				MessageBox(hDlg, _T("设置已更改，将应用于新竞猜"), _T("bet设置"), MB_OK | MB_ICONINFORMATION);
 			}
 		case IDCANCEL:

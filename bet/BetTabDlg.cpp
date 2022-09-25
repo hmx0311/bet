@@ -329,7 +329,7 @@ INT_PTR BetTabDlg::dlgProc(UINT msg, WPARAM wParam, LPARAM lParam)
 				int side = LOWORD(wParam) > IDC_L_ADD_AMOUNT_BUTTON4;
 				TCHAR str[8];
 				amountEdits[side].getText(str, 8);
-				int amount = _wtoi(str) + config.fastAddedAmount[(LOWORD(wParam) - IDC_L_ADD_AMOUNT_BUTTON1) & 3];
+				int amount = _ttoi(str) + config.fastAddedAmount[(LOWORD(wParam) - IDC_L_ADD_AMOUNT_BUTTON1) & 3];
 				if (amount > 9999999)
 				{
 					amount = 9999999;
@@ -366,7 +366,7 @@ INT_PTR BetTabDlg::dlgProc(UINT msg, WPARAM wParam, LPARAM lParam)
 						return (INT_PTR)TRUE;
 					}
 					int lineIdx = betLists[selSide].getCurSel();
-					const Banker& banker = model.changeBought(selSide, lineIdx - betLists[selSide].getBetsSize() - 5, _wtoi(str));
+					const Banker& banker = model.changeBought(selSide, lineIdx - betLists[selSide].getBetsSize() - 5, _ttoi(str));
 					betLists[selSide].updateBanker(lineIdx, banker.show, banker.maxBought == banker.bought ? GetSysColor(COLOR_WINDOWTEXT) : RGB(255, 0, 0));
 					updateCurrentProfit();
 					return (INT_PTR)TRUE;
@@ -584,7 +584,7 @@ void BetTabDlg::add(int side)
 	}
 	TCHAR str[8];
 	amountEdits[side].getText(str, 8);
-	int amount = _wtoi(str);
+	int amount = _ttoi(str);
 	if (amount == 0)
 	{
 		amountEdits[side].setSel(0, -1);
@@ -664,7 +664,7 @@ void BetTabDlg::updateInitialAmount()
 {
 	TCHAR str[20];
 	initialAmountEdit.getText(str, 20);
-	long long newAmount = _wtoll(str);
+	long long newAmount = _ttoll(str);
 	if (newAmount != initialAmount)
 	{
 		initialAmount = newAmount;
@@ -697,7 +697,7 @@ void BetTabDlg::updateWinProbError()
 {
 	TCHAR str[3];
 	winProbErrorEdit.getText(str, 3);
-	double newError = _wtoi(str) / 100.0;
+	double newError = _ttoi(str) / 100.0;
 	if (newError != winProbError)
 	{
 		winProbError = newError;
