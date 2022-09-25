@@ -8,8 +8,8 @@ class BetDlg :
 public:
 	static HICON hIcon;
 private:
-	std::vector<BetTabDlg*> betTabs;
-	BetTabDlg* currentTab;
+	std::vector<Dialog*> betTabs;
+	Dialog* currentDlg;
 
 	HWND hBetTab;
 	Button settingsButton;
@@ -23,8 +23,10 @@ public:
 	BetDlg();
 	virtual INT_PTR initDlg(HWND hDlg);
 	virtual INT_PTR dlgProc(UINT msg, WPARAM wParam, LPARAM lParam);
-	BetTabDlg* getCurrentTab();
+	Dialog* getCurrentTab();
 private:
+	void createBetTabDlg(double cut);
+	void createTab();
 	void calcPos();
 	void calcBetTabPos();
 };

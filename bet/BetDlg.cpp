@@ -4,6 +4,7 @@
 #include "common.h"
 #include "tooltip.h"
 #include "ConfigDlg.h"
+#include "CutInputDlg.h"
 
 #include <windowsx.h>
 #include <CommCtrl.h>
@@ -59,28 +60,11 @@ INT_PTR BetDlg::initDlg(HWND hDlg)
 	TCHAR settingsTipText[] = _T("ÉèÖÃ");
 	createToolTip(settingsButton.getHwnd(), hDlg, settingsTipText);
 
-
 	SetWindowPos(hTabNameEdit, HWND_TOP, 0, 0, 0, 0, SWP_NOMOVE | SWP_NOSIZE);
 	SetWindowFont(hTabNameEdit, (WPARAM)hFont, FALSE);
 	setVCentered(hTabNameEdit);
 
-	ShowWindow(hDlg, SW_SHOW);
-
-	currentTab = new BetTabDlg();
-	currentTab->createDialog(hDlg);
-	betTabs.push_back(currentTab);
-	calcBetTabPos();
-
-	TCITEM tcItem;
-	tcItem.mask = TCIF_TEXT;
-	TCHAR tabName[] = _T("1");
-	tcItem.pszText = tabName;
-	TabCtrl_InsertItem(hBetTab, 0, &tcItem);
-
-	SetWindowPos(addTabButton.getHwnd(), HWND_TOP, ADD_TAB_X, ADD_TAB_Y, 0, 0, SWP_NOSIZE | SWP_SHOWWINDOW);
-
-	ShowWindow(hTabNameEdit, SW_SHOW);
-	SetFocus(hTabNameEdit);
+	createTab();
 	return (INT_PTR)FALSE;
 }
 
@@ -121,20 +105,28 @@ INT_PTR BetDlg::dlgProc(UINT msg, WPARAM wParam, LPARAM lParam)
 	case WM_MOVING:
 		needErase = true;
 		break;
+	case WM_PARENTNOTIFY:
+		if (LOWORD(wParam) == WM_DESTROY && (HWND)lParam == currentDlg->getHwnd() && !IsWindowEnabled(hBetTab))
+		{
+			createBetTabDlg(((CutInputDlg*)currentDlg)->getCut());
+			EnableWindow(hBetTab, TRUE);
+			needErase = true;
+		}
+		break;
 	case WM_COMMAND:
 		switch (LOWORD(wParam))
 		{
 		case ID_CONFIRM:
 			if (GetFocus() == hTabNameEdit)
 			{
-				SetFocus(currentTab->getHwnd());
+				SetFocus(currentDlg->getHwnd());
 			}
 			return (INT_PTR)TRUE;
 		case ID_CANCEL:
 			if (GetFocus() == hTabNameEdit)
 			{
 				SetWindowText(hTabNameEdit, _T(""));
-				SetFocus(currentTab->getHwnd());
+				SetFocus(currentDlg->getHwnd());
 			}
 			return (INT_PTR)TRUE;
 		case IDC_TAB_NAME_EDIT:
@@ -157,32 +149,9 @@ INT_PTR BetDlg::dlgProc(UINT msg, WPARAM wParam, LPARAM lParam)
 			}
 			break;
 		case IDC_ADD_TAB_BUTTON:
-			{
-				int tabId = betTabs.size();
-				if (tabId == MAX_TAB - 1)
-				{
-					ShowWindow(addTabButton.getHwnd(), false);
-				}
-				else
-				{
-					SetWindowPos(addTabButton.getHwnd(), HWND_TOP, ADD_TAB_X + tabId * TAB_WIDTH, ADD_TAB_Y, 0, 0, SWP_NOSIZE);
-				}
-				ShowWindow(currentTab->getHwnd(), SW_HIDE);
-				currentTab = new BetTabDlg();
-				betTabs.push_back(currentTab);
-				currentTab->createDialog(hDlg);
-				ShowWindow(currentTab->getHwnd(), SW_SHOW);
-				TCHAR str[2];
-				_itot(tabId + 1, str, 10);
-				TCITEM tcItem;
-				tcItem.mask = TCIF_TEXT;
-				tcItem.pszText = str;
-				TabCtrl_InsertItem(hBetTab, tabId, &tcItem);
-				TabCtrl_SetCurSel(hBetTab, tabId);
-				SetWindowPos(hTabNameEdit, HWND_TOP, TAB_NAME_EDIT_X + tabId * TAB_WIDTH, TAB_NAME_EDIT_Y, 0, 0, SWP_NOSIZE | SWP_SHOWWINDOW);
-				SetFocus(hTabNameEdit);
-				return (INT_PTR)TRUE;
-			}
+			ShowWindow(currentDlg->getHwnd(), SW_HIDE);
+			createTab();
+			return (INT_PTR)TRUE;
 		case IDC_SETTINGS_BUTTON:
 			ConfigDlg configDlg;
 			configDlg.dialogBox(hDlg);
@@ -196,9 +165,9 @@ INT_PTR BetDlg::dlgProc(UINT msg, WPARAM wParam, LPARAM lParam)
 			{
 			case TCN_SELCHANGE:
 				{
-					ShowWindow(currentTab->getHwnd(), SW_HIDE);
-					currentTab = betTabs[TabCtrl_GetCurSel(hBetTab)];
-					ShowWindow(currentTab->getHwnd(), SW_SHOW);
+					ShowWindow(currentDlg->getHwnd(), SW_HIDE);
+					currentDlg = betTabs[TabCtrl_GetCurSel(hBetTab)];
+					ShowWindow(currentDlg->getHwnd(), SW_SHOW);
 					lastSel = -1;
 					return (INT_PTR)TRUE;
 				}
@@ -268,11 +237,11 @@ INT_PTR BetDlg::dlgProc(UINT msg, WPARAM wParam, LPARAM lParam)
 							{
 								tabId--;
 							}
-							DestroyWindow(currentTab->getHwnd());
-							delete currentTab;
-							currentTab = betTabs[tabId];
-							ShowWindow(currentTab->getHwnd(), SW_SHOW);
-							SetFocus(currentTab->getHwnd());
+							DestroyWindow(currentDlg->getHwnd());
+							delete currentDlg;
+							currentDlg = betTabs[tabId];
+							ShowWindow(currentDlg->getHwnd(), SW_SHOW);
+							SetFocus(currentDlg->getHwnd());
 							TabCtrl_SetCurSel(hBetTab, tabId);
 						}
 					}
@@ -290,7 +259,7 @@ INT_PTR BetDlg::dlgProc(UINT msg, WPARAM wParam, LPARAM lParam)
 		{
 			return (INT_PTR)TRUE;
 		}
-		for (BetTabDlg* betTab : betTabs)
+		for (Dialog* betTab : betTabs)
 		{
 			DestroyWindow(betTab->getHwnd());
 		}
@@ -301,9 +270,53 @@ INT_PTR BetDlg::dlgProc(UINT msg, WPARAM wParam, LPARAM lParam)
 	return (INT_PTR)FALSE;
 }
 
-BetTabDlg* BetDlg::getCurrentTab()
+Dialog* BetDlg::getCurrentTab()
 {
-	return currentTab;
+	return currentDlg;
+}
+
+void BetDlg::createBetTabDlg(double cut)
+{
+	int tabId = betTabs.size();
+	if (tabId == MAX_TAB - 1)
+	{
+		ShowWindow(addTabButton.getHwnd(), FALSE);
+	}
+	else
+	{
+		SetWindowPos(addTabButton.getHwnd(), HWND_TOP, ADD_TAB_X + tabId * TAB_WIDTH, ADD_TAB_Y, 0, 0, SWP_NOSIZE | SWP_SHOWWINDOW);
+	}
+	currentDlg = new BetTabDlg(cut);
+	currentDlg->createDialog(hDlg);
+	betTabs.push_back(currentDlg);
+	calcBetTabPos();
+}
+
+void BetDlg::createTab()
+{
+	if (config.useDefCut)
+	{
+		createBetTabDlg(config.defCut);
+	}
+	else
+	{
+		currentDlg = new CutInputDlg();
+		currentDlg->createDialog(hDlg);
+		InvalidateRect(currentDlg->getHwnd(), nullptr, TRUE);
+		ShowWindow(addTabButton.getHwnd(), SW_HIDE);
+		EnableWindow(hBetTab, FALSE);
+	}
+
+	int tabId = betTabs.size();
+	TCHAR str[2];
+	_itot(tabId + 1, str, 10);
+	TCITEM tcItem;
+	tcItem.mask = TCIF_TEXT;
+	tcItem.pszText = str;
+	TabCtrl_InsertItem(hBetTab, tabId, &tcItem);
+	TabCtrl_SetCurSel(hBetTab, tabId);
+	SetWindowPos(hTabNameEdit, HWND_TOP, TAB_NAME_EDIT_X + tabId * TAB_WIDTH, TAB_NAME_EDIT_Y, 0, 0, SWP_NOSIZE | SWP_SHOWWINDOW);
+	SetFocus(hTabNameEdit);
 }
 
 void BetDlg::calcPos()
@@ -331,7 +344,7 @@ void BetDlg::calcPos()
 void BetDlg::calcBetTabPos()
 {
 	RECT rect;
-	GetWindowRect(GetDlgItem(currentTab->getHwnd(), IDC_L_BET_LIST), &rect);
-	GetWindowRect(GetDlgItem(currentTab->getHwnd(), IDC_MOVE_SPIN), &rect);
+	GetWindowRect(GetDlgItem(currentDlg->getHwnd(), IDC_L_BET_LIST), &rect);
+	GetWindowRect(GetDlgItem(currentDlg->getHwnd(), IDC_MOVE_SPIN), &rect);
 	X_MOVE = rect.left - rect.right;
 }

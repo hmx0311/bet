@@ -56,8 +56,8 @@ public:
 	void addBanker(bool side, Banker& banker);
 	const Banker& allBought(bool side, int index);
 	const Banker& changeBought(bool side, int index, int amount);
-	void moveBackBet(bool side, int index);
-	void moveBackBanker(bool side, int index);
+	void swapBet(bool side, int index);
+	void swapBanker(bool side, int index);
 	void deleteBet(bool side, int index);
 	void deleteBanker(bool side, int index);
 	void reset();
@@ -65,6 +65,7 @@ public:
 	std::pair<long long, long long> calcAimAmountBalance(bool isBet, double odds);
 	void calcReferenceOdds(long long initialAmount, double winningProb, double winProbError, double* __restrict referenceOdds);
 	long long calcAimAmountProb(long long initialAmount, double winningProb, double winProbError, bool side, bool isBet, double odds);
+	double getCut();
 	long long getProfit(bool side);
 	long long getTotalInvest();
 };

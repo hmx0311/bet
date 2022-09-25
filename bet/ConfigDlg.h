@@ -8,11 +8,11 @@ class ConfigDlg :
 	public Dialog
 {
 private:
-	HWND hDefaultCutCombo;
-	NumericEdit defaultCutEdit;
-	HWND hDefaultClosingCheck;
+	HWND hDefCutCombo;
+	NumericEdit defCutEdit;
+	HWND hDefClosingCheck;
 	NumericEdit fastAddedAmountEdit[4];
-	NumericEdit defaultProbErrorEdit;
+	NumericEdit defProbErrorEdit;
 public:
 	ConfigDlg();
 	virtual INT_PTR initDlg(HWND hDlg);

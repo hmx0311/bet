@@ -24,12 +24,12 @@ void loadConfig(Config& cfg)
 	if (file.good())
 	{
 		if (file.read((char*)&cfg, sizeof(Config)).good() &&
-			cfg.defaultCut > 0 && cfg.defaultCut <= 1 &&
+			cfg.defCut > 0 && cfg.defCut <= 1 &&
 			cfg.fastAddedAmount[0] > 0 && cfg.fastAddedAmount[0] < 100000 &&
 			cfg.fastAddedAmount[1] > 0 && cfg.fastAddedAmount[1] < 100000 &&
 			cfg.fastAddedAmount[2] > 0 && cfg.fastAddedAmount[2] < 100000 &&
 			cfg.fastAddedAmount[3] > 0 && cfg.fastAddedAmount[3] < 100000 &&
-			cfg.defaultProbError >= 0 && cfg.defaultProbError < 1)
+			cfg.defProbError >= 0 && cfg.defProbError < 1)
 		{
 			file.close();
 			return;

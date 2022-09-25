@@ -22,7 +22,7 @@ private:
 	bool winProbSide = 0;
 	double winProb = 0;
 	double winProbError = 0;
-	Model* model=nullptr;
+	Model model;
 
 	HWND hProbCalculator = nullptr;
 	HICON hProbCalculatorIcon = nullptr;
@@ -53,7 +53,7 @@ protected:
 	HWND hWinProbCalculatorTip;
 	HWND hReferenceOddsTexts[8];
 public:
-	BetTabDlg();
+	BetTabDlg(double cut);
 	virtual INT_PTR initDlg(HWND hDlg);
 	virtual INT_PTR dlgProc(UINT msg, WPARAM wParam, LPARAM lParam);
 private:

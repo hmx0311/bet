@@ -62,7 +62,7 @@ long long Model::IntervalSumTree::total()
 	return amount[1];
 }
 
-Model::Model(double cut) :cut(cut), haveClosing(config.defaultClosing) {}
+Model::Model(double cut) :cut(cut), haveClosing(config.defClosing) {}
 
 Bet& Model::addBet(bool side, double odds, int amount)
 {
@@ -117,12 +117,12 @@ const Banker& Model::changeBought(bool side, int index, int amount)
 	return banker;
 }
 
-void Model::moveBackBet(bool side, int index)
+void Model::swapBet(bool side, int index)
 {
 	swap(bets[side][index], bets[side][index + 1]);
 }
 
-void Model::moveBackBanker(bool side, int index)
+void Model::swapBanker(bool side, int index)
 {
 	swap(bankers[side][index], bankers[side][index + 1]);
 }
@@ -328,6 +328,11 @@ long long Model::calcAimAmountProb(long long initialAmount, double winProb, doub
 		for (long long temp = aimAmount; long long(long long(aimAmount / odds * DBL_PRECISION_COMPENSATE) * odds) < temp; aimAmount++);
 	}
 	return aimAmount;
+}
+
+double Model::getCut()
+{
+	return cut;
 }
 
 long long Model::getProfit(bool side)

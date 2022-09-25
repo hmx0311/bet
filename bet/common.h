@@ -4,11 +4,11 @@
 
 struct Config
 {
-	double defaultCut;
-	bool useDefaultCut;
-	bool defaultClosing;
+	double defCut;
+	bool useDefCut;
+	bool defClosing;
 	int fastAddedAmount[4];
-	double defaultProbError;
+	double defProbError;
 };
 
 extern Config config;

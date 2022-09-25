@@ -18,19 +18,19 @@ INT_PTR ConfigDlg::initDlg(HWND hDlg)
 {
 	Dialog::initDlg(hDlg);
 
-	hDefaultCutCombo = GetDlgItem(hDlg, IDC_DEFAULT_CUT_COMBO);
-	defaultCutEdit.attach(GetDlgItem(hDlg, IDC_DEFAULT_CUT_EDIT));
-	hDefaultClosingCheck = GetDlgItem(hDlg, IDC_DEFAULT_CLOSING_CHECK);
-	SendMessage(hDefaultClosingCheck, WM_UPDATEUISTATE, MAKEWPARAM(UIS_SET, UISF_HIDEFOCUS), 0);
-	SetWindowSubclass(hDefaultClosingCheck, buttonSubclassProc, 0, 0);
+	hDefCutCombo = GetDlgItem(hDlg, IDC_DEFAULT_CUT_COMBO);
+	defCutEdit.attach(GetDlgItem(hDlg, IDC_DEFAULT_CUT_EDIT));
+	hDefClosingCheck = GetDlgItem(hDlg, IDC_DEFAULT_CLOSING_CHECK);
+	SendMessage(hDefClosingCheck, WM_UPDATEUISTATE, MAKEWPARAM(UIS_SET, UISF_HIDEFOCUS), 0);
+	SetWindowSubclass(hDefClosingCheck, buttonSubclassProc, 0, 0);
 	for (int i = 0; i < 4; i++)
 	{
 		fastAddedAmountEdit[i].attach(GetDlgItem(hDlg, IDC_FAST_ADDED_AMOUNT_EDIT1 + i));
 	}
-	defaultProbErrorEdit.attach(GetDlgItem(hDlg, IDC_DEFAULT_PROBABILTY_ERROR_EDIT));
+	defProbErrorEdit.attach(GetDlgItem(hDlg, IDC_DEFAULT_PROBABILTY_ERROR_EDIT));
 
-	SendMessage(hDefaultCutCombo, WM_UPDATEUISTATE, MAKEWPARAM(UIS_SET, UISF_HIDEFOCUS), 0);
-	SetWindowSubclass(hDefaultCutCombo,
+	SendMessage(hDefCutCombo, WM_UPDATEUISTATE, MAKEWPARAM(UIS_SET, UISF_HIDEFOCUS), 0);
+	SetWindowSubclass(hDefCutCombo,
 		[](HWND hCombo, UINT msg, WPARAM wParam, LPARAM lParam, UINT_PTR uIdSubclass, DWORD_PTR dwRefData)->LRESULT
 		{
 			if (msg == WM_UPDATEUISTATE)
@@ -44,20 +44,20 @@ INT_PTR ConfigDlg::initDlg(HWND hDlg)
 	SendMessage(GetDlgItem(hDlg, IDCANCEL), WM_UPDATEUISTATE, MAKEWPARAM(UIS_SET, UISF_HIDEFOCUS), 0);
 	SetWindowSubclass(GetDlgItem(hDlg, IDCANCEL), buttonSubclassProc, 0, 0);
 
-	ComboBox_AddString(hDefaultCutCombo, _T("新建时输入"));
-	ComboBox_AddString(hDefaultCutCombo, _T("使用默认值"));
-	ComboBox_SetCurSel(hDefaultCutCombo, config.useDefaultCut);
+	ComboBox_AddString(hDefCutCombo, _T("新建时输入"));
+	ComboBox_AddString(hDefCutCombo, _T("使用默认值"));
+	ComboBox_SetCurSel(hDefCutCombo, config.useDefCut);
 	TCHAR str[6];
-	_stprintf(str, _T("%04d"), (int)round((1 - config.defaultCut) * 10000));
-	defaultCutEdit.setText(str);
-	Button_SetCheck(hDefaultClosingCheck, config.defaultClosing);
+	_stprintf(str, _T("%04d"), (int)round((1 - config.defCut) * 10000));
+	defCutEdit.setText(str);
+	Button_SetCheck(hDefClosingCheck, config.defClosing);
 	for (int i = 0; i < 4; i++)
 	{
 		_itot(config.fastAddedAmount[i], str, 10);
 		fastAddedAmountEdit[i].setText(str);
 	}
-	_itot((int)round(config.defaultProbError * 100), str, 10);
-	defaultProbErrorEdit.setText(str);
+	_itot((int)round(config.defProbError * 100), str, 10);
+	defProbErrorEdit.setText(str);
 
 	return (INT_PTR)TRUE;  // 除非将焦点设置到控件，否则返回 TRUE
 }
@@ -72,16 +72,16 @@ INT_PTR ConfigDlg::dlgProc(UINT msg, WPARAM wParam, LPARAM lParam)
 		case IDOK:
 			{
 				Config newConfig = { 0 };
-				newConfig.useDefaultCut = ComboBox_GetCurSel(hDefaultCutCombo);
+				newConfig.useDefCut = ComboBox_GetCurSel(hDefCutCombo);
 				TCHAR str[6];
-				defaultCutEdit.getText(str, 6);
+				defCutEdit.getText(str, 6);
 				for (int i = lstrlen(str) - 1; i >= 0; i--)
 				{
 					int c = str[i] - '0';
-					newConfig.defaultCut = (newConfig.defaultCut + c) * 0.1;
+					newConfig.defCut = (newConfig.defCut + c) * 0.1;
 				}
-				newConfig.defaultCut = 1 - newConfig.defaultCut;
-				newConfig.defaultClosing = Button_GetCheck(hDefaultClosingCheck);
+				newConfig.defCut = 1 - newConfig.defCut;
+				newConfig.defClosing = Button_GetCheck(hDefClosingCheck);
 				for (int i = 0; i < 4; i++)
 				{
 					fastAddedAmountEdit[i].getText(str, 6);
@@ -94,8 +94,8 @@ INT_PTR ConfigDlg::dlgProc(UINT msg, WPARAM wParam, LPARAM lParam)
 					}
 					newConfig.fastAddedAmount[i] = amount;
 				}
-				defaultProbErrorEdit.getText(str, 6);
-				newConfig.defaultProbError = _wtoi(str) / 100.0;
+				defProbErrorEdit.getText(str, 6);
+				newConfig.defProbError = _wtoi(str) / 100.0;
 				if (memcmp(&newConfig, &config, sizeof(Config)) != 0)
 				{
 					ofstream file(CONFIG_FILE_NAME, ios::out | ios::binary);
