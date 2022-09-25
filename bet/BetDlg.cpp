@@ -294,6 +294,7 @@ void BetDlg::createBetTabDlg(double cut)
 
 void BetDlg::createTab()
 {
+	int tabId = betTabs.size();
 	if (config.useDefCut)
 	{
 		createBetTabDlg(config.defCut);
@@ -306,8 +307,6 @@ void BetDlg::createTab()
 		ShowWindow(addTabButton.getHwnd(), SW_HIDE);
 		EnableWindow(hBetTab, FALSE);
 	}
-
-	int tabId = betTabs.size();
 	TCHAR str[2];
 	_itot(tabId + 1, str, 10);
 	TCITEM tcItem;

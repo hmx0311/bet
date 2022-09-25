@@ -28,6 +28,7 @@ INT_PTR CutInputDlg::dlgProc(UINT msg, WPARAM wParam, LPARAM lParam)
 	case WM_COMMAND:
 		switch (LOWORD(wParam))
 		{
+		case ID_CONFIRM:
 		case IDOK:
 			{
 				DestroyWindow(hDlg);
