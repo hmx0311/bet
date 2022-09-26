@@ -14,7 +14,6 @@ INT_PTR CALLBACK dlgProc(HWND hDlg, UINT msg, WPARAM wParam, LPARAM lParam)
 	case WM_DRAWITEM:
 		{
 			PDRAWITEMSTRUCT pDrawItemStruct = (PDRAWITEMSTRUCT)lParam;
-			HDC hDC = pDrawItemStruct->hDC;
 			switch (pDrawItemStruct->CtlType)
 			{
 			case ODT_LISTBOX:
@@ -23,7 +22,7 @@ INT_PTR CALLBACK dlgProc(HWND hDlg, UINT msg, WPARAM wParam, LPARAM lParam)
 					return (INT_PTR)TRUE;
 				}
 				HDC hDCMem;
-				HPAINTBUFFER hPaintBuffer = BeginBufferedPaint(hDC, &pDrawItemStruct->rcItem, BPBF_COMPATIBLEBITMAP, nullptr, &hDCMem);
+				HPAINTBUFFER hPaintBuffer = BeginBufferedPaint(pDrawItemStruct->hDC, &pDrawItemStruct->rcItem, BPBF_COMPATIBLEBITMAP, nullptr, &hDCMem);
 				SelectObject(hDCMem, hFont);
 				((ListBox*)GetWindowLongPtr(pDrawItemStruct->hwndItem, GWLP_USERDATA))->
 					drawItem(hDCMem, pDrawItemStruct->itemID, pDrawItemStruct->itemState, pDrawItemStruct->itemData, pDrawItemStruct->rcItem);
