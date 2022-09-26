@@ -48,6 +48,48 @@ LRESULT Button::wndProc(UINT msg, WPARAM wParam, LPARAM lParam)
 	case WM_SHOWWINDOW:
 		BufferedPaintStopAllAnimations(hButton);
 		break;
+	case WM_PAINT:
+		{
+			PAINTSTRUCT paintStruct;
+			HDC hDC = BeginPaint(hButton, &paintStruct);
+			if (!BufferedPaintRenderAnimation(hButton, hDC))
+			{
+				RECT rcItem;
+				GetClientRect(hButton, &rcItem);
+				PUSHBUTTONSTATES state = PBS_NORMAL;
+				if (Button_GetState(hButton) & BST_PUSHED)
+				{
+					state = PBS_PRESSED;
+				}
+				else if (isTracking)
+				{
+					state = PBS_HOT;
+				}
+				if (lastState == state || hButtonTheme == nullptr)
+				{
+					HDC hDCMem;
+					HPAINTBUFFER hPaintBuffer = BeginBufferedPaint(hDC, &rcItem, BPBF_COMPATIBLEBITMAP, nullptr, &hDCMem);
+					drawButton(hDCMem, state, rcItem);
+					EndBufferedPaint(hPaintBuffer, TRUE);
+				}
+				else
+				{
+					BP_ANIMATIONPARAMS animParams = { sizeof(BP_ANIMATIONPARAMS),0, BPAS_LINEAR, state == PBS_PRESSED ? BUTTON_ANIMATION_DURATION_SHORT : BUTTON_ANIMATION_DURATION_LONG };
+					HDC hDCFrom, hDCTo;
+					HANIMATIONBUFFER hbpAnimation = BeginBufferedAnimation(hButton, hDC, &rcItem, BPBF_COMPATIBLEBITMAP, NULL, &animParams, &hDCFrom, &hDCTo);
+					if (hDCFrom != nullptr)
+					{
+						drawButton(hDCFrom, lastState, rcItem);
+					}
+					drawButton(hDCTo, state, rcItem);
+					BufferedPaintStopAllAnimations(hButton);
+					EndBufferedAnimation(hbpAnimation, TRUE);
+					lastState = state;
+				}
+			}
+			EndPaint(hButton, &paintStruct);
+			return LRESULT(TRUE);
+		}
 	case WM_MOUSEMOVE:
 		{
 			if (isTracking)
@@ -71,37 +113,6 @@ LRESULT Button::wndProc(UINT msg, WPARAM wParam, LPARAM lParam)
 		return LRESULT(TRUE);
 	}
 	return DefSubclassProc(hButton, msg, wParam, lParam);
-}
-
-void Button::drawItem(HDC hDC, UINT itemState, RECT& rcItem)
-{
-	PUSHBUTTONSTATES state = PBS_NORMAL;
-	if (itemState & ODS_SELECTED)
-	{
-		state = PBS_PRESSED;
-	}
-	else if (isTracking)
-	{
-		state = PBS_HOT;
-	}
-	if (lastState == state || hButtonTheme == nullptr)
-	{
-		HDC hDCMem;
-		HPAINTBUFFER hPaintBuffer = BeginBufferedPaint(hDC, &rcItem, BPBF_COMPATIBLEBITMAP, nullptr, &hDCMem);
-		drawButton(hDCMem, state, rcItem);
-		EndBufferedPaint(hPaintBuffer, TRUE);
-		return;
-	}
-	BP_ANIMATIONPARAMS animParams = { sizeof(BP_ANIMATIONPARAMS),0, BPAS_LINEAR, state == PBS_PRESSED ? BUTTON_ANIMATION_DURATION_SHORT : BUTTON_ANIMATION_DURATION_LONG };
-	HDC hdcFrom, hdcTo;
-	HANIMATIONBUFFER hbpAnimation = BeginBufferedAnimation(hButton, hDC, &rcItem, BPBF_COMPATIBLEBITMAP, nullptr, &animParams, &hdcFrom, &hdcTo);
-	if (hdcFrom != nullptr)
-	{
-		drawButton(hdcFrom, lastState, rcItem);
-	}
-	drawButton(hdcTo, state, rcItem);
-	EndBufferedAnimation(hbpAnimation, TRUE);
-	lastState = state;
 }
 
 HWND Button::getHwnd()

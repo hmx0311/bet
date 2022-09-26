@@ -17,14 +17,6 @@ INT_PTR CALLBACK dlgProc(HWND hDlg, UINT msg, WPARAM wParam, LPARAM lParam)
 			HDC hDC = pDrawItemStruct->hDC;
 			switch (pDrawItemStruct->CtlType)
 			{
-			case ODT_BUTTON:
-				{
-					if (!BufferedPaintRenderAnimation(pDrawItemStruct->hwndItem, hDC))
-					{
-						((Button*)GetWindowLongPtr(pDrawItemStruct->hwndItem, GWLP_USERDATA))->drawItem(hDC, pDrawItemStruct->itemState, pDrawItemStruct->rcItem);
-					}
-					return (INT_PTR)TRUE;
-				}
 			case ODT_LISTBOX:
 				if (pDrawItemStruct->itemID == -1)
 				{

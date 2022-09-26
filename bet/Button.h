@@ -20,7 +20,6 @@ protected:
 public:
 	void attach(HWND hButton);
 	LRESULT wndProc(UINT msg, WPARAM wParam, LPARAM lParam);
-	void drawItem(HDC hDC, UINT itemState, RECT& rcItem);
 	HWND getHwnd();
 	void setText(PCTSTR str);
 	void setIcon(HICON hIcon);
