@@ -70,8 +70,6 @@ INT_PTR BetTabDlg::initDlg(HWND hDlg)
 	{
 		addAmountButtons[i].attach(GetDlgItem(hDlg, IDC_L_ADD_AMOUNT_BUTTON1 + i));
 	}
-	clearAmountButtons[0].attach(GetDlgItem(hDlg, IDC_L_CLEAR_AMOUNT_BUTTON));
-	clearAmountButtons[1].attach(GetDlgItem(hDlg, IDC_R_CLEAR_AMOUNT_BUTTON));
 	addButtons[0].attach(GetDlgItem(hDlg, IDC_L_ADD_BUTTON));
 	addButtons[1].attach(GetDlgItem(hDlg, IDC_R_ADD_BUTTON));
 	resultLists[0].attach(GetDlgItem(hDlg, IDC_BALANCE_RESULT_LIST));
@@ -122,10 +120,6 @@ INT_PTR BetTabDlg::initDlg(HWND hDlg)
 	createToolTip(resetButton.getHwnd(), hDlg, resetTipText);
 
 	resetButton.setIcon(hResetIcon);
-	clearAmountButtons[0].setIcon(hClearIcon);
-	clearAmountButtons[0].setBkgBrush(GetSysColorBrush(COLOR_WINDOW));
-	clearAmountButtons[1].setIcon(hClearIcon);
-	clearAmountButtons[1].setBkgBrush(GetSysColorBrush(COLOR_WINDOW));
 	allBoughtButton.setIcon(hTickIcon);
 	winProbCalculatorButton.setIcon(hCalculatorIcon);
 
@@ -339,11 +333,6 @@ INT_PTR BetTabDlg::dlgProc(UINT msg, WPARAM wParam, LPARAM lParam)
 				SetFocus(amountEdits[side].getHwnd());
 				return (INT_PTR)TRUE;
 			}
-		case IDC_L_CLEAR_AMOUNT_BUTTON:
-		case IDC_R_CLEAR_AMOUNT_BUTTON:
-			amountEdits[LOWORD(wParam) - IDC_L_CLEAR_AMOUNT_BUTTON].setText(_T(""));
-			SetFocus(amountEdits[LOWORD(wParam) - IDC_L_CLEAR_AMOUNT_BUTTON].getHwnd());
-			return (INT_PTR)TRUE;
 		case IDC_L_ADD_BUTTON:
 		case IDC_R_ADD_BUTTON:
 			add(LOWORD(wParam) - IDC_L_ADD_BUTTON);

@@ -68,8 +68,6 @@
 #define IDC_R_ADD_AMOUNT_BUTTON2        1049
 #define IDC_R_ADD_AMOUNT_BUTTON3        1050
 #define IDC_R_ADD_AMOUNT_BUTTON4        1051
-#define IDC_L_CLEAR_AMOUNT_BUTTON       1052
-#define IDC_R_CLEAR_AMOUNT_BUTTON       1053
 #define IDC_L_ADD_BUTTON                1054
 #define IDC_R_ADD_BUTTON                1055
 #define IDC_CHANGE_BOUGHT_EDIT          1056

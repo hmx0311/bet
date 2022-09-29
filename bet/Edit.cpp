@@ -7,6 +7,8 @@
 #include <CommCtrl.h>
 #include <windowsx.h>
 
+#define IDC_CLEAR_BUTTON 1000
+
 using namespace std;
 
 void setVCentered(HWND hEdit)
@@ -264,12 +266,26 @@ void AmountEdit::attach(HWND hEdit, HWND hBankerOddsEdit, HWND hBetOddsEdit, HWN
 	SetWindowLongPtr(hEdit, GWLP_USERDATA, (LONG_PTR)this);
 	SetWindowSubclass(hEdit, editSubclassProc, 0, 0);
 	setVCentered(hEdit);
+
+	INITCOMMONCONTROLSEX icex = { sizeof(icex),ICC_STANDARD_CLASSES };
+	InitCommonControlsEx(&icex);
+	HWND hClearButton = CreateWindow(_T("Button"), nullptr,
+		WS_CHILD | WS_VISIBLE | BS_FLAT,
+		0, 0, 0, 0,
+		hEdit, (HMENU)IDC_CLEAR_BUTTON, hInst, nullptr);
+	clearButton.attach(hClearButton);
+	clearButton.setIcon((HICON)LoadImage(hInst, MAKEINTRESOURCE(IDI_CLEAR), IMAGE_ICON, 0, 0, LR_SHARED));
+	clearButton.setBkgBrush(GetSysColorBrush(COLOR_WINDOW));
+	setClearButtonPos();
 }
 
 LRESULT AmountEdit::wndProc(UINT msg, WPARAM wParam, LPARAM lParam)
 {
 	switch (msg)
 	{
+	case WM_DPICHANGED_AFTERPARENT:
+		setClearButtonPos();
+		break;
 	case WM_KEYDOWN:
 	case WM_KEYUP:
 		switch (LOWORD(wParam))
@@ -283,8 +299,28 @@ LRESULT AmountEdit::wndProc(UINT msg, WPARAM wParam, LPARAM lParam)
 	case WM_KILLFOCUS:
 		SendMessage(Button_GetCheck(hBankerSelector) ? hBankerOddsEdit : hBetOddsEdit, WM_KEYUP, VK_UP, MAKELONG(1, KF_UP | KF_REPEAT | KF_EXTENDED));
 		break;
+	case WM_COMMAND:
+		switch (LOWORD(wParam))
+		{
+		case IDC_CLEAR_BUTTON:
+			setText(_T(""));
+			SetFocus(hEdit);
+			return (LRESULT)TRUE;
+		}
+		break;
 	}
 	return NumericEdit::wndProc(msg, wParam, lParam);
+}
+
+void AmountEdit::setClearButtonPos()
+{
+	RECT rcEdit;
+	GetWindowRect(hEdit, &rcEdit);
+	MapWindowRect(HWND_DESKTOP, hEdit, &rcEdit);
+	int buttonPadding = (rcEdit.bottom - rcEdit.top) / 6;
+	SetWindowPos(clearButton.getHwnd(), nullptr,
+		rcEdit.right - (rcEdit.bottom - rcEdit.top - buttonPadding), rcEdit.top + buttonPadding, rcEdit.bottom - rcEdit.top - 2 * buttonPadding, rcEdit.bottom - rcEdit.top - 2 * buttonPadding,
+		SWP_NOZORDER);
 }
 
 

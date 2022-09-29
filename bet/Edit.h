@@ -1,5 +1,7 @@
 #pragma once
 
+#include "button.h"
+
 #include <string>
 
 void setVCentered(HWND hEdit);
@@ -39,10 +41,13 @@ private:
 	HWND hBankerOddsEdit;
 	HWND hBetOddsEdit;
 	HWND hBankerSelector;
+	Button clearButton;
 
 public:
 	void attach(HWND hEdit, HWND hBankerOddsEdit, HWND hBetOddsEdit, HWND hBankerSelector);
 	virtual LRESULT wndProc(UINT msg, WPARAM wParam, LPARAM lParam);
+private:
+	void setClearButtonPos();
 };
 
 class OddsEdit :

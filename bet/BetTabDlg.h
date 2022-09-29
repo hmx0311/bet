@@ -36,7 +36,6 @@ protected:
 	HWND hBankerBetSelectors[10];
 	OddsEdit oddsEdits[10];
 	AmountEdit amountEdits[2];
-	Button clearAmountButtons[2];
 	Button addAmountButtons[8];
 	Button addButtons[2];
 	NumericEdit boughtEdit;
