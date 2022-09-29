@@ -18,16 +18,16 @@ INT_PTR ConfigDlg::initDlg(HWND hDlg)
 {
 	Dialog::initDlg(hDlg);
 
-	hDefCutCombo = GetDlgItem(hDlg, IDC_DEFAULT_CUT_COMBO);
-	defCutEdit.attach(GetDlgItem(hDlg, IDC_DEFAULT_CUT_EDIT));
-	hDefClosingCheck = GetDlgItem(hDlg, IDC_DEFAULT_CLOSING_CHECK);
+	hDefCutCombo = GetDlgItem(hDlg, IDC_DEF_CUT_COMBO);
+	defCutEdit.attach(GetDlgItem(hDlg, IDC_DEF_CUT_EDIT));
+	hDefClosingCheck = GetDlgItem(hDlg, IDC_DEF_CLOSING_CHECK);
 	SendMessage(hDefClosingCheck, WM_UPDATEUISTATE, MAKEWPARAM(UIS_SET, UISF_HIDEFOCUS), 0);
 	SetWindowSubclass(hDefClosingCheck, buttonSubclassProc, 0, 0);
 	for (int i = 0; i < 4; i++)
 	{
 		fastAddedAmountEdit[i].attach(GetDlgItem(hDlg, IDC_FAST_ADDED_AMOUNT_EDIT1 + i));
 	}
-	defProbErrorEdit.attach(GetDlgItem(hDlg, IDC_DEFAULT_PROBABILTY_ERROR_EDIT));
+	defProbErrorEdit.attach(GetDlgItem(hDlg, IDC_DEF_PROB_ERROR_EDIT));
 
 	SendMessage(hDefCutCombo, WM_UPDATEUISTATE, MAKEWPARAM(UIS_SET, UISF_HIDEFOCUS), 0);
 	SetWindowSubclass(hDefCutCombo,

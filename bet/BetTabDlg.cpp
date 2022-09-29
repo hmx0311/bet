@@ -80,14 +80,14 @@ INT_PTR BetTabDlg::initDlg(HWND hDlg)
 	}
 	initialAmountEdit.attach(GetDlgItem(hDlg, IDC_INITIAL_AMOUNT_EDIT));
 	hRemainingAmountText = GetDlgItem(hDlg, IDC_REMAINING_AMOUNT_TEXT);
-	hWinProbSideLeftSelector = GetDlgItem(hDlg, IDC_L_WIN_PROBABILTY_SIDE_SELECTOR);
+	hWinProbSideLeftSelector = GetDlgItem(hDlg, IDC_L_WIN_PROB_SIDE_SELECTOR);
 	SendMessage(hWinProbSideLeftSelector, WM_UPDATEUISTATE, MAKEWPARAM(UIS_SET, UISF_HIDEFOCUS), 0);
 	SetWindowSubclass(hWinProbSideLeftSelector, buttonSubclassProc, 0, 0);
-	SendMessage(GetDlgItem(hDlg, IDC_R_WIN_PROBABILTY_SIDE_SELECTOR), WM_UPDATEUISTATE, MAKEWPARAM(UIS_SET, UISF_HIDEFOCUS), 0);
-	SetWindowSubclass(GetDlgItem(hDlg, IDC_R_WIN_PROBABILTY_SIDE_SELECTOR), buttonSubclassProc, 0, 0);
-	winProbEdit.attach(GetDlgItem(hDlg, IDC_WIN_PROBABILITY_EDIT));
-	winProbErrorEdit.attach(GetDlgItem(hDlg, IDC_WIN_PROBABILITY_ERROR_EDIT));
-	winProbCalculatorButton.attach(GetDlgItem(hDlg, IDC_WIN_PROBABILITY_CALCULATOR_BUTTON));
+	SendMessage(GetDlgItem(hDlg, IDC_R_WIN_PROB_SIDE_SELECTOR), WM_UPDATEUISTATE, MAKEWPARAM(UIS_SET, UISF_HIDEFOCUS), 0);
+	SetWindowSubclass(GetDlgItem(hDlg, IDC_R_WIN_PROB_SIDE_SELECTOR), buttonSubclassProc, 0, 0);
+	winProbEdit.attach(GetDlgItem(hDlg, IDC_WIN_PROB_EDIT));
+	winProbErrorEdit.attach(GetDlgItem(hDlg, IDC_WIN_PROB_ERROR_EDIT));
+	winProbCalculatorButton.attach(GetDlgItem(hDlg, IDC_WIN_PROB_CALCULATOR_BUTTON));
 	resultLists[1].attach(GetDlgItem(hDlg, IDC_L_RESULT_LIST));
 	resultLists[2].attach(GetDlgItem(hDlg, IDC_R_RESULT_LIST));
 	confirmButtons[1].attach(GetDlgItem(hDlg, IDC_L_CONFIRM_BUTTON));
@@ -216,10 +216,10 @@ INT_PTR BetTabDlg::dlgProc(UINT msg, WPARAM wParam, LPARAM lParam)
 			case IDC_INITIAL_AMOUNT_EDIT:
 				updateInitialAmount();
 				return (INT_PTR)TRUE;
-			case IDC_WIN_PROBABILITY_EDIT:
+			case IDC_WIN_PROB_EDIT:
 				updateWinProb();
 				return (INT_PTR)TRUE;
-			case IDC_WIN_PROBABILITY_ERROR_EDIT:
+			case IDC_WIN_PROB_ERROR_EDIT:
 				updateWinProbError();
 				return (INT_PTR)TRUE;
 			case IDC_L_AIM_BANKER_ODDS_EDIT:
@@ -391,8 +391,8 @@ INT_PTR BetTabDlg::dlgProc(UINT msg, WPARAM wParam, LPARAM lParam)
 				return (INT_PTR)TRUE;
 			}
 			break;
-		case IDC_L_WIN_PROBABILTY_SIDE_SELECTOR:
-		case IDC_R_WIN_PROBABILTY_SIDE_SELECTOR:
+		case IDC_L_WIN_PROB_SIDE_SELECTOR:
+		case IDC_R_WIN_PROB_SIDE_SELECTOR:
 			if (winProbSide == Button_GetCheck(hWinProbSideLeftSelector))
 			{
 				winProbSide = !winProbSide;
@@ -403,7 +403,7 @@ INT_PTR BetTabDlg::dlgProc(UINT msg, WPARAM wParam, LPARAM lParam)
 				}
 			}
 			return (INT_PTR)TRUE;
-		case IDC_WIN_PROBABILITY_EDIT:
+		case IDC_WIN_PROB_EDIT:
 			switch (HIWORD(wParam))
 			{
 			case EN_KILLFOCUS:
@@ -411,7 +411,7 @@ INT_PTR BetTabDlg::dlgProc(UINT msg, WPARAM wParam, LPARAM lParam)
 				return (INT_PTR)TRUE;
 			}
 			break;
-		case IDC_WIN_PROBABILITY_ERROR_EDIT:
+		case IDC_WIN_PROB_ERROR_EDIT:
 			switch (HIWORD(wParam))
 			{
 			case EN_KILLFOCUS:
@@ -419,7 +419,7 @@ INT_PTR BetTabDlg::dlgProc(UINT msg, WPARAM wParam, LPARAM lParam)
 				return (INT_PTR)TRUE;
 			}
 			break;
-		case IDC_WIN_PROBABILITY_CALCULATOR_BUTTON:
+		case IDC_WIN_PROB_CALCULATOR_BUTTON:
 			if (hProbCalculator == nullptr)
 			{
 				IFileDialog* pfd = nullptr;
