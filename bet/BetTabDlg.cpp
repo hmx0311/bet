@@ -76,7 +76,7 @@ INT_PTR BetTabDlg::initDlg(HWND hDlg)
 	confirmButtons[0].attach(GetDlgItem(hDlg, IDC_BALANCE_CONFIRM_BUTTON));
 	for (int i = 0; i < 8; i++)
 	{
-		hReferenceOddsTexts[i] = GetDlgItem(hDlg, IDC_L_RECOMMEND_BANKER_ODDS_TEXT + i);
+		hReferenceOddsTexts[i] = GetDlgItem(hDlg, IDC_L_REC_BANKER_ODDS_TEXT + i);
 	}
 	initialAmountEdit.attach(GetDlgItem(hDlg, IDC_INITIAL_AMOUNT_EDIT));
 	hRemainingAmountText = GetDlgItem(hDlg, IDC_REMAINING_AMOUNT_TEXT);

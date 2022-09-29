@@ -332,6 +332,10 @@ void BetDlg::calcPos()
 	logFont.lfWeight = FW_BOLD;
 	DeleteObject(hBoldFont);
 	hBoldFont = CreateFontIndirect(&logFont);
+
+	SetWindowFont(GetDlgItem(hDlg, IDC_BALANCE_MODE_CAPTION), hBoldFont, FALSE);
+	SetWindowFont(GetDlgItem(hDlg, IDC_WIN_PROB_MODE_CAPTION), hBoldFont, FALSE);
+
 	TAB_HEIGHT = pos.bottom - pos.top - 3;
 	ADD_TAB_Y = pos.bottom - TAB_HEIGHT - 2;
 	TAB_NAME_EDIT_X = TAB_NAME_EDIT_MARGIN_X + 2;
