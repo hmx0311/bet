@@ -140,7 +140,7 @@ LRESULT NumericEdit::wndProc(UINT msg, WPARAM wParam, LPARAM lParam)
 		{
 			TCHAR temp[20];
 			getText(temp, 20);
-			return (!curUndo.empty() && (lstrcmp(temp, curUndo.c_str()) != 0 || !lastUndo.empty()));
+			return !curUndo.empty() && (lstrcmp(temp, curUndo.c_str()) != 0 || !lastUndo.empty());
 		}
 	case EM_UNDO:
 		{
