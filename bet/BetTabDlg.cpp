@@ -73,7 +73,7 @@ INT_PTR BetTabDlg::initDlg(HWND hDlg)
 	addButtons[0].attach(GetDlgItem(hDlg, IDC_L_ADD_BUTTON));
 	addButtons[1].attach(GetDlgItem(hDlg, IDC_R_ADD_BUTTON));
 	resultLists[0].attach(GetDlgItem(hDlg, IDC_BALANCE_RESULT_LIST));
-	confirmButtons[0].attach(GetDlgItem(hDlg, IDC_BALANCE_CONFIRM_BUTTON));
+	calculateButtons[0].attach(GetDlgItem(hDlg, IDC_BALANCE_CALCULATE_BUTTON));
 	for (int i = 0; i < 8; i++)
 	{
 		hReferenceOddsTexts[i] = GetDlgItem(hDlg, IDC_L_REC_BANKER_ODDS_TEXT + i);
@@ -90,8 +90,8 @@ INT_PTR BetTabDlg::initDlg(HWND hDlg)
 	winProbCalculatorButton.attach(GetDlgItem(hDlg, IDC_WIN_PROB_CALCULATOR_BUTTON));
 	resultLists[1].attach(GetDlgItem(hDlg, IDC_L_RESULT_LIST));
 	resultLists[2].attach(GetDlgItem(hDlg, IDC_R_RESULT_LIST));
-	confirmButtons[1].attach(GetDlgItem(hDlg, IDC_L_CONFIRM_BUTTON));
-	confirmButtons[2].attach(GetDlgItem(hDlg, IDC_R_CONFIRM_BUTTON));
+	calculateButtons[1].attach(GetDlgItem(hDlg, IDC_L_CALCULATE_BUTTON));
+	calculateButtons[2].attach(GetDlgItem(hDlg, IDC_R_CALCULATE_BUTTON));
 
 	TCHAR str[7];
 	_stprintf(str, _T("%.2f%%"), 100 * (1 - model.getCut()));
@@ -378,7 +378,7 @@ INT_PTR BetTabDlg::dlgProc(UINT msg, WPARAM wParam, LPARAM lParam)
 				return (INT_PTR)TRUE;
 			}
 			break;
-		case IDC_BALANCE_CONFIRM_BUTTON:
+		case IDC_BALANCE_CALCULATE_BUTTON:
 			{
 				calcBalanceAimAmount();
 				return (INT_PTR)TRUE;
@@ -461,9 +461,9 @@ INT_PTR BetTabDlg::dlgProc(UINT msg, WPARAM wParam, LPARAM lParam)
 				disconnectCalculator();
 			}
 			return (INT_PTR)TRUE;
-		case IDC_L_CONFIRM_BUTTON:
-		case IDC_R_CONFIRM_BUTTON:
-			calcAimAmount(LOWORD(wParam) - IDC_L_CONFIRM_BUTTON);
+		case IDC_L_CALCULATE_BUTTON:
+		case IDC_R_CALCULATE_BUTTON:
+			calcAimAmount(LOWORD(wParam) - IDC_L_CALCULATE_BUTTON);
 			return (INT_PTR)TRUE;
 		}
 		break;

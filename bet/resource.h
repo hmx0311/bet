@@ -76,7 +76,7 @@
 #define IDC_ALL_BOUGHT_BUTTON           1058
 #define IDC_RESET_BUTTON                1059
 #define IDC_BALANCE_RESULT_LIST         1060
-#define IDC_BALANCE_CONFIRM_BUTTON      1061
+#define IDC_BALANCE_CALCULATE_BUTTON    1061
 #define IDC_INITIAL_AMOUNT_EDIT         1062
 #define IDC_REMAINING_AMOUNT_TEXT       1063
 #define IDC_L_WIN_PROB_SIDE_SELECTOR    1064
@@ -93,8 +93,8 @@
 #define IDC_R_MIN_BET_ODDS_TEXT         1075
 #define IDC_L_RESULT_LIST               1076
 #define IDC_R_RESULT_LIST               1077
-#define IDC_L_CONFIRM_BUTTON            1078
-#define IDC_R_CONFIRM_BUTTON            1079
+#define IDC_L_CALCULATE_BUTTON          1078
+#define IDC_R_CALCULATE_BUTTON          1079
 #define IDC_DEF_CUT_COMBO               1080
 #define IDC_DEF_CUT_EDIT                1081
 #define IDC_DEF_CLOSING_CHECK           1082

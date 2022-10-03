@@ -42,7 +42,7 @@ protected:
 	HWND hMoveSpin;
 	Button allBoughtButton;
 	ListBox resultLists[3];
-	Button confirmButtons[3];
+	Button calculateButtons[3];
 	NumericEdit initialAmountEdit;
 	HWND hRemainingAmountText;
 	HWND hWinProbSideLeftSelector;
