@@ -54,8 +54,6 @@ LRESULT Button::wndProc(UINT msg, WPARAM wParam, LPARAM lParam)
 			HDC hDC = BeginPaint(hButton, &paintStruct);
 			if (!BufferedPaintRenderAnimation(hButton, hDC))
 			{
-				RECT rcItem;
-				GetClientRect(hButton, &rcItem);
 				PUSHBUTTONSTATES state = PBS_NORMAL;
 				int bst = Button_GetState(hButton);
 				if (bst & BST_PUSHED)
@@ -69,20 +67,20 @@ LRESULT Button::wndProc(UINT msg, WPARAM wParam, LPARAM lParam)
 				if (lastState == state || hButtonTheme == nullptr)
 				{
 					HDC hDCMem;
-					HPAINTBUFFER hPaintBuffer = BeginBufferedPaint(hDC, &rcItem, BPBF_COMPATIBLEBITMAP, nullptr, &hDCMem);
-					drawButton(hDCMem, state, rcItem);
+					HPAINTBUFFER hPaintBuffer = BeginBufferedPaint(hDC, &paintStruct.rcPaint, BPBF_COMPATIBLEBITMAP, nullptr, &hDCMem);
+					drawButton(hDCMem, state, paintStruct.rcPaint);
 					EndBufferedPaint(hPaintBuffer, TRUE);
 				}
 				else
 				{
 					BP_ANIMATIONPARAMS animParams = { sizeof(BP_ANIMATIONPARAMS),0, BPAS_LINEAR, state == PBS_PRESSED ? BUTTON_ANIMATION_DURATION_SHORT : BUTTON_ANIMATION_DURATION_LONG };
 					HDC hDCFrom, hDCTo;
-					HANIMATIONBUFFER hbpAnimation = BeginBufferedAnimation(hButton, hDC, &rcItem, BPBF_COMPATIBLEBITMAP, nullptr, &animParams, &hDCFrom, &hDCTo);
+					HANIMATIONBUFFER hbpAnimation = BeginBufferedAnimation(hButton, hDC, &paintStruct.rcPaint, BPBF_COMPATIBLEBITMAP, nullptr, &animParams, &hDCFrom, &hDCTo);
 					if (hDCFrom != nullptr)
 					{
-						drawButton(hDCFrom, lastState, rcItem);
+						drawButton(hDCFrom, lastState, paintStruct.rcPaint);
 					}
-					drawButton(hDCTo, state, rcItem);
+					drawButton(hDCTo, state, paintStruct.rcPaint);
 					BufferedPaintStopAllAnimations(hButton);
 					EndBufferedAnimation(hbpAnimation, TRUE);
 					lastState = state;
@@ -107,7 +105,7 @@ void Button::setText(PCTSTR str)
 
 void Button::setIcon(HICON hIcon)
 {
-	this->hIcon = hIcon;
+	SendMessage(hButton, BM_SETIMAGE, IMAGE_ICON, (WPARAM)hIcon);
 	if (hIcon != nullptr)
 	{
 		ICONINFO iconInfo;
@@ -117,7 +115,6 @@ void Button::setIcon(HICON hIcon)
 		iconWidth = bmMask.bmWidth;
 		iconHeight = bmMask.bmHeight;
 	}
-	InvalidateRect(hButton, nullptr, FALSE);
 }
 
 void Button::setBkgBrush(HBRUSH hBkgBrush)
@@ -170,6 +167,7 @@ void Button::drawButton(HDC hDC, PUSHBUTTONSTATES state, RECT& rcItem)
 	rcContent.right -= padding;
 	rcContent.bottom -= padding;
 
+	HICON hIcon = (HICON)SendMessage(hButton, BM_GETIMAGE, IMAGE_ICON, 0);
 	if (hIcon != nullptr)
 	{
 		HDC hDCImage = CreateCompatibleDC(hDC);
