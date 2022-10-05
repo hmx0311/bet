@@ -15,9 +15,7 @@ public:
 	virtual void drawItem(HDC hDC, int itemID, UINT itemState, ULONG_PTR itemData, RECT& rcItem);
 	HWND getHwnd();
 	int addString(PCTSTR pszItem, BYTE style = 0, COLORREF color = 0);
-	void getText(int nIndex, PTSTR str);
 	void setCurSel(int nSelect);
-	int getCurSel();
 };
 
 class BetList :
@@ -47,7 +45,4 @@ public:
 	void resetContent();
 private:
 	int insertString(int nIndex, PCTSTR pszItem, BYTE style, COLORREF color = 0);
-	int getItemRect(int nIndex, PRECT pRect);
-	void setTopIndex(int nIndex);
-	int getScrollPos();
 };

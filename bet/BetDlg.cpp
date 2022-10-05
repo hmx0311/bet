@@ -54,7 +54,7 @@ INT_PTR BetDlg::initDlg(HWND hDlg)
 		hDlg, (HMENU)IDC_TAB_NAME_EDIT, hInst, nullptr);
 	SetWindowSubclass(hTabNameEdit, editSubclassProc, 0, 0);
 
-	hButtonTheme = OpenThemeData(settingsButton.getHwnd(), _T("Button"));
+	hButtonTheme = OpenThemeData(hDlg, _T("Button"));
 
 	settingsButton.setIcon((HICON)LoadImage(hInst, MAKEINTRESOURCE(IDI_SETTINGS), IMAGE_ICON, 0, 0, LR_SHARED));
 	TCHAR settingsTipText[] = _T("…Ë÷√");
@@ -90,7 +90,7 @@ INT_PTR BetDlg::dlgProc(UINT msg, WPARAM wParam, LPARAM lParam)
 		break;
 	case WM_THEMECHANGED:
 		CloseThemeData(hButtonTheme);
-		hButtonTheme = OpenThemeData(settingsButton.getHwnd(), _T("Button"));
+		hButtonTheme = OpenThemeData(hDlg, _T("Button"));
 		needErase = true;
 		InvalidateRect(hDlg, nullptr, TRUE);
 		return (INT_PTR)TRUE;
