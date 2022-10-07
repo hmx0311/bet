@@ -71,17 +71,17 @@ INT_PTR ConfigDlg::dlgProc(UINT msg, WPARAM wParam, LPARAM lParam)
 		{
 		case IDOK:
 			{
-				Config newConfig = { 0 };
-				newConfig.useDefCut = ComboBox_GetCurSel(hDefCutCombo);
+				config.useDefCut = ComboBox_GetCurSel(hDefCutCombo);
+				config.defCut = 0;
 				TCHAR str[6];
 				defCutEdit.getText(str, 6);
 				for (int i = lstrlen(str) - 1; i >= 0; i--)
 				{
 					int c = str[i] - '0';
-					newConfig.defCut = (newConfig.defCut + c) * 0.1;
+					config.defCut = (config.defCut + c) * 0.1;
 				}
-				newConfig.defCut = 1 - newConfig.defCut;
-				newConfig.defClosing = Button_GetCheck(hDefClosingCheck);
+				config.defCut = 1 - config.defCut;
+				config.defClosing = Button_GetCheck(hDefClosingCheck);
 				for (int i = 0; i < 4; i++)
 				{
 					fastAddedAmountEdit[i].getText(str, 6);
@@ -92,22 +92,16 @@ INT_PTR ConfigDlg::dlgProc(UINT msg, WPARAM wParam, LPARAM lParam)
 						fastAddedAmountEdit[i].setSel(0, -1);
 						return (INT_PTR)TRUE;
 					}
-					newConfig.fastAddedAmount[i] = amount;
+					config.fastAddedAmount[i] = amount;
 				}
 				defProbErrorEdit.getText(str, 6);
-				newConfig.defProbError = _ttoi(str) / 100.0;
+				config.defProbError = _ttoi(str) / 100.0;
 				ofstream file(CONFIG_FILE_NAME, ios::out | ios::binary);
-				while (file.fail())
+				if (file.good())
 				{
-					if (MessageBox(hDlg, _T("无法写入文件\"") CONFIG_FILE_NAME _T("\""), _T("bet设置"), MB_RETRYCANCEL | MB_ICONERROR) != IDRETRY)
-					{
-						return (INT_PTR)TRUE;
-					}
-					file.open(CONFIG_FILE_NAME, ios::out | ios::binary);
+					file.write((char*)&config, sizeof(Config));
+					file.close();
 				}
-				file.write((char*)&newConfig, sizeof(Config));
-				file.close();
-				config = newConfig;
 				MessageBox(hDlg, _T("设置已更改，将应用于新竞猜"), _T("bet设置"), MB_OK | MB_ICONINFORMATION);
 			}
 		case IDCANCEL:
