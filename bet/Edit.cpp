@@ -37,9 +37,7 @@ LRESULT CALLBACK editSubclassProc(HWND hEdit, UINT msg, WPARAM wParam, LPARAM lP
 			AppendMenu(hMenu, MF_SEPARATOR, 0, nullptr);
 			AppendMenu(hMenu, HIWORD(sel) == LOWORD(sel) ? MF_GRAYED : MF_ENABLED, 2, _T("¼ôÇÐ(&T)"));
 			AppendMenu(hMenu, HIWORD(sel) == LOWORD(sel) ? MF_GRAYED : MF_ENABLED, 3, _T("¸´ÖÆ(&C)"));
-			OpenClipboard(hEdit);
-			AppendMenu(hMenu, GetClipboardData(CF_TEXT) == nullptr ? MF_GRAYED : MF_ENABLED, 4, _T("Õ³Ìù(&P)"));
-			CloseClipboard();
+			AppendMenu(hMenu, IsClipboardFormatAvailable(CF_TEXT) ? MF_ENABLED : MF_GRAYED, 4, _T("Õ³Ìù(&P)"));
 			AppendMenu(hMenu, HIWORD(sel) == LOWORD(sel) ? MF_GRAYED : MF_ENABLED, 5, _T("É¾³ý(&D)"));
 			AppendMenu(hMenu, MF_SEPARATOR, 0, nullptr);
 			AppendMenu(hMenu, LOWORD(sel) == 0 && HIWORD(sel) == GetWindowTextLength(hEdit) ? MF_GRAYED : MF_ENABLED, 6, _T("È«Ñ¡(&A)"));
