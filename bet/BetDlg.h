@@ -1,5 +1,6 @@
 #pragma once
 #include "Dialog.h"
+#include "CutInputDlg.h"
 #include "BetTabDlg.h"
 
 class BetDlg :
@@ -8,7 +9,8 @@ class BetDlg :
 public:
 	static HICON hIcon;
 private:
-	std::vector<Dialog*> betTabs;
+	CutInputDlg cutInputDlg;
+	std::vector<Dialog*> betTabDlgs;
 	Dialog* currentDlg;
 
 	HWND hBetTab;

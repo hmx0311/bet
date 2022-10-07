@@ -32,6 +32,7 @@ INT_PTR CutInputDlg::dlgProc(UINT msg, WPARAM wParam, LPARAM lParam)
 		case IDOK:
 			{
 				DestroyWindow(hDlg);
+				hDlg = nullptr;
 				break;
 			}
 		}

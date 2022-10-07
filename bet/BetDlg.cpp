@@ -4,7 +4,6 @@
 #include "common.h"
 #include "tooltip.h"
 #include "ConfigDlg.h"
-#include "CutInputDlg.h"
 
 #include <windowsx.h>
 #include <CommCtrl.h>
@@ -106,9 +105,9 @@ INT_PTR BetDlg::dlgProc(UINT msg, WPARAM wParam, LPARAM lParam)
 		needErase = true;
 		break;
 	case WM_PARENTNOTIFY:
-		if (LOWORD(wParam) == WM_DESTROY && (HWND)lParam == currentDlg->getHwnd() && !IsWindowEnabled(hBetTab))
+		if (LOWORD(wParam) == WM_DESTROY && (HWND)lParam == cutInputDlg.getHwnd())
 		{
-			createBetTabDlg(((CutInputDlg*)currentDlg)->getCut());
+			createBetTabDlg(cutInputDlg.getCut());
 			EnableWindow(hBetTab, TRUE);
 			needErase = true;
 		}
@@ -166,7 +165,7 @@ INT_PTR BetDlg::dlgProc(UINT msg, WPARAM wParam, LPARAM lParam)
 			case TCN_SELCHANGE:
 				{
 					ShowWindow(currentDlg->getHwnd(), SW_HIDE);
-					currentDlg = betTabs[TabCtrl_GetCurSel(hBetTab)];
+					currentDlg = betTabDlgs[TabCtrl_GetCurSel(hBetTab)];
 					ShowWindow(currentDlg->getHwnd(), SW_SHOW);
 					lastSel = -1;
 					return (INT_PTR)TRUE;
@@ -217,7 +216,7 @@ INT_PTR BetDlg::dlgProc(UINT msg, WPARAM wParam, LPARAM lParam)
 				if (PtInRect(&rcSelTab, cursorPos))
 				{
 					HMENU hMenu = CreatePopupMenu();
-					AppendMenu(hMenu, (betTabs.size() > 1 ? MF_ENABLED : MF_GRAYED), 1, _T("É¾³ý¾º²Â(&D)"));
+					AppendMenu(hMenu, (betTabDlgs.size() > 1 ? MF_ENABLED : MF_GRAYED), 1, _T("É¾³ý¾º²Â(&D)"));
 					if (TrackPopupMenu(hMenu, TPM_BOTTOMALIGN | TPM_NONOTIFY | TPM_RETURNCMD, cursorPos.x, cursorPos.y, 0, hDlg, nullptr) == 1)
 					{
 						TCITEM cItem;
@@ -230,16 +229,16 @@ INT_PTR BetDlg::dlgProc(UINT msg, WPARAM wParam, LPARAM lParam)
 						_stprintf(str, _T("È·¶¨ÒªÉ¾³ý¾º²Â¡°%s¡±Âð£¿"), tabName);
 						if (MessageBox(hDlg, str, _T("bet"), MB_YESNO | MB_ICONQUESTION) == IDYES)
 						{
-							SetWindowPos(addTabButton.getHwnd(), HWND_TOP, ADD_TAB_X + (betTabs.size() - 2) * TAB_WIDTH, ADD_TAB_Y, 0, 0, SWP_NOSIZE | SWP_SHOWWINDOW);
-							betTabs.erase(betTabs.begin() + tabId);
+							SetWindowPos(addTabButton.getHwnd(), HWND_TOP, ADD_TAB_X + (betTabDlgs.size() - 2) * TAB_WIDTH, ADD_TAB_Y, 0, 0, SWP_NOSIZE | SWP_SHOWWINDOW);
+							betTabDlgs.erase(betTabDlgs.begin() + tabId);
 							TabCtrl_DeleteItem(hBetTab, tabId);
-							if (tabId == betTabs.size())
+							if (tabId == betTabDlgs.size())
 							{
 								tabId--;
 							}
 							DestroyWindow(currentDlg->getHwnd());
 							delete currentDlg;
-							currentDlg = betTabs[tabId];
+							currentDlg = betTabDlgs[tabId];
 							ShowWindow(currentDlg->getHwnd(), SW_SHOW);
 							SetFocus(currentDlg->getHwnd());
 							TabCtrl_SetCurSel(hBetTab, tabId);
@@ -259,7 +258,7 @@ INT_PTR BetDlg::dlgProc(UINT msg, WPARAM wParam, LPARAM lParam)
 		{
 			return (INT_PTR)TRUE;
 		}
-		for (Dialog* betTab : betTabs)
+		for (Dialog* betTab : betTabDlgs)
 		{
 			DestroyWindow(betTab->getHwnd());
 		}
@@ -277,7 +276,7 @@ Dialog* BetDlg::getCurrentTab()
 
 void BetDlg::createBetTabDlg(double cut)
 {
-	int tabId = betTabs.size();
+	int tabId = betTabDlgs.size();
 	if (tabId == MAX_TAB - 1)
 	{
 		ShowWindow(addTabButton.getHwnd(), FALSE);
@@ -288,22 +287,22 @@ void BetDlg::createBetTabDlg(double cut)
 	}
 	currentDlg = new BetTabDlg(cut);
 	currentDlg->createDialog(hDlg);
-	betTabs.push_back(currentDlg);
+	betTabDlgs.push_back(currentDlg);
 	calcBetTabPos();
 }
 
 void BetDlg::createTab()
 {
-	int tabId = betTabs.size();
+	int tabId = betTabDlgs.size();
 	if (config.useDefCut)
 	{
 		createBetTabDlg(config.defCut);
 	}
 	else
 	{
-		currentDlg = new CutInputDlg();
-		currentDlg->createDialog(hDlg);
-		InvalidateRect(currentDlg->getHwnd(), nullptr, TRUE);
+		currentDlg = &cutInputDlg;
+		cutInputDlg.createDialog(hDlg);
+		InvalidateRect(cutInputDlg.getHwnd(), nullptr, TRUE);
 		ShowWindow(addTabButton.getHwnd(), SW_HIDE);
 		EnableWindow(hBetTab, FALSE);
 	}
