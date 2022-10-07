@@ -21,9 +21,9 @@ int TAB_NAME_EDIT_X;
 int TAB_NAME_EDIT_Y;
 #define TAB_NAME_EDIT_WIDTH (TAB_WIDTH - 2 * TAB_NAME_EDIT_MARGIN_X)
 #define TAB_NAME_EDIT_HEIGHT (TAB_HEIGHT - 2 * TAB_NAME_EDIT_MARGIN_Y)
-
-
 extern int X_MOVE;
+
+#define MAX_TAB_NAME_LEN 30
 
 HICON BetDlg::hIcon;
 
@@ -131,8 +131,8 @@ INT_PTR BetDlg::dlgProc(UINT msg, WPARAM wParam, LPARAM lParam)
 		case IDC_TAB_NAME_EDIT:
 			if (HIWORD(wParam) == EN_KILLFOCUS)
 			{
-				TCHAR str[20];
-				GetWindowText(hTabNameEdit, str, 20);
+				TCHAR str[MAX_TAB_NAME_LEN];
+				GetWindowText(hTabNameEdit, str, MAX_TAB_NAME_LEN);
 				if (str[0] != '\0')
 				{
 					int tabId = TabCtrl_GetCurSel(hBetTab);
@@ -180,10 +180,10 @@ INT_PTR BetDlg::dlgProc(UINT msg, WPARAM wParam, LPARAM lParam)
 						if (clickTime - lastClickTime < GetDoubleClickTime())
 						{
 							TCITEM cItem;
-							TCHAR str[30];
+							TCHAR str[MAX_TAB_NAME_LEN];
 							cItem.mask = TCIF_TEXT;
 							cItem.pszText = str;
-							cItem.cchTextMax = 30;
+							cItem.cchTextMax = MAX_TAB_NAME_LEN;
 							TabCtrl_GetItem(hBetTab, lastSel, &cItem);
 							SetWindowText(hTabNameEdit, str);
 							Edit_SetSel(hTabNameEdit, 0, -1);
