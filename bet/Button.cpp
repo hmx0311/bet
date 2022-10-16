@@ -16,16 +16,22 @@ HTHEME hButtonTheme;
 
 LRESULT CALLBACK buttonSubclassProc(HWND hButton, UINT msg, WPARAM wParam, LPARAM lParam, UINT_PTR uIdSubclass, DWORD_PTR dwRefData)
 {
-	Button* button = (Button*)GetWindowLongPtr(hButton, GWLP_USERDATA);
-	if (button != nullptr)
+	switch (msg)
 	{
-		return button->wndProc(msg, wParam, lParam);
-	}
-	if (msg == WM_UPDATEUISTATE)
-	{
+	case WM_UPDATEUISTATE:
 		wParam &= ~MAKELONG(0, UISF_HIDEFOCUS | UISF_ACTIVE);
+		break;
+	case WM_SETFOCUS:
+		if (IsWindowVisible((HWND)wParam))
+		{
+			SetFocus((HWND)wParam);
+		}
+		break;
+	case WM_KILLFOCUS:
+		return LRESULT(TRUE);
 	}
-	return DefSubclassProc(hButton, msg, wParam, lParam);
+	Button* button = (Button*)GetWindowLongPtr(hButton, GWLP_USERDATA);
+	return button == nullptr ? DefSubclassProc(hButton, msg, wParam, lParam) : button->wndProc(msg, wParam, lParam);
 }
 
 
@@ -46,7 +52,9 @@ LRESULT Button::wndProc(UINT msg, WPARAM wParam, LPARAM lParam)
 		return LRESULT(TRUE);
 	case WM_MOVE:
 	case WM_SHOWWINDOW:
+		lastState = PBS_NORMAL;
 		BufferedPaintStopAllAnimations(hButton);
+		DefSubclassProc(hButton, WM_KILLFOCUS, 0, 0);
 		break;
 	case WM_PAINT:
 		{

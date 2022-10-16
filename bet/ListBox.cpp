@@ -9,11 +9,7 @@
 
 using namespace std;
 
-int X_MOVE;
-#define Y_MOVE (int)(-5.9f*yScale)
-#define X_ALL_BOUGHT (int)roundf(157.7f*xScale)
-#define Y_ALL_BOUGHT (int)roundf(-3.2f*yScale)
-#define X_CHANGE (int)(2-54.0f*xScale)
+#define X_CHANGE (int)(2-53.0f*xScale)
 
 static LRESULT CALLBACK listBoxSubclassProc(HWND hListBox, UINT msg, WPARAM wParam, LPARAM lParam, UINT_PTR uIdSubclass, DWORD_PTR dwRefData)
 {
@@ -42,7 +38,7 @@ void ListBox::attach(HWND hListBox)
 	SetWindowSubclass(hListBox, listBoxSubclassProc, 0, 0);
 	RECT rect;
 	GetWindowRect(hListBox, &rect);
-	displayedItemCnt = (rect.bottom - rect.top) / listItemHeight;
+	maxDisplayedItemCnt = (rect.bottom - rect.top) / listItemHeight;
 }
 
 LRESULT ListBox::wndProc(UINT msg, WPARAM wParam, LPARAM lParam)
@@ -55,7 +51,7 @@ LRESULT ListBox::wndProc(UINT msg, WPARAM wParam, LPARAM lParam)
 			RECT rect;
 			GetWindowRect(hListBox, &rect);
 			MapWindowRect(HWND_DESKTOP, hListBox, &rect);
-			SetWindowPos(hListBox, nullptr, 0, 0, rect.right - rect.left, listItemHeight * displayedItemCnt - 2 * rect.top, SWP_NOMOVE | SWP_NOZORDER | SWP_NOREDRAW);
+			SetWindowPos(hListBox, nullptr, 0, 0, rect.right - rect.left, listItemHeight * maxDisplayedItemCnt - 2 * rect.top, SWP_NOMOVE | SWP_NOZORDER | SWP_NOREDRAW);
 			break;
 		}
 	}
@@ -99,11 +95,12 @@ void ListBox::setCurSel(int nSelect)
 
 //class BetList
 
-void BetList::attach(HWND hListBox, HWND hMoveSpin, HWND hAllBoughtButton, NumericEdit* boughtEdit)
+void BetList::attach(HWND hListBox, HWND hAllBoughtButton, HWND hMoveUpButton, HWND hMoveDownButton, NumericEdit* boughtEdit)
 {
 	ListBox::attach(hListBox);
-	this->hMoveSpin = hMoveSpin;
 	this->hAllBoughtButton = hAllBoughtButton;
+	this->hMoveUpButton = hMoveUpButton;
+	this->hMoveDownButton = hMoveDownButton;
 	this->boughtEdit = boughtEdit;
 	GetWindowRect(hListBox, &rcListBox);
 	MapWindowRect(HWND_DESKTOP, GetParent(hListBox), &rcListBox);
@@ -119,7 +116,7 @@ LRESULT BetList::wndProc(UINT msg, WPARAM wParam, LPARAM lParam)
 			ListBox_SetItemHeight(hListBox, 0, listItemHeight);
 			GetWindowRect(hListBox, &rcListBox);
 			MapWindowRect(HWND_DESKTOP, hListBox, &rcListBox);
-			SetWindowPos(hListBox, nullptr, 0, 0, rcListBox.right - rcListBox.left, listItemHeight * displayedItemCnt - 2 * rcListBox.top, SWP_NOMOVE | SWP_NOZORDER | SWP_NOREDRAW);
+			SetWindowPos(hListBox, nullptr, 0, 0, rcListBox.right - rcListBox.left, listItemHeight * maxDisplayedItemCnt - 2 * rcListBox.top, SWP_NOMOVE | SWP_NOZORDER | SWP_NOREDRAW);
 			MapWindowRect(hListBox, GetParent(hListBox), &rcListBox);
 			break;
 		}
@@ -178,8 +175,9 @@ LRESULT BetList::wndProc(UINT msg, WPARAM wParam, LPARAM lParam)
 			{
 				return (LRESULT)TRUE;
 			}
-			ShowWindow(hMoveSpin, SW_HIDE);
 			ShowWindow(hAllBoughtButton, SW_HIDE);
+			ShowWindow(hMoveUpButton, SW_HIDE);
+			ShowWindow(hMoveDownButton, SW_HIDE);
 			ShowWindow(boughtEdit->getHwnd(), SW_SHOW);
 			TCHAR str[20];
 			ListBox_GetText(hListBox, curSel, str);
@@ -224,7 +222,7 @@ LRESULT BetList::wndProc(UINT msg, WPARAM wParam, LPARAM lParam)
 			if (oldScroll != GetScrollPos(hListBox, SB_VERT) && getCurSel() != -1)
 			{
 				int selLineIdx = getCurSel() - GetScrollPos(hListBox, SB_VERT);
-				if (selLineIdx < 0 || selLineIdx >= displayedItemCnt)
+				if (selLineIdx < 0 || selLineIdx >= maxDisplayedItemCnt)
 				{
 					setCurSel(-1);
 					if (GetFocus() == boughtEdit->getHwnd())
@@ -232,23 +230,18 @@ LRESULT BetList::wndProc(UINT msg, WPARAM wParam, LPARAM lParam)
 						ShowWindow(boughtEdit->getHwnd(), SW_HIDE);
 						SetFocus(hListBox);
 					}
-					else
-					{
-						ShowWindow(hMoveSpin, SW_HIDE);
-						ShowWindow(hAllBoughtButton, SW_HIDE);
-					}
 				}
 			}
 			return (LRESULT)TRUE;
 		}
 	case WM_KILLFOCUS:
 		{
-			HWND hFocus = GetFocus();
-			if (hFocus != hAllBoughtButton && hFocus != boughtEdit->getHwnd())
+			if ((HWND)wParam != hAllBoughtButton && (HWND)wParam != hMoveUpButton && (HWND)wParam != hMoveDownButton && (HWND)wParam != boughtEdit->getHwnd())
 			{
 				setCurSel(-1);
-				ShowWindow(hMoveSpin, SW_HIDE);
 				ShowWindow(hAllBoughtButton, SW_HIDE);
+				ShowWindow(hMoveUpButton, SW_HIDE);
+				ShowWindow(hMoveDownButton, SW_HIDE);
 			}
 			break;
 		}
@@ -262,8 +255,9 @@ LRESULT BetList::wndProc(UINT msg, WPARAM wParam, LPARAM lParam)
 				{
 					return (LRESULT)TRUE;
 				}
-				ShowWindow(hMoveSpin, SW_HIDE);
 				ShowWindow(hAllBoughtButton, SW_HIDE);
+				ShowWindow(hMoveUpButton, SW_HIDE);
+				ShowWindow(hMoveDownButton, SW_HIDE);
 				ShowWindow(boughtEdit->getHwnd(), SW_SHOW);
 				TCHAR str[20];
 				ListBox_GetText(hListBox, curSel, str);
@@ -313,7 +307,7 @@ LRESULT BetList::wndProc(UINT msg, WPARAM wParam, LPARAM lParam)
 		}
 		break;
 	case WM_MOUSEMOVE:
-		if (wParam == MK_LBUTTON && betsSize + bankersSize + 5 > displayedItemCnt)
+		if (wParam == MK_LBUTTON && betsSize + bankersSize + 5 > maxDisplayedItemCnt)
 		{
 			int y = GET_Y_LPARAM(lParam);
 			if (y < 0)
@@ -322,7 +316,7 @@ LRESULT BetList::wndProc(UINT msg, WPARAM wParam, LPARAM lParam)
 			}
 			else if (y > rcListBox.bottom - rcListBox.top)
 			{
-				setCurSel(GetScrollPos(hListBox, SB_VERT) + displayedItemCnt - 1);
+				setCurSel(GetScrollPos(hListBox, SB_VERT) + maxDisplayedItemCnt - 1);
 			}
 		}
 		break;
@@ -330,7 +324,7 @@ LRESULT BetList::wndProc(UINT msg, WPARAM wParam, LPARAM lParam)
 		if (getCurSel() != -1)
 		{
 			int selLineIdx = getCurSel() - GetScrollPos(hListBox, SB_VERT);
-			if (selLineIdx < 0 || selLineIdx >= displayedItemCnt)
+			if (selLineIdx < 0 || selLineIdx >= maxDisplayedItemCnt)
 			{
 				setCurSel(-1);
 				if (GetFocus() == boughtEdit->getHwnd())
@@ -338,13 +332,9 @@ LRESULT BetList::wndProc(UINT msg, WPARAM wParam, LPARAM lParam)
 					ShowWindow(boughtEdit->getHwnd(), SW_HIDE);
 					SetFocus(hListBox);
 				}
-				else
-				{
-					ShowWindow(hMoveSpin, SW_HIDE);
-					ShowWindow(hAllBoughtButton, SW_HIDE);
-				}
 			}
 		}
+		break;
 	}
 	return result;
 }
@@ -354,26 +344,80 @@ void BetList::drawItem(HDC hDC, int itemID, UINT itemState, ULONG_PTR itemData, 
 	if ((itemID < 2 || betsSize + 1 < itemID && itemID < betsSize + 5) && itemState & ODS_SELECTED)
 	{
 		itemState -= ODS_SELECTED;
-		ShowWindow(hMoveSpin, SW_HIDE);
 		ShowWindow(hAllBoughtButton, SW_HIDE);
+		ShowWindow(hMoveUpButton, SW_HIDE);
+		ShowWindow(hMoveDownButton, SW_HIDE);
 	}
 	if (itemState & ODS_SELECTED)
 	{
+		if (rcItem.top<0 || rcItem.bottom>rcListBox.bottom - rcListBox.top)
+		{
+			setCurSel(-1);
+			if (GetFocus() != boughtEdit->getHwnd())
+			{
+				ShowWindow(hAllBoughtButton, SW_HIDE);
+				ShowWindow(hMoveUpButton, SW_HIDE);
+				ShowWindow(hMoveDownButton, SW_HIDE);
+			}
+			return;
+		}
 		int posY = rcListBox.top + rcItem.top + 2;
 		if (IsWindowVisible(boughtEdit->getHwnd()))
 		{
-			SetWindowPos(boughtEdit->getHwnd(), HWND_TOP, rcListBox.left + rcItem.right + X_CHANGE, posY, 0, 0, SWP_NOSIZE | SWP_NOZORDER);
+			SetWindowPos(boughtEdit->getHwnd(), HWND_TOP, rcListBox.left + rcItem.right - listItemHeight + X_CHANGE, posY, 0, 0, SWP_NOSIZE | SWP_NOZORDER);
 		}
 		else
 		{
-			SetWindowPos(hMoveSpin, nullptr, rcListBox.left + X_MOVE, posY + Y_MOVE, 0, 0, SWP_NOSIZE | SWP_SHOWWINDOW);
+			int posX = rcListBox.left + rcItem.right - listItemHeight + 2;
 			if (itemID > betsSize + 2)
 			{
-				SetWindowPos(hAllBoughtButton, HWND_TOP, rcListBox.left + X_ALL_BOUGHT, posY + Y_ALL_BOUGHT, 0, 0, SWP_NOSIZE | SWP_SHOWWINDOW);
+				SetWindowPos(hAllBoughtButton, HWND_TOP, posX, posY, 0, 0, SWP_NOSIZE | SWP_SHOWWINDOW);
+				if (itemID > betsSize + 5 && ListBox_GetTopIndex(hListBox) < itemID)
+				{
+					SetWindowPos(hMoveUpButton, HWND_TOP, posX, posY - listItemHeight, 0, 0, SWP_NOSIZE | SWP_SHOWWINDOW);
+				}
+				else
+				{
+					ShowWindow(hMoveUpButton, SW_HIDE);
+				}
+				if (itemID < betsSize + bankersSize + 4 && ListBox_GetTopIndex(hListBox) + maxDisplayedItemCnt - 1 > itemID)
+				{
+					SetWindowPos(hMoveDownButton, HWND_TOP, posX, posY + listItemHeight, 0, 0, SWP_NOSIZE | SWP_SHOWWINDOW);
+				}
+				else
+				{
+					ShowWindow(hMoveDownButton, SW_HIDE);
+				}
 			}
 			else
 			{
 				ShowWindow(hAllBoughtButton, SW_HIDE);
+				if (itemID > 2 && ListBox_GetTopIndex(hListBox) < itemID)
+				{
+					if (itemID < betsSize + 1 && ListBox_GetTopIndex(hListBox) + maxDisplayedItemCnt - 1 > itemID)
+					{
+						SetWindowPos(hMoveUpButton, HWND_TOP, posX, posY - (listItemHeight + 1) / 2, 0, 0, SWP_NOSIZE | SWP_SHOWWINDOW);
+						SetWindowPos(hMoveDownButton, HWND_TOP, posX, posY + listItemHeight / 2, 0, 0, SWP_NOSIZE | SWP_SHOWWINDOW);
+					}
+					else
+					{
+						SetWindowPos(hMoveUpButton, HWND_TOP, posX, posY, 0, 0, SWP_NOSIZE | SWP_SHOWWINDOW);
+						ShowWindow(hMoveDownButton, SW_HIDE);
+					}
+				}
+				else
+				{
+					if (itemID < betsSize + 1 && ListBox_GetTopIndex(hListBox) + maxDisplayedItemCnt - 1 > itemID)
+					{
+						ShowWindow(hMoveUpButton, SW_HIDE);
+						SetWindowPos(hMoveDownButton, HWND_TOP, posX, posY, 0, 0, SWP_NOSIZE | SWP_SHOWWINDOW);
+					}
+					else
+					{
+						ShowWindow(hMoveUpButton, SW_HIDE);
+						ShowWindow(hMoveDownButton, SW_HIDE);
+					}
+				}
 			}
 		}
 		FillRect(hDC, &rcItem, GetSysColorBrush(COLOR_HIGHLIGHT));
@@ -388,6 +432,10 @@ void BetList::drawItem(HDC hDC, int itemID, UINT itemState, ULONG_PTR itemData, 
 		rcItem.bottom = rcItem.top + 1;
 		FillRect(hDC, &rcItem, GetSysColorBrush(COLOR_WINDOWTEXT));
 		return;
+	}
+	if (itemID > betsSize + 4)
+	{
+		rcItem.right -= listItemHeight + xScale;
 	}
 	SetBkMode(hDC, TRANSPARENT);
 	COLORREF color = itemData >> 8;
@@ -428,24 +476,25 @@ int BetList::getCurSel()
 
 void BetList::addBet(PCTSTR str)
 {
-	int a = insertString(betsSize + 2, str, DT_CENTER);
+	insertString(betsSize + 2, str, DT_CENTER);
 	betsSize++;
-	ListBox_SetTopIndex(hListBox, betsSize > displayedItemCnt - 2 ? betsSize + 2 - displayedItemCnt : 0);
+	ListBox_SetTopIndex(hListBox, betsSize > maxDisplayedItemCnt - 2 ? betsSize + 2 - maxDisplayedItemCnt : 0);
 }
 
 void BetList::addBanker(PCTSTR str)
 {
-	int nIndex = addString(str, DT_CENTER, RGB(255, 0, 0));
+	int nIndex = addString(str, DT_RIGHT, RGB(255, 0, 0));
 	bankersSize++;
-	ListBox_SetTopIndex(hListBox, betsSize + bankersSize + 6 - displayedItemCnt);
+	ListBox_SetTopIndex(hListBox, betsSize + bankersSize + 6 - maxDisplayedItemCnt);
 }
 
 void BetList::updateBanker(int nIndex, PCTSTR pszItem, COLORREF color)
 {
 	ListBox_DeleteString(hListBox, nIndex);
-	insertString(nIndex, pszItem, DT_CENTER, color);
-	ShowWindow(hMoveSpin, SW_HIDE);
+	insertString(nIndex, pszItem, DT_RIGHT, color);
 	ShowWindow(hAllBoughtButton, SW_HIDE);
+	ShowWindow(hMoveUpButton, SW_HIDE);
+	ShowWindow(hMoveDownButton, SW_HIDE);
 }
 
 int BetList::moveSel(bool direction)
@@ -460,23 +509,22 @@ int BetList::moveSel(bool direction)
 	{
 		TCHAR str[20];
 		ListBox_GetText(hListBox, swapIdx + 1, str);
-		insertString(swapIdx, str, -1);
+		insertString(swapIdx, str, DT_CENTER);
 		ListBox_DeleteString(hListBox, swapIdx + 2);
 		setCurSel(targetLineIdx);
 		return swapIdx - 2;
 	}
-	int bankerIdx = swapIdx - betsSize - 5;
-	if (bankerIdx >= 0 && bankerIdx < bankersSize - 1)
+	else
 	{
+		int bankerIdx = swapIdx - betsSize - 5;
 		TCHAR str[20];
 		ListBox_GetText(hListBox, swapIdx + 1, str);
 		COLORREF color = ListBox_GetItemData(hListBox, swapIdx + 1) >> 8;
-		insertString(swapIdx, str, -1, color);
+		insertString(swapIdx, str, DT_RIGHT, color);
 		ListBox_DeleteString(hListBox, swapIdx + 2);
 		setCurSel(targetLineIdx);
 		return bankerIdx;
 	}
-	return -1;
 }
 
 pair<bool, int> BetList::deleteSel()
@@ -495,12 +543,13 @@ pair<bool, int> BetList::deleteSel()
 		bankersSize--;
 	}
 	ListBox_DeleteString(hListBox, lineIdx);
-	if (GetScrollPos(hListBox, SB_VERT) >= betsSize + bankersSize + 5 - displayedItemCnt)
+	if (GetScrollPos(hListBox, SB_VERT) >= betsSize + bankersSize + 5 - maxDisplayedItemCnt)
 	{
-		ListBox_SetTopIndex(hListBox, betsSize + bankersSize + 5 - displayedItemCnt);
+		ListBox_SetTopIndex(hListBox, betsSize + bankersSize + 5 - maxDisplayedItemCnt);
 	}
-	ShowWindow(hMoveSpin, SW_HIDE);
 	ShowWindow(hAllBoughtButton, SW_HIDE);
+	ShowWindow(hMoveUpButton, SW_HIDE);
+	ShowWindow(hMoveDownButton, SW_HIDE);
 	ShowWindow(boughtEdit->getHwnd(), SW_HIDE);
 	return result;
 }

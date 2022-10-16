@@ -42,21 +42,12 @@ INT_PTR BetTabDlg::initDlg(HWND hDlg)
 	hHaveClosingCheck = GetDlgItem(hDlg, IDC_HAVE_CLOSING_CHECK);
 	SendMessage(hHaveClosingCheck, WM_UPDATEUISTATE, MAKEWPARAM(UIS_SET, UISF_HIDEFOCUS), 0);
 	SetWindowSubclass(hHaveClosingCheck, buttonSubclassProc, 0, 0);
-	hMoveSpin = GetDlgItem(hDlg, IDC_MOVE_SPIN);
 	allBoughtButton.attach(GetDlgItem(hDlg, IDC_ALL_BOUGHT_BUTTON));
-	SetWindowSubclass(allBoughtButton.getHwnd(),
-		[](HWND button, UINT msg, WPARAM wParam, LPARAM lParam, UINT_PTR uIdSubclass, DWORD_PTR dwRefData)->LRESULT
-		{
-			LRESULT result = buttonSubclassProc(button, msg, wParam, lParam, uIdSubclass, dwRefData);
-			if (msg == WM_LBUTTONUP)
-			{
-				SendMessage(GetParent(button), WM_COMMAND, MAKEWPARAM(IDC_ALL_BOUGHT_BUTTON, BN_KILLFOCUS), 0);
-			}
-			return result;
-		}, 0, 0);
+	moveUpButton.attach(GetDlgItem(hDlg, IDC_MOVE_UP_BUTTON));
+	moveDownButton.attach(GetDlgItem(hDlg, IDC_MOVE_DOWN_BUTTON));
 	boughtEdit.attach(GetDlgItem(hDlg, IDC_CHANGE_BOUGHT_EDIT));
-	betLists[0].attach(GetDlgItem(hDlg, IDC_L_BET_LIST), hMoveSpin, allBoughtButton.getHwnd(), &boughtEdit);
-	betLists[1].attach(GetDlgItem(hDlg, IDC_R_BET_LIST), hMoveSpin, allBoughtButton.getHwnd(), &boughtEdit);
+	betLists[0].attach(GetDlgItem(hDlg, IDC_L_BET_LIST), allBoughtButton.getHwnd(), moveUpButton.getHwnd(), moveDownButton.getHwnd(), &boughtEdit);
+	betLists[1].attach(GetDlgItem(hDlg, IDC_R_BET_LIST), allBoughtButton.getHwnd(), moveUpButton.getHwnd(), moveDownButton.getHwnd(), &boughtEdit);
 	for (int i = 0; i < 10; i++)
 	{
 		hBankerBetSelectors[i] = GetDlgItem(hDlg, IDC_L_BANKER_SELECTOR + i);
@@ -121,6 +112,7 @@ INT_PTR BetTabDlg::initDlg(HWND hDlg)
 
 	resetButton.setIcon(hResetIcon);
 	allBoughtButton.setIcon(hTickIcon);
+	allBoughtButton.setBkgBrush(GetSysColorBrush(COLOR_WINDOW));
 	winProbCalculatorButton.setIcon(hCalculatorIcon);
 
 	Button_SetCheck(hWinProbSideLeftSelector, 1);
@@ -167,16 +159,7 @@ INT_PTR BetTabDlg::dlgProc(UINT msg, WPARAM wParam, LPARAM lParam)
 		}
 		return (INT_PTR)TRUE;
 	case WM_ERASEBKGND:
-		{
-			HBRUSH brush = GetSysColorBrush(COLOR_BTNFACE);
-			FillRect((HDC)wParam, &rcErase1, brush);
-			FillRect((HDC)wParam, &rcErase2, brush);
-			GetWindowRect(hMoveSpin, &rcErase1);
-			MapWindowRect(HWND_DESKTOP, hDlg, &rcErase1);
-			GetWindowRect(allBoughtButton.getHwnd(), &rcErase2);
-			MapWindowRect(HWND_DESKTOP, hDlg, &rcErase2);
-			return (INT_PTR)TRUE;
-		}
+		return (INT_PTR)TRUE;
 	case WM_CTLCOLORSTATIC:
 		if ((HWND)lParam == hCurrentProfitTexts[LEFT_SIDE] && model.getProfit(RIGHT_SIDE) - model.getProfit(LEFT_SIDE) > 1 ||
 			(HWND)lParam == hCurrentProfitTexts[RIGHT_SIDE] && model.getProfit(LEFT_SIDE) - model.getProfit(RIGHT_SIDE) > 1)
@@ -360,24 +343,50 @@ INT_PTR BetTabDlg::dlgProc(UINT msg, WPARAM wParam, LPARAM lParam)
 					updateCurrentProfit();
 					return (INT_PTR)TRUE;
 				}
-				break;
-			}
-		case IDC_ALL_BOUGHT_BUTTON:
-			switch (HIWORD(wParam))
-			{
-			case BN_CLICKED:
-				{
-					int lineIdx = betLists[selSide].getCurSel();
-					betLists[selSide].updateBanker(lineIdx, model.allBought(selSide, lineIdx - betLists[selSide].getBetsSize() - 5).show);
-					SetFocus(betLists[selSide].getHwnd());
-					updateCurrentProfit();
-					return (INT_PTR)TRUE;
-				}
-			case BN_KILLFOCUS:
-				SetFocus(betLists[selSide].getHwnd());
-				return (INT_PTR)TRUE;
 			}
 			break;
+		case IDC_ALL_BOUGHT_BUTTON:
+			{
+				int lineIdx = betLists[selSide].getCurSel();
+				betLists[selSide].updateBanker(lineIdx, model.allBought(selSide, lineIdx - betLists[selSide].getBetsSize() - 5).show);
+				SetFocus(betLists[selSide].getHwnd());
+				updateCurrentProfit();
+				return (INT_PTR)TRUE;
+			}
+		case IDC_MOVE_UP_BUTTON:
+			{
+				int itemIdx = betLists[selSide].moveSel(true);
+				if (itemIdx == -1)
+				{
+					return (INT_PTR)TRUE;
+				}
+				if (IsWindowVisible(allBoughtButton.getHwnd()))
+				{
+					model.swapBanker(selSide, itemIdx);
+				}
+				else
+				{
+					model.swapBet(selSide, itemIdx);
+				}
+				return (INT_PTR)TRUE;
+			}
+		case IDC_MOVE_DOWN_BUTTON:
+			{
+				int itemIdx = betLists[selSide].moveSel(false);
+				if (itemIdx == -1)
+				{
+					return (INT_PTR)TRUE;
+				}
+				if (IsWindowVisible(allBoughtButton.getHwnd()))
+				{
+					model.swapBanker(selSide, itemIdx);
+				}
+				else
+				{
+					model.swapBet(selSide, itemIdx);
+				}
+				return (INT_PTR)TRUE;
+			}
 		case IDC_BALANCE_CALCULATE_BUTTON:
 			{
 				calcBalanceAimAmount();
@@ -484,23 +493,6 @@ INT_PTR BetTabDlg::dlgProc(UINT msg, WPARAM wParam, LPARAM lParam)
 			Button_SetCheck(hBankerBetSelectors[((LPNMHDR)lParam)->idFrom - IDC_L_BANKER_ODDS_SPIN], 1);
 			Button_SetCheck(hBankerBetSelectors[(((LPNMHDR)lParam)->idFrom - IDC_L_BANKER_ODDS_SPIN) ^ 1], 0);
 			return (INT_PTR)TRUE;
-		case IDC_MOVE_SPIN:
-			{
-				int itemIdx = betLists[selSide].moveSel(((LPNMUPDOWN)lParam)->iDelta < 0);
-				if (itemIdx == -1)
-				{
-					return (INT_PTR)TRUE;
-				}
-				if (IsWindowVisible(allBoughtButton.getHwnd()))
-				{
-					model.swapBanker(selSide, itemIdx);
-				}
-				else
-				{
-					model.swapBet(selSide, itemIdx);
-				}
-				return (INT_PTR)TRUE;
-			}
 		}
 		break;
 	case WM_DESTROY:

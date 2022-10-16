@@ -21,7 +21,6 @@ int TAB_NAME_EDIT_X;
 int TAB_NAME_EDIT_Y;
 #define TAB_NAME_EDIT_WIDTH (TAB_WIDTH - 2 * TAB_NAME_EDIT_MARGIN_X)
 #define TAB_NAME_EDIT_HEIGHT (TAB_HEIGHT - 2 * TAB_NAME_EDIT_MARGIN_Y)
-extern int X_MOVE;
 
 #define MAX_TAB_NAME_LEN 30
 
@@ -79,7 +78,6 @@ INT_PTR BetDlg::dlgProc(UINT msg, WPARAM wParam, LPARAM lParam)
 		MapWindowRect(HWND_DESKTOP, hDlg, &rcDlg);
 		SetWindowPos(hDlg, nullptr, 0, 0, rcTab.right - 2 * rcDlg.left, rcTab.bottom - rcDlg.top - rcDlg.left, SWP_NOMOVE | SWP_NOZORDER | SWP_NOREDRAW);
 		calcPos();
-		calcBetTabPos();
 		SetWindowPos(hTabNameEdit, nullptr, 0, 0, TAB_NAME_EDIT_WIDTH, TAB_NAME_EDIT_HEIGHT, SWP_NOMOVE | SWP_NOZORDER | SWP_NOREDRAW);
 		DeleteObject(hIcon);
 		hIcon = LoadIcon(hInst, MAKEINTRESOURCE(IDI_BET));
@@ -288,7 +286,6 @@ void BetDlg::createBetTabDlg(double cut)
 	currentDlg = new BetTabDlg(cut);
 	currentDlg->createDialog(hDlg);
 	betTabDlgs.push_back(currentDlg);
-	calcBetTabPos();
 }
 
 void BetDlg::createTab()
@@ -341,12 +338,4 @@ void BetDlg::calcPos()
 	TAB_NAME_EDIT_Y = pos.bottom - TAB_HEIGHT + TAB_NAME_EDIT_MARGIN_Y - 1;
 
 	TabCtrl_SetItemSize(hBetTab, TAB_WIDTH, TAB_HEIGHT);
-}
-
-void BetDlg::calcBetTabPos()
-{
-	RECT rect;
-	GetWindowRect(GetDlgItem(currentDlg->getHwnd(), IDC_L_BET_LIST), &rect);
-	GetWindowRect(GetDlgItem(currentDlg->getHwnd(), IDC_MOVE_SPIN), &rect);
-	X_MOVE = rect.left - rect.right;
 }

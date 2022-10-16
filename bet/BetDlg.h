@@ -30,6 +30,5 @@ private:
 	void createBetTabDlg(double cut);
 	void createTab();
 	void calcPos();
-	void calcBetTabPos();
 };
 

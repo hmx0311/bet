@@ -16,8 +16,6 @@ public:
 	static HICON hCalculatorIcon;
 private:
 	bool selSide = 0;
-	RECT rcErase1 = { 0 };
-	RECT rcErase2 = { 0 };
 	long long initialAmount = 0;
 	bool winProbSide = 0;
 	double winProb = 0;
@@ -39,8 +37,9 @@ protected:
 	Button addAmountButtons[8];
 	Button addButtons[2];
 	NumericEdit boughtEdit;
-	HWND hMoveSpin;
 	Button allBoughtButton;
+	Button moveUpButton;
+	Button moveDownButton;
 	ListBox resultLists[3];
 	Button calculateButtons[3];
 	NumericEdit initialAmountEdit;

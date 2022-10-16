@@ -335,6 +335,9 @@ LRESULT OddsEdit::wndProc(UINT msg, WPARAM wParam, LPARAM lParam)
 			return (LRESULT)TRUE;
 		}
 		break;
+	case WM_MOUSEWHEEL:
+		SetFocus(hEdit);
+		break;
 	case WM_KILLFOCUS:
 		SendMessage(hEdit, WM_KEYUP, VK_UP, MAKELONG(1, KF_UP | KF_REPEAT | KF_EXTENDED));
 		updateOdds();
