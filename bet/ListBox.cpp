@@ -206,12 +206,6 @@ LRESULT BetList::wndProc(UINT msg, WPARAM wParam, LPARAM lParam)
 			DestroyMenu(menu);
 			return (LRESULT)TRUE;
 		}
-	case WM_MOUSEMOVE:
-		if (wParam == MK_LBUTTON)
-		{
-			lParam &= MAKEWPARAM(0, 0xffff);
-		}
-		break;
 	case WM_MOUSEWHEEL:
 		{
 			int oldScroll = GetScrollPos(hLB, SB_VERT);
@@ -232,6 +226,11 @@ LRESULT BetList::wndProc(UINT msg, WPARAM wParam, LPARAM lParam)
 		}
 	case WM_KILLFOCUS:
 		{
+			if (isDragging)
+			{
+				cancelDrag();
+				SetCursor(nullptr);
+			}
 			if ((HWND)wParam != hAllBoughtButton && (HWND)wParam != boughtEdit->getHwnd())
 			{
 				setCurSel(-1);
@@ -243,6 +242,7 @@ LRESULT BetList::wndProc(UINT msg, WPARAM wParam, LPARAM lParam)
 		switch (LOWORD(wParam))
 		{
 		case ID_CONFIRM:
+			if (!isDragging)
 			{
 				int curSel = getCurSel();
 				if (curSel < betsSize + 5)
@@ -260,6 +260,7 @@ LRESULT BetList::wndProc(UINT msg, WPARAM wParam, LPARAM lParam)
 				SetFocus(boughtEdit->getHwnd());
 				return (LRESULT)TRUE;
 			}
+			break;
 		}
 		break;
 	}
@@ -296,20 +297,6 @@ LRESULT BetList::wndProc(UINT msg, WPARAM wParam, LPARAM lParam)
 				setCurSel(betsSize + (curSel > betsSize + 2 ? 5 : 1));
 			}
 			break;
-		}
-		break;
-	case WM_MOUSEMOVE:
-		if (wParam == MK_LBUTTON && betsSize + bankersSize + 5 > maxDisplayedItemCnt)
-		{
-			int y = GET_Y_LPARAM(lParam);
-			if (y < 0)
-			{
-				setCurSel(GetScrollPos(hLB, SB_VERT));
-			}
-			else if (y > rcListBox.bottom - rcListBox.top)
-			{
-				setCurSel(GetScrollPos(hLB, SB_VERT) + maxDisplayedItemCnt - 1);
-			}
 		}
 		break;
 	case WM_VSCROLL:
@@ -406,12 +393,16 @@ BOOL BetList::beginDrag(POINT ptCursor)
 
 UINT BetList::dragging(POINT ptCursor)
 {
-	ScreenToClient(hLB, &ptCursor);
-	RECT rcLast;
-	ListBox_GetItemRect(hLB, lastDragIdx, &rcLast);
-	int dragIdx;
 	int curSel = getCurSel();
-	if (ptCursor.x<0 || ptCursor.x>rcLast.right)
+	if (curSel == -1)
+	{
+		return DL_CURSORSET;
+	}
+	ScreenToClient(hLB, &ptCursor);
+	RECT rc;
+	ListBox_GetItemRect(hLB, 0, &rc);
+	int dragIdx;
+	if (ptCursor.x<0 || ptCursor.x>rc.right)
 	{
 		dragIdx = -1;
 	}
