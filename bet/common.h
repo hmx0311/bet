@@ -11,13 +11,15 @@ struct Config
 	double defProbError;
 };
 
+extern HINSTANCE hInst;
+
 extern Config config;
 extern float xScale;
 extern float yScale;
 extern int listItemHeight;
 extern HFONT hFont;
 extern HFONT hBoldFont;
+extern UINT DRAGLISTMSG;
 
-extern HINSTANCE hInst;
 
 void loadConfig(Config& cfg);

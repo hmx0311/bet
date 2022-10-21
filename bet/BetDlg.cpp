@@ -63,6 +63,7 @@ INT_PTR BetDlg::initDlg(HWND hDlg)
 	setVCentered(hTabNameEdit);
 
 	createTab();
+	DRAGLISTMSG = RegisterWindowMessage(DRAGLISTMSGSTRING);
 	return (INT_PTR)FALSE;
 }
 
@@ -319,7 +320,7 @@ void BetDlg::calcPos()
 	RECT pos;
 	GetWindowRect(hBetTab, &pos);
 	MapWindowRect(HWND_DESKTOP, hDlg, &pos);
-	xScale = pos.right / 676.0f;
+	xScale = pos.right / 641.0f;
 	yScale = pos.bottom / 530.0f;
 	hFont = GetWindowFont(hDlg);
 	LOGFONT logFont;

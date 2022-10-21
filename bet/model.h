@@ -56,8 +56,8 @@ public:
 	void addBanker(bool side, Banker& banker);
 	const Banker& allBought(bool side, int index);
 	const Banker& changeBought(bool side, int index, int amount);
-	void swapBet(bool side, int index);
-	void swapBanker(bool side, int index);
+	void moveBet(bool side, int index, int newPos);
+	void moveBanker(bool side, int index, int newPos);
 	void deleteBet(bool side, int index);
 	void deleteBanker(bool side, int index);
 	void reset();

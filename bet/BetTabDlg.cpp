@@ -43,11 +43,9 @@ INT_PTR BetTabDlg::initDlg(HWND hDlg)
 	SendMessage(hHaveClosingCheck, WM_UPDATEUISTATE, MAKEWPARAM(UIS_SET, UISF_HIDEFOCUS), 0);
 	SetWindowSubclass(hHaveClosingCheck, buttonSubclassProc, 0, 0);
 	allBoughtButton.attach(GetDlgItem(hDlg, IDC_ALL_BOUGHT_BUTTON));
-	moveUpButton.attach(GetDlgItem(hDlg, IDC_MOVE_UP_BUTTON));
-	moveDownButton.attach(GetDlgItem(hDlg, IDC_MOVE_DOWN_BUTTON));
 	boughtEdit.attach(GetDlgItem(hDlg, IDC_CHANGE_BOUGHT_EDIT));
-	betLists[0].attach(GetDlgItem(hDlg, IDC_L_BET_LIST), allBoughtButton.getHwnd(), moveUpButton.getHwnd(), moveDownButton.getHwnd(), &boughtEdit);
-	betLists[1].attach(GetDlgItem(hDlg, IDC_R_BET_LIST), allBoughtButton.getHwnd(), moveUpButton.getHwnd(), moveDownButton.getHwnd(), &boughtEdit);
+	betLists[0].attach(GetDlgItem(hDlg, IDC_L_BET_LIST), allBoughtButton.getHwnd(), &boughtEdit);
+	betLists[1].attach(GetDlgItem(hDlg, IDC_R_BET_LIST), allBoughtButton.getHwnd(), &boughtEdit);
 	for (int i = 0; i < 10; i++)
 	{
 		hBankerBetSelectors[i] = GetDlgItem(hDlg, IDC_L_BANKER_SELECTOR + i);
@@ -127,6 +125,41 @@ INT_PTR BetTabDlg::initDlg(HWND hDlg)
 
 INT_PTR BetTabDlg::dlgProc(UINT msg, WPARAM wParam, LPARAM lParam)
 {
+	if (msg == DRAGLISTMSG)
+	{
+		LPDRAGLISTINFO lpDragListInfo = (LPDRAGLISTINFO)lParam;
+		switch (lpDragListInfo->uNotification)
+		{
+		case DL_BEGINDRAG:
+			SetWindowLongPtr(hDlg, DWLP_MSGRESULT, betLists[selSide].beginDrag(lpDragListInfo->ptCursor));
+			return (INT_PTR)TRUE;
+		case DL_DRAGGING:
+			SetWindowLongPtr(hDlg, DWLP_MSGRESULT, betLists[selSide].dragging(lpDragListInfo->ptCursor));
+			return (INT_PTR)TRUE;
+		case DL_DROPPED:
+			{
+				int curSel = betLists[selSide].getCurSel();
+				int newIdx = betLists[selSide].dropped(lpDragListInfo->ptCursor);
+				if (newIdx != -1)
+				{
+					int betsSize = betLists[selSide].getBetsSize();
+					if (curSel < betsSize + 2)
+					{
+						model.moveBet(selSide, curSel - 2, newIdx - 2);
+					}
+					else
+					{
+						model.moveBanker(selSide, curSel - betsSize - 5, newIdx - betsSize - 5);
+					}
+				}
+				break;
+			}
+		case DL_CANCELDRAG:
+			betLists[selSide].cancelDrag();
+			break;
+		}
+		return (INT_PTR)TRUE;
+	}
 	switch (msg)
 	{
 	case BPC_CONNECTED:
@@ -351,40 +384,6 @@ INT_PTR BetTabDlg::dlgProc(UINT msg, WPARAM wParam, LPARAM lParam)
 				betLists[selSide].updateBanker(lineIdx, model.allBought(selSide, lineIdx - betLists[selSide].getBetsSize() - 5).show);
 				SetFocus(betLists[selSide].getHwnd());
 				updateCurrentProfit();
-				return (INT_PTR)TRUE;
-			}
-		case IDC_MOVE_UP_BUTTON:
-			{
-				int itemIdx = betLists[selSide].moveSel(true);
-				if (itemIdx == -1)
-				{
-					return (INT_PTR)TRUE;
-				}
-				if (IsWindowVisible(allBoughtButton.getHwnd()))
-				{
-					model.swapBanker(selSide, itemIdx);
-				}
-				else
-				{
-					model.swapBet(selSide, itemIdx);
-				}
-				return (INT_PTR)TRUE;
-			}
-		case IDC_MOVE_DOWN_BUTTON:
-			{
-				int itemIdx = betLists[selSide].moveSel(false);
-				if (itemIdx == -1)
-				{
-					return (INT_PTR)TRUE;
-				}
-				if (IsWindowVisible(allBoughtButton.getHwnd()))
-				{
-					model.swapBanker(selSide, itemIdx);
-				}
-				else
-				{
-					model.swapBet(selSide, itemIdx);
-				}
 				return (INT_PTR)TRUE;
 			}
 		case IDC_BALANCE_CALCULATE_BUTTON:

@@ -38,8 +38,6 @@ protected:
 	Button addButtons[2];
 	NumericEdit boughtEdit;
 	Button allBoughtButton;
-	Button moveUpButton;
-	Button moveDownButton;
 	ListBox resultLists[3];
 	Button calculateButtons[3];
 	NumericEdit initialAmountEdit;

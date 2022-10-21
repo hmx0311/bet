@@ -117,14 +117,34 @@ const Banker& Model::changeBought(bool side, int index, int amount)
 	return banker;
 }
 
-void Model::swapBet(bool side, int index)
+void Model::moveBet(bool side, int index, int newPos)
 {
-	swap(bets[side][index], bets[side][index + 1]);
+	Bet* pBets = bets[side].data();
+	Bet bet = pBets[index];
+	if (index < newPos)
+	{
+		memmove(pBets + index, pBets + index + 1, (newPos - index) * sizeof(Bet));
+	}
+	else
+	{
+		memmove(pBets + newPos + 1, pBets + newPos, (index - newPos) * sizeof(Bet));
+	}
+	pBets[newPos] = bet;
 }
 
-void Model::swapBanker(bool side, int index)
+void Model::moveBanker(bool side, int index, int newPos)
 {
-	swap(bankers[side][index], bankers[side][index + 1]);
+	Banker* pBankers = bankers[side].data();
+	Banker banker = pBankers[index];
+	if (index < newPos)
+	{
+		memmove(pBankers + index, pBankers + index + 1, (newPos - index) * sizeof(Banker));
+	}
+	else
+	{
+		memmove(pBankers + newPos + 1, pBankers + newPos, (index - newPos) * sizeof(Banker));
+	}
+	pBankers[newPos] = banker;
 }
 
 void Model::deleteBet(bool side, int index)

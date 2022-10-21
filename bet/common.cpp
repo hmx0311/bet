@@ -17,6 +17,7 @@ float yScale = 1;
 int listItemHeight;
 HFONT hFont;
 HFONT hBoldFont;
+UINT DRAGLISTMSG;
 
 void loadConfig(Config& cfg)
 {

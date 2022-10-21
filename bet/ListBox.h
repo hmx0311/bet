@@ -7,10 +7,10 @@
 class ListBox
 {
 protected:
-	HWND hListBox;
+	HWND hLB;
 	int maxDisplayedItemCnt;
 public:
-	void attach(HWND hListBox);
+	void attach(HWND hLB);
 	virtual LRESULT wndProc(UINT msg, WPARAM wParam, LPARAM lParam);
 	virtual void drawItem(HDC hDC, int itemID, UINT itemState, ULONG_PTR itemData, RECT& rcItem);
 	HWND getHwnd();
@@ -22,28 +22,32 @@ class BetList :
 	public ListBox
 {
 private:
-	RECT rcListBox;
 	HWND hAllBoughtButton;
-	HWND hMoveUpButton;
-	HWND hMoveDownButton;
 	NumericEdit* boughtEdit;
+	RECT rcListBox;
+	bool isDragging = false;
+	int lastDragIdx = -1;
 	int betsSize = 0;
 	int bankersSize = 0;
 
 public:
-	void attach(HWND hListBox, HWND hAllBoughtButton, HWND hMoveUpButton, HWND hMoveDownButton, NumericEdit* boughtEdit);
+	void attach(HWND hLB, HWND hAllBoughtButton, NumericEdit* boughtEdit);
 	virtual LRESULT wndProc(UINT msg, WPARAM wParam, LPARAM lParam);
 	virtual void drawItem(HDC hDC, int itemID, UINT itemState, ULONG_PTR itemData, RECT& rcItem);
+	BOOL beginDrag(POINT ptCursor);
+	UINT dragging(POINT ptCursor);
+	int dropped(POINT ptCursor);
+	void cancelDrag();
 	int getBetsSize();
 	int getBankersSize();
 	int getCurSel();
 	void addBet(PCTSTR str);
 	void addBanker(PCTSTR str);
 	void updateBanker(int nIndex, PCTSTR pszItem, COLORREF color = 0);
-	int moveSel(bool direction);
 	std::pair<bool, int> deleteSel();
 	bool isEmpty();
 	void resetContent();
 private:
+	void eraseDragLine(HDC hDC);
 	int insertString(int nIndex, PCTSTR pszItem, BYTE style, COLORREF color = 0);
 };
