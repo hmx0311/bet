@@ -2,7 +2,7 @@
 #include "CutInputDlg.h"
 
 #include "common.h"
-#include "Button.h"
+#include "button.h"
 
 CutInputDlg::CutInputDlg()
 {

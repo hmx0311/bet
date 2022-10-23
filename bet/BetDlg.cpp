@@ -7,7 +7,6 @@
 
 #include <windowsx.h>
 #include <CommCtrl.h>
-#include <cmath>
 #include <ctime>
 
 #define TAB_WIDTH (int)roundf(142 * xScale)

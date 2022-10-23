@@ -1,7 +1,6 @@
 #include "framework.h"
 #include "Dialog.h"
 
-#include "button.h"
 #include "listBox.h"
 #include "common.h"
 

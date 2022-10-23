@@ -5,7 +5,6 @@
 #include "bet.h"
 
 #include <windowsx.h>
-#include <CommCtrl.h>
 
 using namespace std;
 

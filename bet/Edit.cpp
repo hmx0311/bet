@@ -1,10 +1,9 @@
 #include "framework.h"
-#include "Edit.h"
+#include "edit.h"
 
 #include "common.h"
 #include "bet.h"
 
-#include <CommCtrl.h>
 #include <windowsx.h>
 
 #define IDC_CLEAR_BUTTON 1000

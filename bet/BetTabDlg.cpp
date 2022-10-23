@@ -6,8 +6,6 @@
 #include "CutInputDlg.h"
 
 #include <CommCtrl.h>
-#include <Vsstyle.h>
-#include <uxtheme.h>
 #include <shobjidl_core.h>
 #include <shellapi.h>
 #include <windowsx.h>

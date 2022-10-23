@@ -3,7 +3,6 @@
 
 #include "button.h"
 
-#include <cmath>
 #include <fstream>
 #include <windowsx.h>
 
