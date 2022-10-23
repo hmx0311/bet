@@ -1,9 +1,6 @@
 #include "framework.h"
 #include "button.h"
 
-#include "common.h"
-#include "bet.h"
-
 #include <windowsx.h>
 
 #define BUTTON_ANIMATION_DURATION_SHORT 150
@@ -49,7 +46,7 @@ LRESULT Button::wndProc(UINT msg, WPARAM wParam, LPARAM lParam)
 	switch (msg)
 	{
 	case WM_ERASEBKGND:
-		return LRESULT(TRUE);
+		return (LRESULT)TRUE;
 	case WM_MOVE:
 	case WM_SHOWWINDOW:
 		lastState = PBS_NORMAL;
@@ -62,6 +59,8 @@ LRESULT Button::wndProc(UINT msg, WPARAM wParam, LPARAM lParam)
 			HDC hDC = BeginPaint(hButton, &paintStruct);
 			if (!BufferedPaintRenderAnimation(hButton, hDC))
 			{
+				RECT rcItem;
+				GetClientRect(hButton, &rcItem);
 				PUSHBUTTONSTATES state = PBS_NORMAL;
 				int bst = Button_GetState(hButton);
 				if (bst & BST_PUSHED)
@@ -75,20 +74,20 @@ LRESULT Button::wndProc(UINT msg, WPARAM wParam, LPARAM lParam)
 				if (lastState == state || hButtonTheme == nullptr)
 				{
 					HDC hDCMem;
-					HPAINTBUFFER hPaintBuffer = BeginBufferedPaint(hDC, &paintStruct.rcPaint, BPBF_COMPATIBLEBITMAP, nullptr, &hDCMem);
-					drawButton(hDCMem, state, paintStruct.rcPaint);
+					HPAINTBUFFER hPaintBuffer = BeginBufferedPaint(hDC, &rcItem, BPBF_COMPATIBLEBITMAP, nullptr, &hDCMem);
+					drawButton(hDCMem, state, rcItem);
 					EndBufferedPaint(hPaintBuffer, TRUE);
 				}
 				else
 				{
 					BP_ANIMATIONPARAMS animParams = { sizeof(BP_ANIMATIONPARAMS),0, BPAS_LINEAR, state == PBS_PRESSED ? BUTTON_ANIMATION_DURATION_SHORT : BUTTON_ANIMATION_DURATION_LONG };
 					HDC hDCFrom, hDCTo;
-					HANIMATIONBUFFER hbpAnimation = BeginBufferedAnimation(hButton, hDC, &paintStruct.rcPaint, BPBF_COMPATIBLEBITMAP, nullptr, &animParams, &hDCFrom, &hDCTo);
+					HANIMATIONBUFFER hbpAnimation = BeginBufferedAnimation(hButton, hDC, &rcItem, BPBF_COMPATIBLEBITMAP, nullptr, &animParams, &hDCFrom, &hDCTo);
 					if (hDCFrom != nullptr)
 					{
-						drawButton(hDCFrom, lastState, paintStruct.rcPaint);
+						drawButton(hDCFrom, lastState, rcItem);
 					}
-					drawButton(hDCTo, state, paintStruct.rcPaint);
+					drawButton(hDCTo, state, rcItem);
 					BufferedPaintStopAllAnimations(hButton);
 					EndBufferedAnimation(hbpAnimation, TRUE);
 					lastState = state;
