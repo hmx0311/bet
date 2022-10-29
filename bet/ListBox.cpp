@@ -205,24 +205,6 @@ LRESULT BetList::wndProc(UINT msg, WPARAM wParam, LPARAM lParam)
 			DestroyMenu(menu);
 			return (LRESULT)TRUE;
 		}
-	case WM_MOUSEWHEEL:
-		{
-			int oldScroll = GetScrollPos(hLB, SB_VERT);
-			ListBox_SetTopIndex(hLB, ((short)HIWORD(wParam)) < 0 ? oldScroll + 1 : oldScroll - 1);
-			if (oldScroll != GetScrollPos(hLB, SB_VERT) && getCurSel() != -1)
-			{
-				int selLineIdx = getCurSel() - GetScrollPos(hLB, SB_VERT);
-				if (selLineIdx < 0 || selLineIdx >= maxDisplayedItemCnt)
-				{
-					if (GetFocus() == boughtEdit->getHwnd())
-					{
-						ShowWindow(boughtEdit->getHwnd(), SW_HIDE);
-						SetFocus(hLB);
-					}
-				}
-			}
-			return (LRESULT)TRUE;
-		}
 	case WM_KILLFOCUS:
 		{
 			if (isDragging)
@@ -244,7 +226,8 @@ LRESULT BetList::wndProc(UINT msg, WPARAM wParam, LPARAM lParam)
 			if (!isDragging)
 			{
 				int curSel = getCurSel();
-				if (curSel < betsSize + 5)
+				int curScroll = GetScrollPos(hLB, SB_VERT);
+				if (curSel < betsSize + 5 || curSel < curScroll || curSel >= curScroll + maxDisplayedItemCnt)
 				{
 					return (LRESULT)TRUE;
 				}
@@ -299,6 +282,7 @@ LRESULT BetList::wndProc(UINT msg, WPARAM wParam, LPARAM lParam)
 		}
 		break;
 	case WM_VSCROLL:
+	case WM_MOUSEWHEEL:
 		if (getCurSel() != -1)
 		{
 			int selLineIdx = getCurSel() - GetScrollPos(hLB, SB_VERT);

@@ -30,11 +30,9 @@ INT_PTR CutInputDlg::dlgProc(UINT msg, WPARAM wParam, LPARAM lParam)
 		{
 		case ID_CONFIRM:
 		case IDOK:
-			{
-				DestroyWindow(hDlg);
-				hDlg = nullptr;
-				break;
-			}
+			DestroyWindow(hDlg);
+			hDlg = nullptr;
+			break;
 		}
 	}
 	return (INT_PTR)FALSE;
