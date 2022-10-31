@@ -104,8 +104,7 @@
 #define IDC_DEF_PROB_ERROR_EDIT         1086
 #define IDC_WIN_PROB_CALCULATOR_BUTTON  1087
 #define ID_CONFIRM                      32771
-#define ID_CANCEL                       32772
-#define ID_DELETE                       32773
+#define ID_DELETE                       32772
 #define IDC_STATIC                      -1
 
 // Next default values for new objects
@@ -114,7 +113,7 @@
 #ifndef APSTUDIO_READONLY_SYMBOLS
 #define _APS_NO_MFC                     1
 #define _APS_NEXT_RESOURCE_VALUE        134
-#define _APS_NEXT_COMMAND_VALUE         32774
+#define _APS_NEXT_COMMAND_VALUE         32773
 #define _APS_NEXT_CONTROL_VALUE         1088
 #define _APS_NEXT_SYMED_VALUE           101
 #endif

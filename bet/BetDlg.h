@@ -25,10 +25,8 @@ public:
 	BetDlg();
 	virtual INT_PTR initDlg(HWND hDlg);
 	virtual INT_PTR dlgProc(UINT msg, WPARAM wParam, LPARAM lParam);
-	Dialog* getCurrentTab();
 private:
 	void createBetTabDlg(double cut);
 	void createTab();
 	void calcPos();
 };
-

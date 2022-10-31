@@ -246,7 +246,7 @@ INT_PTR BetTabDlg::dlgProc(UINT msg, WPARAM wParam, LPARAM lParam)
 				return (INT_PTR)TRUE;
 			}
 			return (INT_PTR)TRUE;
-		case ID_CANCEL:
+		case IDCANCEL:
 			switch (GetDlgCtrlID(GetFocus()))
 			{
 			case IDC_CHANGE_BOUGHT_EDIT:

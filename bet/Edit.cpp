@@ -85,7 +85,6 @@ LRESULT CALLBACK editSubclassProc(HWND hEdit, UINT msg, WPARAM wParam, LPARAM lP
 		switch (LOWORD(wParam))
 		{
 		case ID_CONFIRM:
-		case ID_CANCEL:
 			SendMessage(GetParent(hEdit), msg, wParam, lParam);
 			break;
 		}
@@ -163,6 +162,14 @@ LRESULT NumericEdit::wndProc(UINT msg, WPARAM wParam, LPARAM lParam)
 			Edit::setText(curUndo.c_str());
 			return (LRESULT)TRUE;
 		}
+	case WM_KEYDOWN:
+		switch (wParam)
+		{
+		case VK_ESCAPE:
+			Edit::setText(curUndo.c_str());
+			break;
+		}
+		break;
 	case WM_PASTE:
 		{
 			OpenClipboard(hEdit);
@@ -220,9 +227,6 @@ LRESULT NumericEdit::wndProc(UINT msg, WPARAM wParam, LPARAM lParam)
 		case ID_CONFIRM:
 			updateStr();
 			break;
-		case ID_CANCEL:
-			Edit::setText(curUndo.c_str());
-			break;
 		}
 		break;
 	}
@@ -257,13 +261,10 @@ void NumericEdit::updateStr()
 
 void AmountEdit::attach(HWND hEdit, HWND hBankerOddsEdit, HWND hBetOddsEdit, HWND hBankerSelector)
 {
-	this->hEdit = hEdit;
+	Edit::attach(hEdit);
 	this->hBankerOddsEdit = hBankerOddsEdit;
 	this->hBetOddsEdit = hBetOddsEdit;
 	this->hBankerSelector = hBankerSelector;
-	SetWindowLongPtr(hEdit, GWLP_USERDATA, (LONG_PTR)this);
-	SetWindowSubclass(hEdit, editSubclassProc, 0, 0);
-	setVCentered(hEdit);
 
 	INITCOMMONCONTROLSEX icex = { sizeof(icex),ICC_STANDARD_CLASSES };
 	InitCommonControlsEx(&icex);

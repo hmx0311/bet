@@ -5,7 +5,6 @@
 #include <string>
 
 void setVCentered(HWND hEdit);
-LRESULT CALLBACK editSubclassProc(HWND hEdit, UINT msg, WPARAM wParam, LPARAM lParam, UINT_PTR uIdSubclass, DWORD_PTR dwRefData);
 
 class Edit
 {

@@ -52,7 +52,6 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
 	while (GetMessage(&msg, nullptr, 0, 0))
 	{
 		if (!TranslateAccelerator(msg.hwnd, hAccel, &msg) &&
-			!IsDialogMessage(betDlg.getCurrentTab()->getHwnd(), &msg) &&
 			!IsDialogMessage(betDlg.getHwnd(), &msg))
 		{
 			TranslateMessage(&msg);

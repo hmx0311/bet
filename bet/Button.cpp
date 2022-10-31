@@ -16,12 +16,21 @@ LRESULT CALLBACK buttonSubclassProc(HWND hButton, UINT msg, WPARAM wParam, LPARA
 	switch (msg)
 	{
 	case WM_UPDATEUISTATE:
-		wParam &= ~MAKELONG(0, UISF_HIDEFOCUS | UISF_ACTIVE);
+		wParam &= ~MAKELONG(0, UISF_HIDEFOCUS);
 		break;
 	case WM_SETFOCUS:
-		if (IsWindowVisible((HWND)wParam))
+		if (HIBYTE(GetKeyState(VK_TAB)))
+		{
+			SetFocus(GetNextDlgTabItem(GetParent(hButton), hButton, HIBYTE(GetKeyState(VK_SHIFT))));
+			return LRESULT(TRUE);
+		}
+		if(IsWindowVisible((HWND)wParam))
 		{
 			SetFocus((HWND)wParam);
+		}
+		else
+		{
+			SetFocus(GetNextDlgTabItem(GetParent(hButton), hButton, FALSE));
 		}
 		break;
 	case WM_KILLFOCUS:

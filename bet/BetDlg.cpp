@@ -49,7 +49,34 @@ INT_PTR BetDlg::initDlg(HWND hDlg)
 		WS_CHILD | WS_VISIBLE | ES_CENTER | ES_MULTILINE,
 		TAB_NAME_EDIT_X, TAB_NAME_EDIT_Y, TAB_NAME_EDIT_WIDTH, TAB_NAME_EDIT_HEIGHT,
 		hDlg, (HMENU)IDC_TAB_NAME_EDIT, hInst, nullptr);
-	SetWindowSubclass(hTabNameEdit, editSubclassProc, 0, 0);
+	SetWindowSubclass(hTabNameEdit,
+		[](HWND hEdit, UINT msg, WPARAM wParam, LPARAM lParam, UINT_PTR, DWORD_PTR)->LRESULT
+		{
+			switch (msg)
+			{
+			case WM_DPICHANGED_AFTERPARENT:
+				setVCentered(hEdit);
+				return (LRESULT)TRUE;
+			case WM_KEYDOWN:
+				switch (wParam)
+				{
+				case VK_ESCAPE:
+					SetWindowText(hEdit, _T(""));
+					ShowWindow(hEdit, SW_HIDE);
+					return (LRESULT)TRUE;
+				}
+				break;
+			case WM_COMMAND:
+				switch (LOWORD(wParam))
+				{
+				case ID_CONFIRM:
+					ShowWindow(hEdit, SW_HIDE);
+					break;
+				}
+				break;
+			}
+			return DefSubclassProc(hEdit, msg, wParam, lParam);
+		}, 0, 0);
 
 	hButtonTheme = OpenThemeData(hDlg, _T("Button"));
 
@@ -103,7 +130,7 @@ INT_PTR BetDlg::dlgProc(UINT msg, WPARAM wParam, LPARAM lParam)
 		needErase = true;
 		break;
 	case WM_PARENTNOTIFY:
-		if (LOWORD(wParam) == WM_DESTROY && (HWND)lParam == cutInputDlg.getHwnd())
+		if (LOWORD(wParam) == WM_DESTROY)
 		{
 			createBetTabDlg(cutInputDlg.getCut());
 			EnableWindow(hBetTab, TRUE);
@@ -113,19 +140,6 @@ INT_PTR BetDlg::dlgProc(UINT msg, WPARAM wParam, LPARAM lParam)
 	case WM_COMMAND:
 		switch (LOWORD(wParam))
 		{
-		case ID_CONFIRM:
-			if (GetFocus() == hTabNameEdit)
-			{
-				SetFocus(currentDlg->getHwnd());
-			}
-			return (INT_PTR)TRUE;
-		case ID_CANCEL:
-			if (GetFocus() == hTabNameEdit)
-			{
-				SetWindowText(hTabNameEdit, _T(""));
-				SetFocus(currentDlg->getHwnd());
-			}
-			return (INT_PTR)TRUE;
 		case IDC_TAB_NAME_EDIT:
 			if (HIWORD(wParam) == EN_KILLFOCUS)
 			{
@@ -265,11 +279,6 @@ INT_PTR BetDlg::dlgProc(UINT msg, WPARAM wParam, LPARAM lParam)
 		break;
 	}
 	return (INT_PTR)FALSE;
-}
-
-Dialog* BetDlg::getCurrentTab()
-{
-	return currentDlg;
 }
 
 void BetDlg::createBetTabDlg(double cut)
