@@ -206,19 +206,18 @@ LRESULT BetList::wndProc(UINT msg, WPARAM wParam, LPARAM lParam)
 			return (LRESULT)TRUE;
 		}
 	case WM_KILLFOCUS:
+		if ((HWND)wParam != hAllBoughtButton && (HWND)wParam != boughtEdit->getHwnd())
 		{
 			if (isDragging)
 			{
 				cancelDrag();
 				SetCursor(nullptr);
 			}
-			if ((HWND)wParam != hAllBoughtButton && (HWND)wParam != boughtEdit->getHwnd())
-			{
-				setCurSel(-1);
-				ShowWindow(hAllBoughtButton, SW_HIDE);
-			}
-			break;
+			setCurSel(-1);
+			ShowWindow(hAllBoughtButton, SW_HIDE);
+			RedrawWindow(hLB, nullptr, nullptr, RDW_FRAME | RDW_INVALIDATE);
 		}
+		break;
 	case WM_COMMAND:
 		switch (LOWORD(wParam))
 		{
@@ -251,6 +250,19 @@ LRESULT BetList::wndProc(UINT msg, WPARAM wParam, LPARAM lParam)
 
 	switch (msg)
 	{
+	case WM_PAINT:
+	case WM_NCPAINT:
+		if (GetFocus() == hLB || getCurSel() != -1)
+		{
+			HPEN hPen = CreatePen(PS_SOLID, 2, GetSysColor(COLOR_HIGHLIGHT));
+			HDC hDC = GetDCEx(hLB, nullptr, DCX_WINDOW | DCX_PARENTCLIP);
+			SelectObject(hDC, hPen);
+			SelectObject(hDC, GetStockBrush(NULL_BRUSH));
+			Rectangle(hDC, 1, 1, rcListBox.right - rcListBox.left, rcListBox.bottom - rcListBox.top);
+			DeleteObject(hPen);
+			ReleaseDC(hLB, hDC);
+		}
+		break;
 	case WM_KEYDOWN:
 		switch (LOWORD(wParam))
 		{
@@ -327,7 +339,7 @@ void BetList::drawItem(HDC hDC, int itemID, UINT itemState, ULONG_PTR itemData, 
 			int posX = rcListBox.left + rcItem.right - listItemHeight + 2;
 			if (itemID > betsSize + 2)
 			{
-				SetWindowPos(hAllBoughtButton, HWND_TOP, posX, posY, 0, 0, SWP_NOSIZE | SWP_SHOWWINDOW);
+				SetWindowPos(hAllBoughtButton, HWND_TOP, posX, posY, listItemHeight, listItemHeight, SWP_SHOWWINDOW);
 			}
 			else
 			{
