@@ -8,6 +8,7 @@ class ListBox
 {
 protected:
 	HWND hLB;
+	RECT rcLB;
 	int maxDisplayedItemCnt;
 public:
 	void attach(HWND hLB);
@@ -16,6 +17,9 @@ public:
 	HWND getHwnd();
 	int addString(PCTSTR pszItem, BYTE style = 0, COLORREF color = 0);
 	void setCurSel(int nSelect);
+protected:
+	void onDPIChanged();
+	void drawFocus();
 };
 
 class BetList :
@@ -24,7 +28,6 @@ class BetList :
 private:
 	HWND hAllBoughtButton;
 	NumericEdit* boughtEdit;
-	RECT rcListBox;
 	bool isDragging = false;
 	int lastDragIdx = -1;
 	int betsSize = 0;

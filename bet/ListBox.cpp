@@ -12,9 +12,9 @@ using namespace std;
 
 static LRESULT CALLBACK listBoxSubclassProc(HWND hLB, UINT msg, WPARAM wParam, LPARAM lParam, UINT_PTR uIdSubclass, DWORD_PTR dwRefData)
 {
-	ListBox* listBox = (ListBox*)GetWindowLongPtr(hLB, GWLP_USERDATA);
-	if (msg == WM_ERASEBKGND)
+	switch (msg)
 	{
+	case WM_ERASEBKGND:
 		RECT rect;
 		GetClientRect(hLB, &rect);
 		rect.top += (ListBox_GetCount(hLB) - GetScrollPos(hLB, SB_VERT)) * listItemHeight;
@@ -23,8 +23,10 @@ static LRESULT CALLBACK listBoxSubclassProc(HWND hLB, UINT msg, WPARAM wParam, L
 			FillRect((HDC)wParam, &rect, GetSysColorBrush(COLOR_WINDOW));
 		}
 		return (LRESULT)TRUE;
+	case WM_MOUSELEAVE:
+		return (LRESULT)TRUE;
 	}
-	return listBox->wndProc(msg, wParam, lParam);
+	return ((ListBox*)GetWindowLongPtr(hLB, GWLP_USERDATA))->wndProc(msg, wParam, lParam);
 }
 
 
@@ -35,9 +37,9 @@ void ListBox::attach(HWND hLB)
 	this->hLB = hLB;
 	SetWindowLongPtr(hLB, GWLP_USERDATA, (LONG_PTR)this);
 	SetWindowSubclass(hLB, listBoxSubclassProc, 0, 0);
-	RECT rect;
-	GetWindowRect(hLB, &rect);
-	maxDisplayedItemCnt = (rect.bottom - rect.top) / listItemHeight;
+	GetWindowRect(hLB, &rcLB);
+	MapWindowRect(HWND_DESKTOP, GetParent(hLB), &rcLB);
+	maxDisplayedItemCnt = (rcLB.bottom - rcLB.top) / listItemHeight;
 }
 
 LRESULT ListBox::wndProc(UINT msg, WPARAM wParam, LPARAM lParam)
@@ -45,16 +47,26 @@ LRESULT ListBox::wndProc(UINT msg, WPARAM wParam, LPARAM lParam)
 	switch (msg)
 	{
 	case WM_DPICHANGED_AFTERPARENT:
-		{
-			ListBox_SetItemHeight(hLB, 0, listItemHeight);
-			RECT rect;
-			GetWindowRect(hLB, &rect);
-			MapWindowRect(HWND_DESKTOP, hLB, &rect);
-			SetWindowPos(hLB, nullptr, 0, 0, rect.right - rect.left, listItemHeight * maxDisplayedItemCnt - 2 * rect.top, SWP_NOMOVE | SWP_NOZORDER | SWP_NOREDRAW);
-			break;
-		}
+		onDPIChanged();
+		break;
+	case WM_KILLFOCUS:
+		RedrawWindow(hLB, nullptr, nullptr, RDW_FRAME | RDW_INVALIDATE);
+		break;
 	}
-	return DefSubclassProc(hLB, msg, wParam, lParam);
+
+	LRESULT result = DefSubclassProc(hLB, msg, wParam, lParam);
+
+	switch (msg)
+	{
+	case WM_PAINT:
+	case WM_NCPAINT:
+		if (GetFocus() == hLB)
+		{
+			drawFocus();
+		}
+		break;
+	}
+	return result;
 }
 
 void ListBox::drawItem(HDC hDC, int itemID, UINT itemState, ULONG_PTR itemData, RECT& rcItem)
@@ -92,16 +104,33 @@ void ListBox::setCurSel(int nSelect)
 }
 
 
+
+void ListBox::onDPIChanged()
+{
+	ListBox_SetItemHeight(hLB, 0, listItemHeight);
+	GetWindowRect(hLB, &rcLB);
+	MapWindowRect(HWND_DESKTOP, GetParent(hLB), &rcLB);
+	rcLB.bottom = rcLB.top + listItemHeight * maxDisplayedItemCnt + 4;
+	SetWindowPos(hLB, nullptr, 0, 0, rcLB.right - rcLB.left, rcLB.bottom - rcLB.top, SWP_NOMOVE | SWP_NOZORDER | SWP_NOREDRAW);
+}
+
+void ListBox::drawFocus()
+{
+	HDC hDC = GetDCEx(hLB, nullptr, DCX_WINDOW | DCX_PARENTCLIP);
+	RECT rcFocus = { rcLB.right - rcLB.left - 2, 0, rcLB.right - rcLB.left, rcLB.bottom - rcLB.top };
+	FillRect(hDC, &rcFocus, GetSysColorBrush(COLOR_HIGHLIGHT));
+	ReleaseDC(hLB, hDC);
+}
+
+
 //class BetList
 
 void BetList::attach(HWND hLB, HWND hAllBoughtButton, NumericEdit* boughtEdit)
 {
 	ListBox::attach(hLB);
-	MakeDragList(hLB);
 	this->hAllBoughtButton = hAllBoughtButton;
 	this->boughtEdit = boughtEdit;
-	GetWindowRect(hLB, &rcListBox);
-	MapWindowRect(HWND_DESKTOP, GetParent(hLB), &rcListBox);
+	MakeDragList(hLB);
 	resetContent();
 }
 
@@ -110,14 +139,8 @@ LRESULT BetList::wndProc(UINT msg, WPARAM wParam, LPARAM lParam)
 	switch (msg)
 	{
 	case WM_DPICHANGED_AFTERPARENT:
-		{
-			ListBox_SetItemHeight(hLB, 0, listItemHeight);
-			GetWindowRect(hLB, &rcListBox);
-			MapWindowRect(HWND_DESKTOP, hLB, &rcListBox);
-			SetWindowPos(hLB, nullptr, 0, 0, rcListBox.right - rcListBox.left, listItemHeight * maxDisplayedItemCnt - 2 * rcListBox.top, SWP_NOMOVE | SWP_NOZORDER | SWP_NOREDRAW);
-			MapWindowRect(hLB, GetParent(hLB), &rcListBox);
-			break;
-		}
+		onDPIChanged();
+		break;
 	case WM_KEYDOWN:
 		switch (LOWORD(wParam))
 		{
@@ -254,13 +277,7 @@ LRESULT BetList::wndProc(UINT msg, WPARAM wParam, LPARAM lParam)
 	case WM_NCPAINT:
 		if (GetFocus() == hLB || getCurSel() != -1)
 		{
-			HPEN hPen = CreatePen(PS_SOLID, 2, GetSysColor(COLOR_HIGHLIGHT));
-			HDC hDC = GetDCEx(hLB, nullptr, DCX_WINDOW | DCX_PARENTCLIP);
-			SelectObject(hDC, hPen);
-			SelectObject(hDC, GetStockBrush(NULL_BRUSH));
-			Rectangle(hDC, 1, 1, rcListBox.right - rcListBox.left, rcListBox.bottom - rcListBox.top);
-			DeleteObject(hPen);
-			ReleaseDC(hLB, hDC);
+			drawFocus();
 		}
 		break;
 	case WM_KEYDOWN:
@@ -321,7 +338,7 @@ void BetList::drawItem(HDC hDC, int itemID, UINT itemState, ULONG_PTR itemData, 
 	}
 	if (itemState & ODS_SELECTED)
 	{
-		if (rcItem.top<0 || rcItem.bottom>rcListBox.bottom - rcListBox.top)
+		if (rcItem.top<0 || rcItem.bottom>rcLB.bottom - rcLB.top)
 		{
 			if (GetFocus() != boughtEdit->getHwnd())
 			{
@@ -329,14 +346,14 @@ void BetList::drawItem(HDC hDC, int itemID, UINT itemState, ULONG_PTR itemData, 
 			}
 			return;
 		}
-		int posY = rcListBox.top + rcItem.top + 2;
+		int posY = rcLB.top + rcItem.top + 2;
 		if (IsWindowVisible(boughtEdit->getHwnd()))
 		{
-			SetWindowPos(boughtEdit->getHwnd(), HWND_TOP, rcListBox.left + rcItem.right - listItemHeight + X_CHANGE, posY, 0, 0, SWP_NOSIZE | SWP_NOZORDER);
+			SetWindowPos(boughtEdit->getHwnd(), HWND_TOP, rcLB.left + rcItem.right - listItemHeight + X_CHANGE, posY, 0, 0, SWP_NOSIZE | SWP_NOZORDER);
 		}
 		else
 		{
-			int posX = rcListBox.left + rcItem.right - listItemHeight + 2;
+			int posX = rcLB.left + rcItem.right - listItemHeight + 2;
 			if (itemID > betsSize + 2)
 			{
 				SetWindowPos(hAllBoughtButton, HWND_TOP, posX, posY, listItemHeight, listItemHeight, SWP_SHOWWINDOW);
