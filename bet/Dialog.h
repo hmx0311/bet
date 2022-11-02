@@ -7,8 +7,9 @@ class Dialog
 {
 protected:
 	HWND hDlg = nullptr;
-	UINT nIDTemplate;
+	const UINT nIDTemplate;
 public:
+	Dialog(UINT nIDTemplate);
 	virtual INT_PTR initDlg(HWND hDlg);
 	virtual INT_PTR dlgProc(UINT msg, WPARAM wParam, LPARAM lParam) = 0;
 	void createDialog(HWND hWndParent = nullptr);

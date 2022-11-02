@@ -26,9 +26,7 @@ int TAB_NAME_EDIT_Y;
 HICON BetDlg::hIcon;
 
 BetDlg::BetDlg()
-{
-	nIDTemplate = IDD_BET_DIALOG;
-}
+	:Dialog(IDD_BET_DIALOG) {}
 
 
 INT_PTR BetDlg::initDlg(HWND hDlg)

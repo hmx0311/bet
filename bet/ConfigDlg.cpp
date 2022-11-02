@@ -9,9 +9,7 @@
 using namespace std;
 
 ConfigDlg::ConfigDlg()
-{
-	nIDTemplate = IDD_CONFIG_DIALOG;
-}
+	:Dialog(IDD_CONFIG_DIALOG){}
 
 INT_PTR ConfigDlg::initDlg(HWND hDlg)
 {

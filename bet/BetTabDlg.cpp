@@ -24,10 +24,8 @@ HICON BetTabDlg::hClearIcon;
 HICON BetTabDlg::hTickIcon;
 HICON BetTabDlg::hCalculatorIcon;
 
-BetTabDlg::BetTabDlg(double cut) :model(cut)
-{
-	nIDTemplate = IDD_BET_TAB_DIALOG;
-}
+BetTabDlg::BetTabDlg(double cut)
+	:Dialog(IDD_BET_TAB_DIALOG), model(cut), betLists{ BetList(allBoughtButton,boughtEdit),BetList(allBoughtButton,boughtEdit) } {}
 
 INT_PTR BetTabDlg::initDlg(HWND hDlg)
 {
@@ -42,8 +40,8 @@ INT_PTR BetTabDlg::initDlg(HWND hDlg)
 	SetWindowSubclass(hHaveClosingCheck, buttonSubclassProc, 0, 0);
 	allBoughtButton.attach(GetDlgItem(hDlg, IDC_ALL_BOUGHT_BUTTON));
 	boughtEdit.attach(GetDlgItem(hDlg, IDC_CHANGE_BOUGHT_EDIT));
-	betLists[0].attach(GetDlgItem(hDlg, IDC_L_BET_LIST), allBoughtButton.getHwnd(), &boughtEdit);
-	betLists[1].attach(GetDlgItem(hDlg, IDC_R_BET_LIST), allBoughtButton.getHwnd(), &boughtEdit);
+	betLists[0].attach(GetDlgItem(hDlg, IDC_L_BET_LIST));
+	betLists[1].attach(GetDlgItem(hDlg, IDC_R_BET_LIST));
 	for (int i = 0; i < 10; i++)
 	{
 		hBankerBetSelectors[i] = GetDlgItem(hDlg, IDC_L_BANKER_SELECTOR + i);

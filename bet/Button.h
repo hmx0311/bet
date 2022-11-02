@@ -22,6 +22,5 @@ public:
 	void setText(PCTSTR str);
 	void setIcon(HICON hIcon);
 	void setBkgBrush(HBRUSH hBkgBrush);
-private:
 	void drawButton(HDC hDC, PUSHBUTTONSTATES states, RECT& rcItem);
 };

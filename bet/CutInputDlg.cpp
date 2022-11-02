@@ -5,9 +5,7 @@
 #include "button.h"
 
 CutInputDlg::CutInputDlg()
-{
-	nIDTemplate = IDD_CUT_INPUT_DIALOG;
-}
+	:Dialog(IDD_CUT_INPUT_DIALOG) {}
 
 INT_PTR CutInputDlg::initDlg(HWND hDlg)
 {

@@ -41,6 +41,9 @@ INT_PTR CALLBACK dlgProc(HWND hDlg, UINT msg, WPARAM wParam, LPARAM lParam)
 	return dlg->dlgProc(msg, wParam, lParam);
 }
 
+Dialog::Dialog(UINT nIDTemplate)
+	:nIDTemplate(nIDTemplate) {}
+
 INT_PTR Dialog::initDlg(HWND hDlg)
 {
 	this->hDlg = hDlg;

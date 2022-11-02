@@ -27,15 +27,17 @@ class BetList :
 	public ListBox
 {
 private:
-	HWND hAllBoughtButton;
-	NumericEdit* boughtEdit;
+	Button& allBoughtButton;
+	NumericEdit& boughtEdit;
+	bool isScrolling = false;
 	bool isDragging = false;
 	int lastDragIdx = -1;
 	int betsSize = 0;
 	int bankersSize = 0;
 
 public:
-	void attach(HWND hLB, HWND hAllBoughtButton, NumericEdit* boughtEdit);
+	BetList(Button& allBoughtButton, NumericEdit& boughtEdit);
+	void attach(HWND hLB);
 	virtual LRESULT wndProc(UINT msg, WPARAM wParam, LPARAM lParam);
 	virtual void drawItem(HDC hDC, int itemID, UINT itemState, ULONG_PTR itemData, RECT& rcItem);
 	BOOL beginDrag(POINT ptCursor);

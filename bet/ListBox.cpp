@@ -125,11 +125,12 @@ void ListBox::drawFocus()
 
 //class BetList
 
-void BetList::attach(HWND hLB, HWND hAllBoughtButton, NumericEdit* boughtEdit)
+BetList::BetList(Button& allBoughtButton, NumericEdit& boughtEdit)
+	:allBoughtButton(allBoughtButton), boughtEdit(boughtEdit) {}
+
+void BetList::attach(HWND hLB)
 {
 	ListBox::attach(hLB);
-	this->hAllBoughtButton = hAllBoughtButton;
-	this->boughtEdit = boughtEdit;
 	MakeDragList(hLB);
 	resetContent();
 }
@@ -196,15 +197,15 @@ LRESULT BetList::wndProc(UINT msg, WPARAM wParam, LPARAM lParam)
 			{
 				return (LRESULT)TRUE;
 			}
-			ShowWindow(hAllBoughtButton, SW_HIDE);
-			ShowWindow(boughtEdit->getHwnd(), SW_SHOW);
+			ShowWindow(allBoughtButton.getHwnd(), SW_HIDE);
+			ShowWindow(boughtEdit.getHwnd(), SW_SHOW);
 			TCHAR str[20];
 			ListBox_GetText(hLB, curSel, str);
 			int i;
 			for (i = 12; str[i] == ' '; i++);
-			boughtEdit->setText(&str[i]);
-			boughtEdit->setSel(0, -1);
-			SetFocus(boughtEdit->getHwnd());
+			boughtEdit.setText(&str[i]);
+			boughtEdit.setSel(0, -1);
+			SetFocus(boughtEdit.getHwnd());
 			return (LRESULT)TRUE;
 		}
 	case WM_CONTEXTMENU:
@@ -229,7 +230,7 @@ LRESULT BetList::wndProc(UINT msg, WPARAM wParam, LPARAM lParam)
 			return (LRESULT)TRUE;
 		}
 	case WM_KILLFOCUS:
-		if ((HWND)wParam != hAllBoughtButton && (HWND)wParam != boughtEdit->getHwnd())
+		if ((HWND)wParam != allBoughtButton.getHwnd() && (HWND)wParam != boughtEdit.getHwnd())
 		{
 			if (isDragging)
 			{
@@ -237,8 +238,41 @@ LRESULT BetList::wndProc(UINT msg, WPARAM wParam, LPARAM lParam)
 				SetCursor(nullptr);
 			}
 			setCurSel(-1);
-			ShowWindow(hAllBoughtButton, SW_HIDE);
+			ShowWindow(allBoughtButton.getHwnd(), SW_HIDE);
 			RedrawWindow(hLB, nullptr, nullptr, RDW_FRAME | RDW_INVALIDATE);
+		}
+		break;
+	case WM_VSCROLL:
+	case WM_MOUSEWHEEL:
+		{
+			int curSel = getCurSel();
+			if (curSel != -1)
+			{
+				if (IsWindowVisible(allBoughtButton.getHwnd()))
+				{
+					isScrolling = true;
+					SetWindowPos(allBoughtButton.getHwnd(), nullptr, 0, 0, 0, 0, SWP_NOMOVE | SWP_NOSIZE | SWP_NOZORDER | SWP_HIDEWINDOW | SWP_NOREDRAW);
+					LRESULT result = DefSubclassProc(hLB, msg, wParam, lParam);
+					RECT rcSel;
+					ListBox_GetItemRect(hLB, curSel, &rcSel);
+					MapWindowRect(hLB, GetParent(hLB), &rcSel);
+					if (rcSel.top > rcLB.top && rcSel.bottom < rcLB.bottom)
+					{
+						SetWindowPos(allBoughtButton.getHwnd(), nullptr, rcSel.right - listItemHeight, rcSel.top, 0, 0, SWP_NOSIZE | SWP_NOZORDER | SWP_SHOWWINDOW);
+					}
+					isScrolling = false;
+					return result;
+				}
+				int selLineIdx = getCurSel() - GetScrollPos(hLB, SB_VERT);
+				if (selLineIdx < 0 || selLineIdx >= maxDisplayedItemCnt)
+				{
+					if (GetFocus() == boughtEdit.getHwnd())
+					{
+						ShowWindow(boughtEdit.getHwnd(), SW_HIDE);
+						SetFocus(hLB);
+					}
+				}
+			}
 		}
 		break;
 	case WM_COMMAND:
@@ -253,15 +287,15 @@ LRESULT BetList::wndProc(UINT msg, WPARAM wParam, LPARAM lParam)
 				{
 					return (LRESULT)TRUE;
 				}
-				ShowWindow(hAllBoughtButton, SW_HIDE);
-				ShowWindow(boughtEdit->getHwnd(), SW_SHOW);
+				ShowWindow(allBoughtButton.getHwnd(), SW_HIDE);
+				ShowWindow(boughtEdit.getHwnd(), SW_SHOW);
 				TCHAR str[20];
 				ListBox_GetText(hLB, curSel, str);
 				int i;
 				for (i = 12; str[i] == ' '; i++);
-				boughtEdit->setText(&str[i]);
-				boughtEdit->setSel(0, -1);
-				SetFocus(boughtEdit->getHwnd());
+				boughtEdit.setText(&str[i]);
+				boughtEdit.setSel(0, -1);
+				SetFocus(boughtEdit.getHwnd());
 				return (LRESULT)TRUE;
 			}
 			break;
@@ -310,21 +344,6 @@ LRESULT BetList::wndProc(UINT msg, WPARAM wParam, LPARAM lParam)
 			break;
 		}
 		break;
-	case WM_VSCROLL:
-	case WM_MOUSEWHEEL:
-		if (getCurSel() != -1)
-		{
-			int selLineIdx = getCurSel() - GetScrollPos(hLB, SB_VERT);
-			if (selLineIdx < 0 || selLineIdx >= maxDisplayedItemCnt)
-			{
-				if (GetFocus() == boughtEdit->getHwnd())
-				{
-					ShowWindow(boughtEdit->getHwnd(), SW_HIDE);
-					SetFocus(hLB);
-				}
-			}
-		}
-		break;
 	}
 	return result;
 }
@@ -334,35 +353,36 @@ void BetList::drawItem(HDC hDC, int itemID, UINT itemState, ULONG_PTR itemData, 
 	if ((itemID < 2 || betsSize + 1 < itemID && itemID < betsSize + 5) && itemState & ODS_SELECTED)
 	{
 		itemState -= ODS_SELECTED;
-		ShowWindow(hAllBoughtButton, SW_HIDE);
+		ShowWindow(allBoughtButton.getHwnd(), SW_HIDE);
 	}
 	if (itemState & ODS_SELECTED)
 	{
 		if (rcItem.top<0 || rcItem.bottom>rcLB.bottom - rcLB.top)
 		{
-			if (GetFocus() != boughtEdit->getHwnd())
-			{
-				ShowWindow(hAllBoughtButton, SW_HIDE);
-			}
 			return;
 		}
+		FillRect(hDC, &rcItem, GetSysColorBrush(COLOR_HIGHLIGHT));
 		int posY = rcLB.top + rcItem.top + 2;
-		if (IsWindowVisible(boughtEdit->getHwnd()))
+		if (IsWindowVisible(boughtEdit.getHwnd()))
 		{
-			SetWindowPos(boughtEdit->getHwnd(), HWND_TOP, rcLB.left + rcItem.right - listItemHeight + X_CHANGE, posY, 0, 0, SWP_NOSIZE | SWP_NOZORDER);
+			SetWindowPos(boughtEdit.getHwnd(), HWND_TOP, rcLB.left + rcItem.right - listItemHeight + X_CHANGE, posY, 0, 0, SWP_NOSIZE | SWP_NOZORDER);
 		}
 		else
 		{
 			if (itemID > betsSize + 2)
 			{
-				SetWindowPos(hAllBoughtButton, HWND_TOP, rcLB.left + rcItem.right - listItemHeight + 2, posY, listItemHeight, listItemHeight, SWP_SHOWWINDOW);
+				RECT rcAllBoughtButton = { rcItem.right - listItemHeight,rcItem.top,rcItem.right,rcItem.bottom };
+				allBoughtButton.drawButton(hDC, PBS_NORMAL, rcAllBoughtButton);
+				if (!isScrolling)
+				{
+					SetWindowPos(allBoughtButton.getHwnd(), HWND_TOP, rcLB.left + rcItem.right - listItemHeight + 2, posY, listItemHeight, listItemHeight, SWP_SHOWWINDOW);
+				}
 			}
 			else
 			{
-				ShowWindow(hAllBoughtButton, SW_HIDE);
+				ShowWindow(allBoughtButton.getHwnd(), SW_HIDE);
 			}
 		}
-		FillRect(hDC, &rcItem, GetSysColorBrush(COLOR_HIGHLIGHT));
 	}
 	else
 	{
@@ -621,7 +641,7 @@ void BetList::updateBanker(int nIndex, const Banker& banker)
 	_stprintf(str, _T("%0.1f %7d %7d"), banker.odds, banker.amount, banker.bought);
 	insertString(nIndex, str, DT_RIGHT, banker.maxBought == banker.bought ? GetSysColor(COLOR_WINDOWTEXT) : RGB(255, 0, 0));
 	ListBox_DeleteString(hLB, nIndex + 1);
-	ShowWindow(hAllBoughtButton, SW_HIDE);
+	ShowWindow(allBoughtButton.getHwnd(), SW_HIDE);
 }
 
 pair<bool, int> BetList::deleteSel()
@@ -644,8 +664,8 @@ pair<bool, int> BetList::deleteSel()
 	{
 		ListBox_SetTopIndex(hLB, betsSize + bankersSize + 5 - maxDisplayedItemCnt);
 	}
-	ShowWindow(hAllBoughtButton, SW_HIDE);
-	ShowWindow(boughtEdit->getHwnd(), SW_HIDE);
+	ShowWindow(allBoughtButton.getHwnd(), SW_HIDE);
+	ShowWindow(boughtEdit.getHwnd(), SW_HIDE);
 	return result;
 }
 
