@@ -353,10 +353,9 @@ void BetList::drawItem(HDC hDC, int itemID, UINT itemState, ULONG_PTR itemData, 
 		}
 		else
 		{
-			int posX = rcLB.left + rcItem.right - listItemHeight + 2;
 			if (itemID > betsSize + 2)
 			{
-				SetWindowPos(hAllBoughtButton, HWND_TOP, posX, posY, listItemHeight, listItemHeight, SWP_SHOWWINDOW);
+				SetWindowPos(hAllBoughtButton, HWND_TOP, rcLB.left + rcItem.right - listItemHeight + 2, posY, listItemHeight, listItemHeight, SWP_SHOWWINDOW);
 			}
 			else
 			{
@@ -598,23 +597,29 @@ int BetList::getCurSel()
 	return curSel;
 }
 
-void BetList::addBet(PCTSTR str)
+void BetList::addBet(double odds, int amount)
 {
+	TCHAR str[13];
+	_stprintf(str, _T("%0.1f  %7d"), odds, amount);
 	insertString(betsSize + 2, str, DT_CENTER);
 	betsSize++;
 	ListBox_SetTopIndex(hLB, betsSize > maxDisplayedItemCnt - 2 ? betsSize + 2 - maxDisplayedItemCnt : 0);
 }
 
-void BetList::addBanker(PCTSTR str)
+void BetList::addBanker(const Banker& banker)
 {
+	TCHAR str[20];
+	_stprintf(str, _T("%0.1f %7d       0"), banker.odds, banker.amount);
 	int nIndex = addString(str, DT_RIGHT, RGB(255, 0, 0));
 	bankersSize++;
 	ListBox_SetTopIndex(hLB, betsSize + bankersSize + 6 - maxDisplayedItemCnt);
 }
 
-void BetList::updateBanker(int nIndex, PCTSTR pszItem, COLORREF color)
+void BetList::updateBanker(int nIndex, const Banker& banker)
 {
-	insertString(nIndex, pszItem, DT_RIGHT, color);
+	TCHAR str[20];
+	_stprintf(str, _T("%0.1f %7d %7d"), banker.odds, banker.amount, banker.bought);
+	insertString(nIndex, str, DT_RIGHT, banker.maxBought == banker.bought ? GetSysColor(COLOR_WINDOWTEXT) : RGB(255, 0, 0));
 	ListBox_DeleteString(hLB, nIndex + 1);
 	ShowWindow(hAllBoughtButton, SW_HIDE);
 }

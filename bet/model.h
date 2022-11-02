@@ -7,7 +7,6 @@ struct Bet
 {
 	int amount = 0;
 	int profit = 0;
-	TCHAR show[13];
 
 	Bet(double odds, int amount, double cut);
 };
@@ -19,7 +18,6 @@ struct Banker
 	int maxBought;
 	int bought = 0;
 	int profit = 0;
-	TCHAR show[20];
 
 	Banker(double odds, int amount);
 	void changeBought(int newBought, double cut);
@@ -52,8 +50,8 @@ private:
 
 public:
 	Model(double cut);
-	Bet& addBet(bool side, double odds, int amount);
-	void addBanker(bool side, Banker& banker);
+	void addBet(bool side, double odds, int amount);
+	const Banker& addBanker(bool side, double odds, int amount);
 	const Banker& allBought(bool side, int index);
 	const Banker& changeBought(bool side, int index, int amount);
 	void moveBet(bool side, int index, int newPos);

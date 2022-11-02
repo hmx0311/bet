@@ -370,7 +370,7 @@ INT_PTR BetTabDlg::dlgProc(UINT msg, WPARAM wParam, LPARAM lParam)
 					}
 					int lineIdx = betLists[selSide].getCurSel();
 					const Banker& banker = model.changeBought(selSide, lineIdx - betLists[selSide].getBetsSize() - 5, _ttoi(str));
-					betLists[selSide].updateBanker(lineIdx, banker.show, banker.maxBought == banker.bought ? GetSysColor(COLOR_WINDOWTEXT) : RGB(255, 0, 0));
+					betLists[selSide].updateBanker(lineIdx, banker);
 					updateCurrentProfit();
 					return (INT_PTR)TRUE;
 				}
@@ -379,8 +379,7 @@ INT_PTR BetTabDlg::dlgProc(UINT msg, WPARAM wParam, LPARAM lParam)
 		case IDC_ALL_BOUGHT_BUTTON:
 			{
 				int lineIdx = betLists[selSide].getCurSel();
-				betLists[selSide].updateBanker(lineIdx, model.allBought(selSide, lineIdx - betLists[selSide].getBetsSize() - 5).show);
-				SetFocus(betLists[selSide].getHwnd());
+				betLists[selSide].updateBanker(lineIdx, model.allBought(selSide, lineIdx - betLists[selSide].getBetsSize() - 5));
 				updateCurrentProfit();
 				return (INT_PTR)TRUE;
 			}
@@ -571,14 +570,12 @@ void BetTabDlg::add(int side)
 	}
 	if (Button_GetCheck(hBankerBetSelectors[2 * side + 1]))
 	{
-		Bet& bet = model.addBet(side, oddsEdits[2 * side + 1].getOdds(), amount);
-		betLists[side].addBet(bet.show);
+		model.addBet(side, oddsEdits[2 * side + 1].getOdds(), amount);
+		betLists[side].addBet(oddsEdits[2 * side + 1].getOdds(), amount);
 	}
 	else
 	{
-		Banker banker(oddsEdits[2 * side].getOdds(), amount);
-		model.addBanker(side, banker);
-		betLists[side].addBanker(banker.show);
+		betLists[side].addBanker(model.addBanker(side, oddsEdits[2 * side].getOdds(), amount));
 	}
 	SetFocus(amountEdits[side].getHwnd());
 	updateCurrentProfit();

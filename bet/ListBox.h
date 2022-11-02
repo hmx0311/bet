@@ -1,6 +1,7 @@
 #pragma once
 
 #include "edit.h"
+#include "model.h"
 
 #include <utility>
 
@@ -44,9 +45,9 @@ public:
 	int getBetsSize();
 	int getBankersSize();
 	int getCurSel();
-	void addBet(PCTSTR str);
-	void addBanker(PCTSTR str);
-	void updateBanker(int nIndex, PCTSTR pszItem, COLORREF color = 0);
+	void addBet(double odds, int amount);
+	void addBanker(const Banker& banker);
+	void updateBanker(int nIndex, const Banker& banker);
 	std::pair<bool, int> deleteSel();
 	bool isEmpty();
 	void resetContent();

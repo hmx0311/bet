@@ -7,21 +7,16 @@ using namespace std;
 
 constexpr double DBL_PRECISION_COMPENSATE = 1 + 40 * DBL_EPSILON;
 
-Bet::Bet(double odds, int amount, double cut) :amount(amount), profit(amount* cut* odds* DBL_PRECISION_COMPENSATE)
-{
-	_stprintf(show, _T("%0.1f  %7d"), odds, amount);
-}
+Bet::Bet(double odds, int amount, double cut)
+	:amount(amount), profit(amount* cut* odds* DBL_PRECISION_COMPENSATE) {}
 
-Banker::Banker(double odds, int amount) : odds(odds), amount(amount), maxBought(int(amount* DBL_PRECISION_COMPENSATE / odds)* odds* DBL_PRECISION_COMPENSATE)
-{
-	_stprintf(show, _T("%0.1f %7d       0"), odds, amount);
-}
+Banker::Banker(double odds, int amount)
+	:odds(odds), amount(amount), maxBought(int(amount* DBL_PRECISION_COMPENSATE / odds)* odds* DBL_PRECISION_COMPENSATE) {}
 
 void Banker::changeBought(int newBought, double cut)
 {
 	bought = newBought;
 	profit = bought / odds * cut * DBL_PRECISION_COMPENSATE;
-	_stprintf(show, _T("%0.1f %7d %7d"), odds, amount, bought);
 }
 
 long long Model::IntervalSumTree::getAmount(int index)
@@ -64,18 +59,17 @@ long long Model::IntervalSumTree::total()
 
 Model::Model(double cut) :cut(cut), haveClosing(config.defClosing) {}
 
-Bet& Model::addBet(bool side, double odds, int amount)
+void Model::addBet(bool side, double odds, int amount)
 {
-	bets[side].emplace_back(odds, amount, cut);
-	Bet& bet = bets[side].back();
+	Bet& bet = bets[side].emplace_back(odds, amount, cut);
 	totalInvest += amount;
 	profit[side] += bet.profit;
 	profit[!side] -= bet.amount;
-	return bet;
 }
 
-void Model::addBanker(bool side, Banker& banker)
+const Banker& Model::addBanker(bool side, double odds, int amount)
 {
+	Banker& banker = bankers[side].emplace_back(odds, amount);
 	totalInvest += banker.amount;
 	int oddsIdx = round(10 * banker.odds);
 	potentialProfit[side][0].deltaUpdate(oddsIdx, banker.maxBought / banker.odds * cut * DBL_PRECISION_COMPENSATE);
@@ -84,7 +78,7 @@ void Model::addBanker(bool side, Banker& banker)
 	{
 		profit[!side] -= banker.maxBought;
 	}
-	bankers[side].push_back(banker);
+	return banker;
 }
 
 const Banker& Model::allBought(bool side, int index)
