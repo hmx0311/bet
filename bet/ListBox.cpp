@@ -23,8 +23,6 @@ static LRESULT CALLBACK listBoxSubclassProc(HWND hLB, UINT msg, WPARAM wParam, L
 			FillRect((HDC)wParam, &rect, GetSysColorBrush(COLOR_WINDOW));
 		}
 		return (LRESULT)TRUE;
-	case WM_MOUSELEAVE:
-		return 0;
 	}
 	return ((ListBox*)GetWindowLongPtr(hLB, GWLP_USERDATA))->wndProc(msg, wParam, lParam);
 }
@@ -49,7 +47,11 @@ LRESULT ListBox::wndProc(UINT msg, WPARAM wParam, LPARAM lParam)
 	case WM_DPICHANGED_AFTERPARENT:
 		onDPIChanged();
 		break;
+	case WM_SETFOCUS:
+		SetWindowRgn(hLB, CreateRectRgn(0, 0, rcLB.right - rcLB.left - 2, rcLB.bottom - rcLB.top), FALSE);
+		break;
 	case WM_KILLFOCUS:
+		SetWindowRgn(hLB, nullptr, FALSE);
 		RedrawWindow(hLB, nullptr, nullptr, RDW_FRAME | RDW_INVALIDATE);
 		break;
 	}
@@ -112,6 +114,10 @@ void ListBox::onDPIChanged()
 	MapWindowRect(HWND_DESKTOP, GetParent(hLB), &rcLB);
 	rcLB.bottom = rcLB.top + listItemHeight * maxDisplayedItemCnt + 4;
 	SetWindowPos(hLB, nullptr, 0, 0, rcLB.right - rcLB.left, rcLB.bottom - rcLB.top, SWP_NOMOVE | SWP_NOZORDER | SWP_NOREDRAW);
+	if (GetFocus() == hLB)
+	{
+		SetWindowRgn(hLB, CreateRectRgn(0, 0, rcLB.right - rcLB.left - 2, rcLB.bottom - rcLB.top), FALSE);
+	}
 }
 
 void ListBox::drawFocus()
@@ -256,6 +262,9 @@ LRESULT BetList::wndProc(UINT msg, WPARAM wParam, LPARAM lParam)
 			DestroyMenu(menu);
 			return (LRESULT)TRUE;
 		}
+	case WM_SETFOCUS:
+		SetWindowRgn(hLB, CreateRectRgn(0, 0, rcLB.right - rcLB.left - 2, rcLB.bottom - rcLB.top), FALSE);
+		break;
 	case WM_KILLFOCUS:
 		if ((HWND)wParam != allBoughtButton.getHwnd() && (HWND)wParam != boughtEdit.getHwnd())
 		{
@@ -266,6 +275,7 @@ LRESULT BetList::wndProc(UINT msg, WPARAM wParam, LPARAM lParam)
 			}
 			setCurSel(-1);
 			ShowWindow(allBoughtButton.getHwnd(), SW_HIDE);
+			SetWindowRgn(hLB, nullptr, FALSE);
 			RedrawWindow(hLB, nullptr, nullptr, RDW_FRAME | RDW_INVALIDATE);
 		}
 		break;
@@ -683,9 +693,11 @@ void BetList::updateBanker(int nIndex, const Banker& banker)
 {
 	TCHAR str[20];
 	_stprintf(str, _T("%0.1f %7d %7d"), banker.odds, banker.amount, banker.bought);
+	SetWindowRedraw(hLB, FALSE);
+	ShowWindow(allBoughtButton.getHwnd(), SW_HIDE);
 	insertString(nIndex, str, DT_RIGHT, banker.maxBought == banker.bought ? GetSysColor(COLOR_WINDOWTEXT) : RGB(255, 0, 0));
 	ListBox_DeleteString(hLB, nIndex + 1);
-	ShowWindow(allBoughtButton.getHwnd(), SW_HIDE);
+	SetWindowRedraw(hLB, TRUE);
 }
 
 pair<bool, int> BetList::deleteSel()
