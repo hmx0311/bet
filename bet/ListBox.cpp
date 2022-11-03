@@ -24,7 +24,7 @@ static LRESULT CALLBACK listBoxSubclassProc(HWND hLB, UINT msg, WPARAM wParam, L
 		}
 		return (LRESULT)TRUE;
 	case WM_MOUSELEAVE:
-		return (LRESULT)TRUE;
+		return 0;
 	}
 	return ((ListBox*)GetWindowLongPtr(hLB, GWLP_USERDATA))->wndProc(msg, wParam, lParam);
 }
@@ -145,43 +145,70 @@ LRESULT BetList::wndProc(UINT msg, WPARAM wParam, LPARAM lParam)
 	case WM_KEYDOWN:
 		switch (LOWORD(wParam))
 		{
-		case VK_UP:
+		case VK_PRIOR:
+		case VK_NEXT:
+		case VK_END:
+		case VK_HOME:
+			if (isEmpty())
+			{
+				return 0;
+			}
+			if (getCurSel() > betsSize + 2)
+			{
+				isScrolling = true;
+				SetWindowPos(allBoughtButton.getHwnd(), nullptr, 0, 0, 0, 0, SWP_NOMOVE | SWP_NOSIZE | SWP_NOZORDER | SWP_NOREDRAW | SWP_HIDEWINDOW);
+			}
+			break;
 		case VK_LEFT:
+		case VK_UP:
 			{
 				int curSel = getCurSel();
 				if (isEmpty() || curSel == 2 || curSel == 5 && betsSize == 0)
 				{
-					return (LRESULT)TRUE;
+					return 0;
 				}
 				if (curSel == 5 + betsSize)
 				{
 					setCurSel(1 + betsSize);
-					return (LRESULT)TRUE;
+					return 0;
+				}
+				if (curSel > betsSize + 2)
+				{
+					isScrolling = true;
+					SetWindowPos(allBoughtButton.getHwnd(), nullptr, 0, 0, 0, 0, SWP_NOMOVE | SWP_NOSIZE | SWP_NOZORDER | SWP_NOREDRAW | SWP_HIDEWINDOW);
 				}
 				break;
 			}
-		case VK_DOWN:
 		case VK_RIGHT:
-			if (isEmpty())
+		case VK_DOWN:
 			{
-				return (LRESULT)TRUE;
-			}
-			if (getCurSel() == 1 + betsSize)
-			{
-				if (bankersSize == 0)
+				int curSel = getCurSel();
+				if (isEmpty())
 				{
-					return (LRESULT)TRUE;
+					return 0;
 				}
-				setCurSel(5 + betsSize);
-				return (LRESULT)TRUE;
+				if (curSel == 1 + betsSize)
+				{
+					if (bankersSize == 0)
+					{
+						return 0;
+					}
+					setCurSel(5 + betsSize);
+					return 0;
+				}
+				if (curSel > betsSize + 2)
+				{
+					isScrolling = true;
+					SetWindowPos(allBoughtButton.getHwnd(), nullptr, 0, 0, 0, 0, SWP_NOMOVE | SWP_NOSIZE | SWP_NOZORDER | SWP_NOREDRAW | SWP_HIDEWINDOW);
+				}
+				break;
 			}
-			break;
 		case VK_DELETE:
 			if (!(GetAsyncKeyState(VK_LBUTTON) & 0x8000) && getCurSel() > 0)
 			{
 				SendMessage(GetParent(hLB), WM_COMMAND, ID_DELETE, 0);
 			}
-			return (LRESULT)TRUE;
+			return 0;
 		}
 		break;
 	case WM_LBUTTONDBLCLK:
@@ -191,14 +218,14 @@ LRESULT BetList::wndProc(UINT msg, WPARAM wParam, LPARAM lParam)
 			{
 				return (LRESULT)TRUE;
 			}
-			RECT rect;
-			ListBox_GetItemRect(hLB, curSel, &rect);
-			if (!PtInRect(&rect, { GET_X_LPARAM(lParam),GET_Y_LPARAM(lParam) }))
+			RECT rcItem;
+			ListBox_GetItemRect(hLB, curSel, &rcItem);
+			if (!PtInRect(&rcItem, { GET_X_LPARAM(lParam),GET_Y_LPARAM(lParam) }))
 			{
 				return (LRESULT)TRUE;
 			}
 			ShowWindow(allBoughtButton.getHwnd(), SW_HIDE);
-			ShowWindow(boughtEdit.getHwnd(), SW_SHOW);
+			SetWindowPos(boughtEdit.getHwnd(), HWND_TOP, rcLB.left + rcItem.right - listItemHeight + X_CHANGE, rcLB.top + rcItem.top + 2, 0, 0, SWP_NOSIZE | SWP_NOZORDER | SWP_SHOWWINDOW);
 			TCHAR str[20];
 			ListBox_GetText(hLB, curSel, str);
 			int i;
@@ -246,35 +273,37 @@ LRESULT BetList::wndProc(UINT msg, WPARAM wParam, LPARAM lParam)
 	case WM_MOUSEWHEEL:
 		{
 			int curSel = getCurSel();
-			if (curSel != -1)
+			if (curSel > betsSize + 2)
 			{
-				if (IsWindowVisible(allBoughtButton.getHwnd()))
+				isScrolling = true;
+				LRESULT result;
+				if (!IsWindowVisible(boughtEdit.getHwnd()))
 				{
-					isScrolling = true;
-					SetWindowPos(allBoughtButton.getHwnd(), nullptr, 0, 0, 0, 0, SWP_NOMOVE | SWP_NOSIZE | SWP_NOZORDER | SWP_HIDEWINDOW | SWP_NOREDRAW);
-					LRESULT result = DefSubclassProc(hLB, msg, wParam, lParam);
+					SetWindowPos(allBoughtButton.getHwnd(), nullptr, 0, 0, 0, 0, SWP_NOMOVE | SWP_NOSIZE | SWP_NOZORDER | SWP_NOREDRAW | SWP_HIDEWINDOW);
+					result = DefSubclassProc(hLB, msg, wParam, lParam);
+					showAllBoughtButton(curSel);
+				}
+				else
+				{
+					result = DefSubclassProc(hLB, msg, wParam, lParam);
 					RECT rcSel;
 					ListBox_GetItemRect(hLB, curSel, &rcSel);
 					MapWindowRect(hLB, GetParent(hLB), &rcSel);
 					if (rcSel.top > rcLB.top && rcSel.bottom < rcLB.bottom)
 					{
-						SetWindowPos(allBoughtButton.getHwnd(), nullptr, rcSel.right - listItemHeight, rcSel.top, 0, 0, SWP_NOSIZE | SWP_NOZORDER | SWP_SHOWWINDOW);
+						SetWindowPos(boughtEdit.getHwnd(), HWND_TOP, rcSel.right - listItemHeight + X_CHANGE, rcSel.top, 0, 0, SWP_NOSIZE | SWP_NOZORDER);
 					}
-					isScrolling = false;
-					return result;
-				}
-				int selLineIdx = getCurSel() - GetScrollPos(hLB, SB_VERT);
-				if (selLineIdx < 0 || selLineIdx >= maxDisplayedItemCnt)
-				{
-					if (GetFocus() == boughtEdit.getHwnd())
+					else
 					{
 						ShowWindow(boughtEdit.getHwnd(), SW_HIDE);
 						SetFocus(hLB);
 					}
 				}
+				isScrolling = false;
+				return result;
 			}
+			break;
 		}
-		break;
 	case WM_COMMAND:
 		switch (LOWORD(wParam))
 		{
@@ -317,31 +346,47 @@ LRESULT BetList::wndProc(UINT msg, WPARAM wParam, LPARAM lParam)
 	case WM_KEYDOWN:
 		switch (LOWORD(wParam))
 		{
-		case VK_UP:
+		case VK_PRIOR:
+		case VK_NEXT:
+		case VK_END:
+		case VK_HOME:
 		case VK_LEFT:
-		case VK_DOWN:
+		case VK_UP:
 		case VK_RIGHT:
-			if (getCurSel() == -1)
+		case VK_DOWN:
 			{
-				if (betsSize == 0)
+				int curSel = getCurSel();
+				if (curSel == -1)
 				{
-					setCurSel(5);
+					if (betsSize == 0)
+					{
+						setCurSel(5);
+						break;
+					}
+					curSel = ListBox_GetCurSel(hLB);
+					if (curSel < 2)
+					{
+						setCurSel(2);
+						break;
+					}
+					if (bankersSize == 0)
+					{
+						setCurSel(betsSize + 1);
+						break;
+					}
+					setCurSel(betsSize + (curSel > betsSize + 2 ? 5 : 1));
 					break;
 				}
-				int curSel = ListBox_GetCurSel(hLB);
-				if (curSel < 2)
+				if (isScrolling)
 				{
-					setCurSel(2);
-					break;
+					if (curSel > betsSize + 2)
+					{
+						showAllBoughtButton(curSel);
+					}
+					isScrolling = false;
 				}
-				if (bankersSize == 0)
-				{
-					setCurSel(betsSize + 1);
-					break;
-				}
-				setCurSel(betsSize + (curSel > betsSize + 2 ? 5 : 1));
+				break;
 			}
-			break;
 		}
 		break;
 	}
@@ -357,17 +402,9 @@ void BetList::drawItem(HDC hDC, int itemID, UINT itemState, ULONG_PTR itemData, 
 	}
 	if (itemState & ODS_SELECTED)
 	{
-		if (rcItem.top<0 || rcItem.bottom>rcLB.bottom - rcLB.top)
-		{
-			return;
-		}
 		FillRect(hDC, &rcItem, GetSysColorBrush(COLOR_HIGHLIGHT));
 		int posY = rcLB.top + rcItem.top + 2;
-		if (IsWindowVisible(boughtEdit.getHwnd()))
-		{
-			SetWindowPos(boughtEdit.getHwnd(), HWND_TOP, rcLB.left + rcItem.right - listItemHeight + X_CHANGE, posY, 0, 0, SWP_NOSIZE | SWP_NOZORDER);
-		}
-		else
+		if (!IsWindowVisible(boughtEdit.getHwnd()))
 		{
 			if (itemID > betsSize + 2)
 			{
@@ -375,7 +412,14 @@ void BetList::drawItem(HDC hDC, int itemID, UINT itemState, ULONG_PTR itemData, 
 				allBoughtButton.drawButton(hDC, PBS_NORMAL, rcAllBoughtButton);
 				if (!isScrolling)
 				{
-					SetWindowPos(allBoughtButton.getHwnd(), HWND_TOP, rcLB.left + rcItem.right - listItemHeight + 2, posY, listItemHeight, listItemHeight, SWP_SHOWWINDOW);
+					if (rcItem.top >= 0 && rcItem.bottom <= rcLB.bottom - rcLB.top)
+					{
+						SetWindowPos(allBoughtButton.getHwnd(), HWND_TOP, rcLB.left + rcItem.right - listItemHeight + 2, posY, listItemHeight, listItemHeight, SWP_SHOWWINDOW);
+					}
+					else
+					{
+						ShowWindow(allBoughtButton.getHwnd(), SW_HIDE);
+					}
 				}
 			}
 			else
@@ -669,6 +713,21 @@ pair<bool, int> BetList::deleteSel()
 	return result;
 }
 
+void BetList::setCurSel(int nSelect)
+{
+	int curSel = getCurSel();
+	if (curSel < betsSize + 2 || nSelect < betsSize + 2)
+	{
+		ListBox_SetCurSel(hLB, nSelect);
+		return;
+	}
+	isScrolling = true;
+	SetWindowPos(allBoughtButton.getHwnd(), nullptr, 0, 0, 0, 0, SWP_NOMOVE | SWP_NOSIZE | SWP_NOZORDER | SWP_NOREDRAW | SWP_HIDEWINDOW);
+	ListBox_SetCurSel(hLB, nSelect);
+	showAllBoughtButton(nSelect);
+	isScrolling = false;
+}
+
 bool BetList::isEmpty()
 {
 	return betsSize + bankersSize == 0;
@@ -686,6 +745,24 @@ void BetList::resetContent()
 	addString(_T("赔率 已投入   已买"));
 }
 
+int BetList::insertString(int nIndex, PCTSTR pszItem, BYTE style, COLORREF color)
+{
+	int index = ListBox_InsertString(hLB, nIndex, pszItem);
+	ListBox_SetItemData(hLB, index, ((color << 8) | style));
+	return index;
+}
+
+void BetList::showAllBoughtButton(int nIndex)
+{
+	RECT rcSel;
+	ListBox_GetItemRect(hLB, nIndex, &rcSel);
+	MapWindowRect(hLB, GetParent(hLB), &rcSel);
+	if (rcSel.top > rcLB.top && rcSel.bottom < rcLB.bottom)
+	{
+		SetWindowPos(allBoughtButton.getHwnd(), nullptr, rcSel.right - listItemHeight, rcSel.top, 0, 0, SWP_NOSIZE | SWP_NOZORDER | SWP_SHOWWINDOW);
+	}
+}
+
 void BetList::eraseDragLine(HDC hDC)
 {
 	RECT rcLastLine;
@@ -693,11 +770,4 @@ void BetList::eraseDragLine(HDC hDC)
 	rcLastLine.top--;
 	rcLastLine.bottom = rcLastLine.top + 2;
 	FillRect(hDC, &rcLastLine, GetSysColorBrush(COLOR_WINDOW));
-}
-
-int BetList::insertString(int nIndex, PCTSTR pszItem, BYTE style, COLORREF color)
-{
-	int index = ListBox_InsertString(hLB, nIndex, pszItem);
-	ListBox_SetItemData(hLB, index, ((color << 8) | style));
-	return index;
 }

@@ -50,10 +50,12 @@ public:
 	void addBet(double odds, int amount);
 	void addBanker(const Banker& banker);
 	void updateBanker(int nIndex, const Banker& banker);
+	void setCurSel(int nSelect);
 	std::pair<bool, int> deleteSel();
 	bool isEmpty();
 	void resetContent();
 private:
-	void eraseDragLine(HDC hDC);
 	int insertString(int nIndex, PCTSTR pszItem, BYTE style, COLORREF color = 0);
+	void showAllBoughtButton(int nIndex);
+	void eraseDragLine(HDC hDC);
 };
