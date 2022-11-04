@@ -175,7 +175,7 @@ LRESULT BetList::wndProc(UINT msg, WPARAM wParam, LPARAM lParam)
 				}
 				if (curSel == 5 + betsSize)
 				{
-					setCurSel(1 + betsSize);
+					moveCurSel(1 + betsSize);
 					return 0;
 				}
 				if (curSel > betsSize + 2)
@@ -199,7 +199,7 @@ LRESULT BetList::wndProc(UINT msg, WPARAM wParam, LPARAM lParam)
 					{
 						return 0;
 					}
-					setCurSel(5 + betsSize);
+					moveCurSel(5 + betsSize);
 					return 0;
 				}
 				if (curSel > betsSize + 2)
@@ -222,13 +222,13 @@ LRESULT BetList::wndProc(UINT msg, WPARAM wParam, LPARAM lParam)
 			int curSel = getCurSel();
 			if (curSel < betsSize + 5)
 			{
-				return (LRESULT)TRUE;
+				return 0;
 			}
 			RECT rcItem;
 			ListBox_GetItemRect(hLB, curSel, &rcItem);
 			if (!PtInRect(&rcItem, { GET_X_LPARAM(lParam),GET_Y_LPARAM(lParam) }))
 			{
-				return (LRESULT)TRUE;
+				return 0;
 			}
 			ShowWindow(allBoughtButton.getHwnd(), SW_HIDE);
 			SetWindowPos(boughtEdit.getHwnd(), HWND_TOP, rcLB.left + rcItem.right - listItemHeight + X_CHANGE, rcLB.top + rcItem.top + 2, 0, 0, SWP_NOSIZE | SWP_NOZORDER | SWP_SHOWWINDOW);
@@ -239,14 +239,14 @@ LRESULT BetList::wndProc(UINT msg, WPARAM wParam, LPARAM lParam)
 			boughtEdit.setText(&str[i]);
 			boughtEdit.setSel(0, -1);
 			SetFocus(boughtEdit.getHwnd());
-			return (LRESULT)TRUE;
+			return 0;
 		}
 	case WM_CONTEXTMENU:
 		{
 			int curSel = getCurSel();
 			if (curSel < 0)
 			{
-				return (LRESULT)TRUE;
+				return 0;
 			}
 			RECT rect;
 			ListBox_GetItemRect(hLB, curSel, &rect);
@@ -254,13 +254,13 @@ LRESULT BetList::wndProc(UINT msg, WPARAM wParam, LPARAM lParam)
 			POINT pos = { lParam == -1 ? (rect.left + rect.right) / 2 : GET_X_LPARAM(lParam),lParam == -1 ? (rect.top + rect.bottom) / 2 : GET_Y_LPARAM(lParam) };
 			if (!PtInRect(&rect, pos))
 			{
-				return (LRESULT)TRUE;
+				return 0;
 			}
 			HMENU menu = CreatePopupMenu();
 			AppendMenu(menu, 0, ID_DELETE, _T("É¾³ý(&D)"));
 			TrackPopupMenu(menu, 0, pos.x, pos.y, 0, GetParent(hLB), nullptr);
 			DestroyMenu(menu);
-			return (LRESULT)TRUE;
+			return 0;
 		}
 	case WM_SETFOCUS:
 		SetWindowRgn(hLB, CreateRectRgn(0, 0, rcLB.right - rcLB.left - 2, rcLB.bottom - rcLB.top), FALSE);
@@ -324,7 +324,7 @@ LRESULT BetList::wndProc(UINT msg, WPARAM wParam, LPARAM lParam)
 				int curScroll = GetScrollPos(hLB, SB_VERT);
 				if (curSel < betsSize + 5 || curSel < curScroll || curSel >= curScroll + maxDisplayedItemCnt)
 				{
-					return (LRESULT)TRUE;
+					return 0;
 				}
 				ShowWindow(allBoughtButton.getHwnd(), SW_HIDE);
 				ShowWindow(boughtEdit.getHwnd(), SW_SHOW);
@@ -335,7 +335,7 @@ LRESULT BetList::wndProc(UINT msg, WPARAM wParam, LPARAM lParam)
 				boughtEdit.setText(&str[i]);
 				boughtEdit.setSel(0, -1);
 				SetFocus(boughtEdit.getHwnd());
-				return (LRESULT)TRUE;
+				return 0;
 			}
 			break;
 		}
@@ -370,21 +370,21 @@ LRESULT BetList::wndProc(UINT msg, WPARAM wParam, LPARAM lParam)
 				{
 					if (betsSize == 0)
 					{
-						setCurSel(5);
+						moveCurSel(5);
 						break;
 					}
 					curSel = ListBox_GetCurSel(hLB);
 					if (curSel < 2)
 					{
-						setCurSel(2);
+						moveCurSel(2);
 						break;
 					}
 					if (bankersSize == 0)
 					{
-						setCurSel(betsSize + 1);
+						moveCurSel(betsSize + 1);
 						break;
 					}
-					setCurSel(betsSize + (curSel > betsSize + 2 ? 5 : 1));
+					moveCurSel(betsSize + (curSel > betsSize + 2 ? 5 : 1));
 					break;
 				}
 				if (isScrolling)
@@ -604,6 +604,7 @@ int BetList::dropped(POINT ptCursor)
 		TCHAR str[20];
 		ListBox_GetText(hLB, curSel, str);
 		LRESULT itemData = ListBox_GetItemData(hLB, curSel);
+		SetWindowRedraw(hLB, FALSE);
 		ListBox_DeleteString(hLB, curSel);
 		if (curSel < lastDragIdx)
 		{
@@ -611,7 +612,8 @@ int BetList::dropped(POINT ptCursor)
 		}
 		ListBox_InsertString(hLB, lastDragIdx, str);
 		ListBox_SetItemData(hLB, lastDragIdx, itemData);
-		setCurSel(lastDragIdx);
+		moveCurSel(lastDragIdx);
+		SetWindowRedraw(hLB, TRUE);
 	}
 	if (curSel > betsSize + 2)
 	{
@@ -725,7 +727,7 @@ pair<bool, int> BetList::deleteSel()
 	return result;
 }
 
-void BetList::setCurSel(int nSelect)
+void BetList::moveCurSel(int nSelect)
 {
 	int curSel = getCurSel();
 	if (curSel < betsSize + 2 || nSelect < betsSize + 2)

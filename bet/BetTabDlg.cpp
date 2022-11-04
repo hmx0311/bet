@@ -363,7 +363,7 @@ INT_PTR BetTabDlg::dlgProc(UINT msg, WPARAM wParam, LPARAM lParam)
 					ShowWindow(boughtEdit.getHwnd(), SW_HIDE);
 					if (str[0] == '\0')
 					{
-						betLists[selSide].setCurSel(-1);
+						betLists[selSide].moveCurSel(-1);
 						return (INT_PTR)TRUE;
 					}
 					int lineIdx = betLists[selSide].getCurSel();

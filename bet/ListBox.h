@@ -50,7 +50,7 @@ public:
 	void addBet(double odds, int amount);
 	void addBanker(const Banker& banker);
 	void updateBanker(int nIndex, const Banker& banker);
-	void setCurSel(int nSelect);
+	void moveCurSel(int nSelect);
 	std::pair<bool, int> deleteSel();
 	bool isEmpty();
 	void resetContent();

@@ -62,7 +62,7 @@ LRESULT CALLBACK editSubclassProc(HWND hEdit, UINT msg, WPARAM wParam, LPARAM lP
 				break;
 			}
 			DestroyMenu(hMenu);
-			return (LRESULT)TRUE;
+			return 0;
 		}
 	}
 	Edit* edit = (Edit*)GetWindowLongPtr(hEdit, GWLP_USERDATA);
@@ -80,7 +80,7 @@ LRESULT CALLBACK editSubclassProc(HWND hEdit, UINT msg, WPARAM wParam, LPARAM lP
 	{
 	case WM_DPICHANGED_AFTERPARENT:
 		setVCentered(hEdit);
-		return (LRESULT)TRUE;
+		return 0;
 	case WM_COMMAND:
 		switch (LOWORD(wParam))
 		{
@@ -172,13 +172,13 @@ LRESULT NumericEdit::wndProc(UINT msg, WPARAM wParam, LPARAM lParam)
 		break;
 	case WM_PASTE:
 		{
-			OpenClipboard(hEdit);
 			wstring str;
+			OpenClipboard(hEdit);
 			char* text = (char*)GetClipboardData(CF_TEXT);
 			if (text == nullptr)
 			{
 				CloseClipboard();
-				return (INT_PTR)TRUE;
+				return 0;
 			}
 			for (; *text != '\0'; text++)
 			{
@@ -212,7 +212,7 @@ LRESULT NumericEdit::wndProc(UINT msg, WPARAM wParam, LPARAM lParam)
 			}
 			CloseClipboard();
 			Edit_ReplaceSel(hEdit, str.c_str());
-			return (LRESULT)TRUE;
+			return 0;
 		}
 	case WM_KILLFOCUS:
 		updateStr();
@@ -292,7 +292,7 @@ LRESULT AmountEdit::wndProc(UINT msg, WPARAM wParam, LPARAM lParam)
 		case VK_UP:
 		case VK_DOWN:
 			SendMessage(Button_GetCheck(hBankerSelector) ? hBankerOddsEdit : hBetOddsEdit, msg, wParam, lParam);
-			return (LRESULT)TRUE;
+			return 0;
 		}
 		break;
 	case WM_KILLFOCUS:
@@ -304,7 +304,7 @@ LRESULT AmountEdit::wndProc(UINT msg, WPARAM wParam, LPARAM lParam)
 		case IDC_CLEAR_BUTTON:
 			setText(_T(""));
 			SetFocus(hEdit);
-			return (LRESULT)TRUE;
+			return 0;
 		}
 		break;
 	}
@@ -332,7 +332,7 @@ LRESULT OddsEdit::wndProc(UINT msg, WPARAM wParam, LPARAM lParam)
 	case EM_SETSEL:
 		if (wParam == 0 && lParam == -1)
 		{
-			return (LRESULT)TRUE;
+			return 0;
 		}
 		break;
 	case WM_MOUSEWHEEL:

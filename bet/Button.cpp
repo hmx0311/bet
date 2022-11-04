@@ -32,10 +32,10 @@ LRESULT CALLBACK buttonSubclassProc(HWND hButton, UINT msg, WPARAM wParam, LPARA
 			{
 				SetFocus(GetNextDlgTabItem(GetParent(hButton), hButton, FALSE));
 			}
-			return LRESULT(TRUE);
+			return 0;
 		}
 	case WM_KILLFOCUS:
-		return LRESULT(TRUE);
+		return 0;
 	}
 	Button* button = (Button*)GetWindowLongPtr(hButton, GWLP_USERDATA);
 	return button == nullptr ? DefSubclassProc(hButton, msg, wParam, lParam) : button->wndProc(msg, wParam, lParam);
@@ -104,7 +104,7 @@ LRESULT Button::wndProc(UINT msg, WPARAM wParam, LPARAM lParam)
 				}
 			}
 			EndPaint(hButton, &paintStruct);
-			return LRESULT(TRUE);
+			return 0;
 		}
 	}
 	return DefSubclassProc(hButton, msg, wParam, lParam);

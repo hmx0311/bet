@@ -34,11 +34,7 @@ INT_PTR CALLBACK dlgProc(HWND hDlg, UINT msg, WPARAM wParam, LPARAM lParam)
 		return (INT_PTR)TRUE;
 	}
 	Dialog* dlg = (Dialog*)GetWindowLongPtr(hDlg, GWLP_USERDATA);
-	if (dlg == nullptr)
-	{
-		return (INT_PTR)FALSE;
-	}
-	return dlg->dlgProc(msg, wParam, lParam);
+	return dlg == nullptr ? (INT_PTR)FALSE : dlg->dlgProc(msg, wParam, lParam);
 }
 
 Dialog::Dialog(UINT nIDTemplate)

@@ -54,14 +54,14 @@ INT_PTR BetDlg::initDlg(HWND hDlg)
 			{
 			case WM_DPICHANGED_AFTERPARENT:
 				setVCentered(hEdit);
-				return (LRESULT)TRUE;
+				return 0;
 			case WM_KEYDOWN:
 				switch (wParam)
 				{
 				case VK_ESCAPE:
 					SetWindowText(hEdit, _T(""));
 					ShowWindow(hEdit, SW_HIDE);
-					return (LRESULT)TRUE;
+					return 0;
 				}
 				break;
 			case WM_COMMAND:
