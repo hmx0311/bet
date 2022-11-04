@@ -8,7 +8,7 @@
 
 using namespace std;
 
-#define X_CHANGE (int)(2-53.0f*xScale)
+#define X_CHANGE (int)(-53.0f*xScale)
 
 static LRESULT CALLBACK listBoxSubclassProc(HWND hLB, UINT msg, WPARAM wParam, LPARAM lParam, UINT_PTR uIdSubclass, DWORD_PTR dwRefData)
 {
@@ -224,14 +224,15 @@ LRESULT BetList::wndProc(UINT msg, WPARAM wParam, LPARAM lParam)
 			{
 				return 0;
 			}
-			RECT rcItem;
-			ListBox_GetItemRect(hLB, curSel, &rcItem);
-			if (!PtInRect(&rcItem, { GET_X_LPARAM(lParam),GET_Y_LPARAM(lParam) }))
+			RECT rcSel;
+			ListBox_GetItemRect(hLB, curSel, &rcSel);
+			if (!PtInRect(&rcSel, { GET_X_LPARAM(lParam),GET_Y_LPARAM(lParam) }))
 			{
 				return 0;
 			}
+			MapWindowRect(hLB, GetParent(hLB), &rcSel);
 			ShowWindow(allBoughtButton.getHwnd(), SW_HIDE);
-			SetWindowPos(boughtEdit.getHwnd(), HWND_TOP, rcLB.left + rcItem.right - listItemHeight + X_CHANGE, rcLB.top + rcItem.top + 2, 0, 0, SWP_NOSIZE | SWP_NOZORDER | SWP_SHOWWINDOW);
+			SetWindowPos(boughtEdit.getHwnd(), HWND_TOP, rcSel.right - listItemHeight + X_CHANGE, rcSel.top, 0, 0, SWP_NOSIZE | SWP_NOZORDER | SWP_SHOWWINDOW);
 			TCHAR str[20];
 			ListBox_GetText(hLB, curSel, str);
 			int i;
@@ -318,16 +319,15 @@ LRESULT BetList::wndProc(UINT msg, WPARAM wParam, LPARAM lParam)
 		switch (LOWORD(wParam))
 		{
 		case ID_CONFIRM:
-			if (!isDragging)
+			if (!isDragging&&IsWindowVisible(allBoughtButton.getHwnd()))
 			{
 				int curSel = getCurSel();
-				int curScroll = GetScrollPos(hLB, SB_VERT);
-				if (curSel < betsSize + 5 || curSel < curScroll || curSel >= curScroll + maxDisplayedItemCnt)
-				{
-					return 0;
-				}
 				ShowWindow(allBoughtButton.getHwnd(), SW_HIDE);
-				ShowWindow(boughtEdit.getHwnd(), SW_SHOW);
+				RECT rcSel;
+				ListBox_GetItemRect(hLB, curSel, &rcSel);
+				MapWindowRect(hLB, GetParent(hLB), &rcSel);
+				ShowWindow(allBoughtButton.getHwnd(), SW_HIDE);
+				SetWindowPos(boughtEdit.getHwnd(), HWND_TOP, rcSel.right - listItemHeight + X_CHANGE, rcSel.top, 0, 0, SWP_NOSIZE | SWP_NOZORDER | SWP_SHOWWINDOW);
 				TCHAR str[20];
 				ListBox_GetText(hLB, curSel, str);
 				int i;
@@ -335,9 +335,8 @@ LRESULT BetList::wndProc(UINT msg, WPARAM wParam, LPARAM lParam)
 				boughtEdit.setText(&str[i]);
 				boughtEdit.setSel(0, -1);
 				SetFocus(boughtEdit.getHwnd());
-				return 0;
 			}
-			break;
+			return 0;
 		}
 		break;
 	}
