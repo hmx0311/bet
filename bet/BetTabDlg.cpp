@@ -361,12 +361,15 @@ INT_PTR BetTabDlg::dlgProc(UINT msg, WPARAM wParam, LPARAM lParam)
 					TCHAR str[8];
 					boughtEdit.getText(str, 8);
 					ShowWindow(boughtEdit.getHwnd(), SW_HIDE);
+					int lineIdx = betLists[selSide].getCurSel();
+					if (GetFocus() != betLists[selSide].getHwnd())
+					{
+						SendMessage(betLists[selSide].getHwnd(), WM_KILLFOCUS, 0, 0);
+					}
 					if (str[0] == '\0')
 					{
-						betLists[selSide].moveCurSel(-1);
 						return (INT_PTR)TRUE;
 					}
-					int lineIdx = betLists[selSide].getCurSel();
 					const Banker& banker = model.changeBought(selSide, lineIdx - betLists[selSide].getBetsSize() - 5, _ttoi(str));
 					betLists[selSide].updateBanker(lineIdx, banker);
 					updateCurrentProfit();
