@@ -276,7 +276,7 @@ INT_PTR BetTabDlg::dlgProc(UINT msg, WPARAM wParam, LPARAM lParam)
 					{
 						model.deleteBanker(selSide, result.second);
 					}
-					updateCurrentProfit();
+					updateInvestAmount();
 					return (INT_PTR)TRUE;
 				}
 			case IDC_RESET_BUTTON:
@@ -287,7 +287,7 @@ INT_PTR BetTabDlg::dlgProc(UINT msg, WPARAM wParam, LPARAM lParam)
 					{
 						betLists[i].resetContent();
 					}
-					updateCurrentProfit();
+					updateInvestAmount();
 				}
 				return (INT_PTR)TRUE;
 			case IDC_HAVE_CLOSING_CHECK:
@@ -407,7 +407,11 @@ INT_PTR BetTabDlg::dlgProc(UINT msg, WPARAM wParam, LPARAM lParam)
 					{
 						if (ComboBox_GetCurSel(hCurrentAmountCombo) == 0)
 						{
-							TCHAR str[15];
+							if (initialAmount > 9999999999999)
+							{
+								initialAmount = 9999999999999;
+							}
+							TCHAR str[14];
 							_i64tot(initialAmount, str, 10);
 							currentAmountEdit.resetUndo();
 							currentAmountEdit.setText(str);
@@ -422,7 +426,7 @@ INT_PTR BetTabDlg::dlgProc(UINT msg, WPARAM wParam, LPARAM lParam)
 							}
 							else
 							{
-								TCHAR str[15];
+								TCHAR str[14];
 								_i64tot(remainingAmount, str, 10);
 								currentAmountEdit.resetUndo();
 								currentAmountEdit.setText(str);
@@ -554,6 +558,41 @@ INT_PTR BetTabDlg::dlgProc(UINT msg, WPARAM wParam, LPARAM lParam)
 	return (INT_PTR)FALSE;
 }
 
+void BetTabDlg::updateInvestAmount()
+{
+	if (Button_GetCheck(hAutoCurrentAmountCheck))
+	{
+		if (ComboBox_GetCurSel(hCurrentAmountCombo) == 1)
+		{
+			TCHAR str[15];
+			long long remainingAmount = initialAmount - model.getTotalInvest();
+			if (remainingAmount < 0)
+			{
+				ComboBox_SetCurSel(hCurrentAmountCombo, 0);
+				_i64tot(initialAmount, str, 10);
+			}
+			else
+			{
+				if (remainingAmount > 9999999999999)
+				{
+					remainingAmount = 9999999999999;
+					initialAmount = remainingAmount + model.getTotalInvest();
+				}
+				_i64tot(remainingAmount, str, 10);
+			}
+			currentAmountEdit.resetUndo();
+			currentAmountEdit.setText(str);
+		}
+	}
+	else if (ComboBox_GetCurSel(hCurrentAmountCombo) == 1)
+	{
+		TCHAR str[15];
+		currentAmountEdit.getText(str, 20);
+		initialAmount = _ttoll(str) + model.getTotalInvest();
+	}
+	updateCurrentProfit();
+}
+
 void BetTabDlg::updateCurrentProfit()
 {
 	TCHAR str[20];
@@ -564,29 +603,6 @@ void BetTabDlg::updateCurrentProfit()
 	_i64tot(model.getProfit(1), str, 10);
 	SetWindowText(hCurrentProfitTexts[1], str);
 	ListBox_ResetContent(resultLists[0].getHwnd());
-	if (Button_GetCheck(hAutoCurrentAmountCheck))
-	{
-		if (ComboBox_GetCurSel(hCurrentAmountCombo) == 1)
-		{
-			long long remainingAmount = initialAmount - model.getTotalInvest();
-			if (remainingAmount < 0)
-			{
-				ComboBox_SetCurSel(hCurrentAmountCombo, 0);
-				_i64tot(initialAmount, str, 10);
-			}
-			else
-			{
-				_i64tot(remainingAmount, str, 10);
-			}
-			currentAmountEdit.resetUndo();
-			currentAmountEdit.setText(str);
-		}
-	}
-	else if (ComboBox_GetCurSel(hCurrentAmountCombo) == 1)
-	{
-		currentAmountEdit.getText(str, 20);
-		initialAmount = _ttoll(str) + model.getTotalInvest();
-	}
 	updateMinOdds();
 }
 
@@ -643,7 +659,7 @@ void BetTabDlg::add(int side)
 	{
 		betLists[side].addBanker(model.addBanker(side, oddsEdits[2 * side].getOdds(), amount));
 	}
-	updateCurrentProfit();
+	updateInvestAmount();
 }
 
 void BetTabDlg::calcBalanceAimAmount()
