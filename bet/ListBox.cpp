@@ -105,8 +105,6 @@ void ListBox::setCurSel(int nSelect)
 	ListBox_SetCurSel(hLB, nSelect);
 }
 
-
-
 void ListBox::onDPIChanged()
 {
 	ListBox_SetItemHeight(hLB, 0, listItemHeight);
@@ -147,6 +145,23 @@ LRESULT BetList::wndProc(UINT msg, WPARAM wParam, LPARAM lParam)
 	{
 	case WM_DPICHANGED_AFTERPARENT:
 		onDPIChanged();
+		break;
+	case WM_SETFOCUS:
+		SetWindowRgn(hLB, CreateRectRgn(0, 0, rcLB.right - rcLB.left - 2, rcLB.bottom - rcLB.top), FALSE);
+		break;
+	case WM_KILLFOCUS:
+		if ((HWND)wParam != allBoughtButton.getHwnd() && (HWND)wParam != boughtEdit.getHwnd())
+		{
+			if (isDragging)
+			{
+				cancelDrag();
+				SetCursor(nullptr);
+			}
+			setCurSel(-1);
+			ShowWindow(allBoughtButton.getHwnd(), SW_HIDE);
+			SetWindowRgn(hLB, nullptr, FALSE);
+			RedrawWindow(hLB, nullptr, nullptr, RDW_FRAME | RDW_INVALIDATE);
+		}
 		break;
 	case WM_GETDLGCODE:
 		switch (wParam)
@@ -225,44 +240,15 @@ LRESULT BetList::wndProc(UINT msg, WPARAM wParam, LPARAM lParam)
 		case VK_RETURN:
 			if (IsWindowVisible(allBoughtButton.getHwnd()))
 			{
-				int curSel = getCurSel();
-				ShowWindow(allBoughtButton.getHwnd(), SW_HIDE);
-				RECT rcSel;
-				ListBox_GetItemRect(hLB, curSel, &rcSel);
-				MapWindowRect(hLB, GetParent(hLB), &rcSel);
-				ShowWindow(allBoughtButton.getHwnd(), SW_HIDE);
-				SetWindowPos(boughtEdit.getHwnd(), HWND_TOP, rcSel.right - listItemHeight + X_CHANGE, rcSel.top, 0, 0, SWP_NOSIZE | SWP_NOZORDER | SWP_SHOWWINDOW);
-				TCHAR str[20];
-				ListBox_GetText(hLB, curSel, str);
-				int i;
-				for (i = 12; str[i] == ' '; i++);
-				boughtEdit.setText(&str[i]);
-				boughtEdit.setSel(0, -1);
-				SetFocus(boughtEdit.getHwnd());
+				showChangeBoughtEdit();
 			}
 			return 0;
 		}
 		break;
 	case WM_LBUTTONDBLCLK:
-		if (IsWindowVisible(allBoughtButton.getHwnd()))
+		if (IsWindowVisible(allBoughtButton.getHwnd()) && GET_Y_LPARAM(lParam) <= (betsSize + bankersSize + 5) * listItemHeight)
 		{
-			int curSel = getCurSel();
-			RECT rcSel;
-			ListBox_GetItemRect(hLB, curSel, &rcSel);
-			if (!PtInRect(&rcSel, { GET_X_LPARAM(lParam),GET_Y_LPARAM(lParam) }))
-			{
-				return 0;
-			}
-			MapWindowRect(hLB, GetParent(hLB), &rcSel);
-			ShowWindow(allBoughtButton.getHwnd(), SW_HIDE);
-			SetWindowPos(boughtEdit.getHwnd(), HWND_TOP, rcSel.right - listItemHeight + X_CHANGE, rcSel.top, 0, 0, SWP_NOSIZE | SWP_NOZORDER | SWP_SHOWWINDOW);
-			TCHAR str[20];
-			ListBox_GetText(hLB, curSel, str);
-			int i;
-			for (i = 12; str[i] == ' '; i++);
-			boughtEdit.setText(&str[i]);
-			boughtEdit.setSel(0, -1);
-			SetFocus(boughtEdit.getHwnd());
+			showChangeBoughtEdit();
 		}
 		return 0;
 	case WM_CONTEXTMENU:
@@ -286,23 +272,6 @@ LRESULT BetList::wndProc(UINT msg, WPARAM wParam, LPARAM lParam)
 			DestroyMenu(menu);
 			return 0;
 		}
-	case WM_SETFOCUS:
-		SetWindowRgn(hLB, CreateRectRgn(0, 0, rcLB.right - rcLB.left - 2, rcLB.bottom - rcLB.top), FALSE);
-		break;
-	case WM_KILLFOCUS:
-		if ((HWND)wParam != allBoughtButton.getHwnd() && (HWND)wParam != boughtEdit.getHwnd())
-		{
-			if (isDragging)
-			{
-				cancelDrag();
-				SetCursor(nullptr);
-			}
-			setCurSel(-1);
-			ShowWindow(allBoughtButton.getHwnd(), SW_HIDE);
-			SetWindowRgn(hLB, nullptr, FALSE);
-			RedrawWindow(hLB, nullptr, nullptr, RDW_FRAME | RDW_INVALIDATE);
-		}
-		break;
 	case WM_VSCROLL:
 	case WM_MOUSEWHEEL:
 		{
@@ -730,12 +699,12 @@ void BetList::moveCurSel(int nSelect)
 	int curSel = getCurSel();
 	if (curSel < betsSize + 2 || nSelect < betsSize + 2)
 	{
-		ListBox_SetCurSel(hLB, nSelect);
+		setCurSel(nSelect);
 		return;
 	}
 	isScrolling = true;
 	SetWindowPos(allBoughtButton.getHwnd(), nullptr, 0, 0, 0, 0, SWP_NOMOVE | SWP_NOSIZE | SWP_NOZORDER | SWP_NOREDRAW | SWP_HIDEWINDOW);
-	ListBox_SetCurSel(hLB, nSelect);
+	setCurSel(nSelect);
 	showAllBoughtButton(nSelect);
 	isScrolling = false;
 }
@@ -773,6 +742,24 @@ void BetList::showAllBoughtButton(int nIndex)
 	{
 		SetWindowPos(allBoughtButton.getHwnd(), nullptr, rcSel.right - listItemHeight, rcSel.top, 0, 0, SWP_NOSIZE | SWP_NOZORDER | SWP_SHOWWINDOW);
 	}
+}
+
+void BetList::showChangeBoughtEdit()
+{
+	int curSel = ListBox_GetCurSel(hLB);
+	ShowWindow(allBoughtButton.getHwnd(), SW_HIDE);
+	RECT rcSel;
+	ListBox_GetItemRect(hLB, curSel, &rcSel);
+	MapWindowRect(hLB, GetParent(hLB), &rcSel);
+	ShowWindow(allBoughtButton.getHwnd(), SW_HIDE);
+	SetWindowPos(boughtEdit.getHwnd(), HWND_TOP, rcSel.right - listItemHeight + X_CHANGE, rcSel.top, 0, 0, SWP_NOSIZE | SWP_NOZORDER | SWP_SHOWWINDOW);
+	TCHAR str[20];
+	ListBox_GetText(hLB, curSel, str);
+	int i;
+	for (i = 12; str[i] == ' '; i++);
+	boughtEdit.setText(&str[i]);
+	boughtEdit.setSel(0, -1);
+	SetFocus(boughtEdit.getHwnd());
 }
 
 void BetList::eraseDragLine(HDC hDC)

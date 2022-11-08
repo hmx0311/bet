@@ -57,5 +57,6 @@ public:
 private:
 	int insertString(int nIndex, PCTSTR pszItem, BYTE style, COLORREF color = 0);
 	void showAllBoughtButton(int nIndex);
+	void showChangeBoughtEdit();
 	void eraseDragLine(HDC hDC);
 };

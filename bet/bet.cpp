@@ -41,7 +41,7 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
 
 	if (!betDlg.getHwnd())
 	{
-		return FALSE;
+		return 0;
 	}
 
 	MSG msg;
