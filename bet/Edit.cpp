@@ -20,7 +20,7 @@ void setVCentered(HWND hEdit)
 	Edit_SetRectNoPaint(hEdit, &rcVCentered);
 }
 
-LRESULT CALLBACK editSubclassProc(HWND hEdit, UINT msg, WPARAM wParam, LPARAM lParam, UINT_PTR uIdSubclass, DWORD_PTR dwRefData)
+static LRESULT CALLBACK editSubclassProc(HWND hEdit, UINT msg, WPARAM wParam, LPARAM lParam, UINT_PTR uIdSubclass, DWORD_PTR dwRefData)
 {
 	switch (msg)
 	{
@@ -32,14 +32,15 @@ LRESULT CALLBACK editSubclassProc(HWND hEdit, UINT msg, WPARAM wParam, LPARAM lP
 			POINT pos = { lParam == -1 ? (rect.left + rect.right) / 2 : GET_X_LPARAM(lParam),lParam == -1 ? (rect.top + rect.bottom) / 2 : GET_Y_LPARAM(lParam) };
 			HMENU hMenu = CreatePopupMenu();
 			DWORD sel = Edit_GetSel(hEdit);
+			WORD firstSel = LOWORD(sel), lastSel = HIWORD(sel);
 			AppendMenu(hMenu, Edit_CanUndo(hEdit) ? MF_ENABLED : MF_GRAYED, 1, _T("³·Ïú(&U)"));
 			AppendMenu(hMenu, MF_SEPARATOR, 0, nullptr);
-			AppendMenu(hMenu, HIWORD(sel) == LOWORD(sel) ? MF_GRAYED : MF_ENABLED, 2, _T("¼ôÇÐ(&T)"));
-			AppendMenu(hMenu, HIWORD(sel) == LOWORD(sel) ? MF_GRAYED : MF_ENABLED, 3, _T("¸´ÖÆ(&C)"));
+			AppendMenu(hMenu, firstSel == lastSel ? MF_GRAYED : MF_ENABLED, 2, _T("¼ôÇÐ(&T)"));
+			AppendMenu(hMenu, firstSel == lastSel ? MF_GRAYED : MF_ENABLED, 3, _T("¸´ÖÆ(&C)"));
 			AppendMenu(hMenu, IsClipboardFormatAvailable(CF_TEXT) ? MF_ENABLED : MF_GRAYED, 4, _T("Õ³Ìù(&P)"));
-			AppendMenu(hMenu, HIWORD(sel) == LOWORD(sel) ? MF_GRAYED : MF_ENABLED, 5, _T("É¾³ý(&D)"));
+			AppendMenu(hMenu, firstSel == lastSel ? MF_GRAYED : MF_ENABLED, 5, _T("É¾³ý(&D)"));
 			AppendMenu(hMenu, MF_SEPARATOR, 0, nullptr);
-			AppendMenu(hMenu, LOWORD(sel) == 0 && HIWORD(sel) == GetWindowTextLength(hEdit) ? MF_GRAYED : MF_ENABLED, 6, _T("È«Ñ¡(&A)"));
+			AppendMenu(hMenu, firstSel == 0 && lastSel == GetWindowTextLength(hEdit) ? MF_GRAYED : MF_ENABLED, 6, _T("È«Ñ¡(&A)"));
 			switch (TrackPopupMenu(hMenu, TPM_NONOTIFY | TPM_RETURNCMD, pos.x, pos.y, 0, hEdit, nullptr))
 			{
 			case 1:
@@ -65,32 +66,16 @@ LRESULT CALLBACK editSubclassProc(HWND hEdit, UINT msg, WPARAM wParam, LPARAM lP
 			return 0;
 		}
 	}
-	Edit* edit = (Edit*)GetWindowLongPtr(hEdit, GWLP_USERDATA);
-	LRESULT result = edit == nullptr ? DefSubclassProc(hEdit, msg, wParam, lParam) : edit->wndProc(msg, wParam, lParam);
+	LRESULT result = ((Edit*)GetWindowLongPtr(hEdit, GWLP_USERDATA))->wndProc(msg, wParam, lParam);
 	switch (msg)
 	{
 	case WM_GETDLGCODE:
 		return result & ~DLGC_HASSETSEL;
-	}
-	if (result)
-	{
-		return result;
-	}
-	switch (msg)
-	{
 	case WM_DPICHANGED_AFTERPARENT:
 		setVCentered(hEdit);
-		return 0;
-	case WM_COMMAND:
-		switch (LOWORD(wParam))
-		{
-		case ID_CONFIRM:
-			SendMessage(GetParent(hEdit), msg, wParam, lParam);
-			break;
-		}
 		break;
 	}
-	return (LRESULT)FALSE;
+	return result;
 }
 
 
@@ -165,6 +150,10 @@ LRESULT NumericEdit::wndProc(UINT msg, WPARAM wParam, LPARAM lParam)
 	case WM_KEYDOWN:
 		switch (wParam)
 		{
+		case VK_RETURN:
+			updateStr();
+			SendMessage(GetParent(hEdit), WM_COMMAND, ID_CONFIRM, 0);
+			break;
 		case VK_ESCAPE:
 			Edit::setText(curUndo.c_str());
 			break;
@@ -191,7 +180,7 @@ LRESULT NumericEdit::wndProc(UINT msg, WPARAM wParam, LPARAM lParam)
 				case ',':
 					break;
 				default:
-					if (*text < 0)
+					if (*text <= 0)
 					{
 						if (*(WCHAR*)text == '¡¡')
 						{
@@ -200,7 +189,7 @@ LRESULT NumericEdit::wndProc(UINT msg, WPARAM wParam, LPARAM lParam)
 						}
 						str.clear();
 					}
-					if (isdigit(*text))
+					else if (isdigit(*text))
 					{
 						str.push_back(*text);
 					}
@@ -218,16 +207,7 @@ LRESULT NumericEdit::wndProc(UINT msg, WPARAM wParam, LPARAM lParam)
 		updateStr();
 		break;
 	case WM_SHOWWINDOW:
-		lastUndo = _T("");
-		curUndo = _T("");
-		break;
-	case WM_COMMAND:
-		switch (LOWORD(wParam))
-		{
-		case ID_CONFIRM:
-			updateStr();
-			break;
-		}
+		resetUndo();
 		break;
 	}
 	return DefSubclassProc(hEdit, msg, wParam, lParam);
@@ -242,6 +222,12 @@ void NumericEdit::setText(PCTSTR str)
 		curUndo = str;
 	}
 	Edit::setText(str);
+}
+
+void NumericEdit::resetUndo()
+{
+	lastUndo.clear();
+	curUndo.clear();
 }
 
 void NumericEdit::updateStr()
@@ -287,7 +273,7 @@ LRESULT AmountEdit::wndProc(UINT msg, WPARAM wParam, LPARAM lParam)
 		break;
 	case WM_KEYDOWN:
 	case WM_KEYUP:
-		switch (LOWORD(wParam))
+		switch (wParam)
 		{
 		case VK_UP:
 		case VK_DOWN:
@@ -335,20 +321,21 @@ LRESULT OddsEdit::wndProc(UINT msg, WPARAM wParam, LPARAM lParam)
 			return 0;
 		}
 		break;
+	case WM_KEYDOWN:
+		switch (wParam)
+		{
+		case VK_RETURN:
+			updateOdds();
+			SendMessage(GetParent(hEdit), WM_COMMAND, ID_CONFIRM, 0);
+			break;
+		}
+		break;
 	case WM_MOUSEWHEEL:
 		SetFocus(hEdit);
 		break;
 	case WM_KILLFOCUS:
 		SendMessage(hEdit, WM_KEYUP, VK_UP, MAKELONG(1, KF_UP | KF_REPEAT | KF_EXTENDED));
 		updateOdds();
-		break;
-	case WM_COMMAND:
-		switch (LOWORD(wParam))
-		{
-		case ID_CONFIRM:
-			updateOdds();
-			break;
-		}
 		break;
 	}
 	return DefSubclassProc(hEdit, msg, wParam, lParam);

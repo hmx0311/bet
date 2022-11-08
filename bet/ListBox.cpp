@@ -148,8 +148,15 @@ LRESULT BetList::wndProc(UINT msg, WPARAM wParam, LPARAM lParam)
 	case WM_DPICHANGED_AFTERPARENT:
 		onDPIChanged();
 		break;
+	case WM_GETDLGCODE:
+		switch (wParam)
+		{
+		case VK_RETURN:
+			return DLGC_WANTALLKEYS;
+		}
+		break;
 	case WM_KEYDOWN:
-		switch (LOWORD(wParam))
+		switch (wParam)
 		{
 		case VK_PRIOR:
 		case VK_NEXT:
@@ -210,20 +217,36 @@ LRESULT BetList::wndProc(UINT msg, WPARAM wParam, LPARAM lParam)
 				break;
 			}
 		case VK_DELETE:
-			if (!(GetAsyncKeyState(VK_LBUTTON) & 0x8000) && getCurSel() > 0)
+			if (getCurSel() > 0)
 			{
 				SendMessage(GetParent(hLB), WM_COMMAND, ID_DELETE, 0);
+			}
+			return 0;
+		case VK_RETURN:
+			if (IsWindowVisible(allBoughtButton.getHwnd()))
+			{
+				int curSel = getCurSel();
+				ShowWindow(allBoughtButton.getHwnd(), SW_HIDE);
+				RECT rcSel;
+				ListBox_GetItemRect(hLB, curSel, &rcSel);
+				MapWindowRect(hLB, GetParent(hLB), &rcSel);
+				ShowWindow(allBoughtButton.getHwnd(), SW_HIDE);
+				SetWindowPos(boughtEdit.getHwnd(), HWND_TOP, rcSel.right - listItemHeight + X_CHANGE, rcSel.top, 0, 0, SWP_NOSIZE | SWP_NOZORDER | SWP_SHOWWINDOW);
+				TCHAR str[20];
+				ListBox_GetText(hLB, curSel, str);
+				int i;
+				for (i = 12; str[i] == ' '; i++);
+				boughtEdit.setText(&str[i]);
+				boughtEdit.setSel(0, -1);
+				SetFocus(boughtEdit.getHwnd());
 			}
 			return 0;
 		}
 		break;
 	case WM_LBUTTONDBLCLK:
+		if (IsWindowVisible(allBoughtButton.getHwnd()))
 		{
 			int curSel = getCurSel();
-			if (curSel < betsSize + 5)
-			{
-				return 0;
-			}
 			RECT rcSel;
 			ListBox_GetItemRect(hLB, curSel, &rcSel);
 			if (!PtInRect(&rcSel, { GET_X_LPARAM(lParam),GET_Y_LPARAM(lParam) }))
@@ -240,8 +263,8 @@ LRESULT BetList::wndProc(UINT msg, WPARAM wParam, LPARAM lParam)
 			boughtEdit.setText(&str[i]);
 			boughtEdit.setSel(0, -1);
 			SetFocus(boughtEdit.getHwnd());
-			return 0;
 		}
+		return 0;
 	case WM_CONTEXTMENU:
 		{
 			int curSel = getCurSel();
@@ -315,30 +338,6 @@ LRESULT BetList::wndProc(UINT msg, WPARAM wParam, LPARAM lParam)
 			}
 			break;
 		}
-	case WM_COMMAND:
-		switch (LOWORD(wParam))
-		{
-		case ID_CONFIRM:
-			if (!isDragging&&IsWindowVisible(allBoughtButton.getHwnd()))
-			{
-				int curSel = getCurSel();
-				ShowWindow(allBoughtButton.getHwnd(), SW_HIDE);
-				RECT rcSel;
-				ListBox_GetItemRect(hLB, curSel, &rcSel);
-				MapWindowRect(hLB, GetParent(hLB), &rcSel);
-				ShowWindow(allBoughtButton.getHwnd(), SW_HIDE);
-				SetWindowPos(boughtEdit.getHwnd(), HWND_TOP, rcSel.right - listItemHeight + X_CHANGE, rcSel.top, 0, 0, SWP_NOSIZE | SWP_NOZORDER | SWP_SHOWWINDOW);
-				TCHAR str[20];
-				ListBox_GetText(hLB, curSel, str);
-				int i;
-				for (i = 12; str[i] == ' '; i++);
-				boughtEdit.setText(&str[i]);
-				boughtEdit.setSel(0, -1);
-				SetFocus(boughtEdit.getHwnd());
-			}
-			return 0;
-		}
-		break;
 	}
 
 	LRESULT result = DefSubclassProc(hLB, msg, wParam, lParam);
@@ -353,7 +352,7 @@ LRESULT BetList::wndProc(UINT msg, WPARAM wParam, LPARAM lParam)
 		}
 		break;
 	case WM_KEYDOWN:
-		switch (LOWORD(wParam))
+		switch (wParam)
 		{
 		case VK_PRIOR:
 		case VK_NEXT:

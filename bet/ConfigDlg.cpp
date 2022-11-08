@@ -1,6 +1,7 @@
 #include "framework.h"
 #include "ConfigDlg.h"
 
+#include "controls.h"
 #include "button.h"
 
 #include <fstream>
@@ -9,7 +10,7 @@
 using namespace std;
 
 ConfigDlg::ConfigDlg()
-	:Dialog(IDD_CONFIG_DIALOG){}
+	:Dialog(IDD_CONFIG_DIALOG) {}
 
 INT_PTR ConfigDlg::initDlg(HWND hDlg)
 {
@@ -27,19 +28,11 @@ INT_PTR ConfigDlg::initDlg(HWND hDlg)
 	defProbErrorEdit.attach(GetDlgItem(hDlg, IDC_DEF_PROB_ERROR_EDIT));
 
 	SendMessage(hDefCutCombo, WM_UPDATEUISTATE, MAKEWPARAM(UIS_SET, UISF_HIDEFOCUS), 0);
-	SetWindowSubclass(hDefCutCombo,
-		[](HWND hCombo, UINT msg, WPARAM wParam, LPARAM lParam, UINT_PTR uIdSubclass, DWORD_PTR dwRefData)->LRESULT
-		{
-			if (msg == WM_UPDATEUISTATE)
-			{
-				wParam &= ~MAKELONG(0, UISF_HIDEFOCUS | UISF_ACTIVE);
-			}
-			return DefSubclassProc(hCombo, msg, wParam, lParam);
-		}, 0, 0);
+	SetWindowSubclass(hDefCutCombo, noFocusRectSubclassProc, 0, 0);
 	SendMessage(GetDlgItem(hDlg, IDOK), WM_UPDATEUISTATE, MAKEWPARAM(UIS_SET, UISF_HIDEFOCUS), 0);
-	SetWindowSubclass(GetDlgItem(hDlg, IDOK), buttonSubclassProc, 0, 0);
+	SetWindowSubclass(GetDlgItem(hDlg, IDOK), noFocusRectSubclassProc, 0, 0);
 	SendMessage(GetDlgItem(hDlg, IDCANCEL), WM_UPDATEUISTATE, MAKEWPARAM(UIS_SET, UISF_HIDEFOCUS), 0);
-	SetWindowSubclass(GetDlgItem(hDlg, IDCANCEL), buttonSubclassProc, 0, 0);
+	SetWindowSubclass(GetDlgItem(hDlg, IDCANCEL), noFocusRectSubclassProc, 0, 0);
 
 	ComboBox_AddString(hDefCutCombo, _T("新建时输入"));
 	ComboBox_AddString(hDefCutCombo, _T("使用默认值"));
@@ -66,6 +59,14 @@ INT_PTR ConfigDlg::dlgProc(UINT msg, WPARAM wParam, LPARAM lParam)
 	case WM_COMMAND:
 		switch (LOWORD(wParam))
 		{
+		case IDC_DEF_CUT_COMBO:
+			switch (HIWORD(wParam))
+			{
+			case CBN_CLOSEUP:
+				SetFocus(GetDlgItem(hDlg, IDOK));
+				return (INT_PTR)TRUE;
+			}
+			break;
 		case IDOK:
 			{
 				config.useDefCut = ComboBox_GetCurSel(hDefCutCombo);

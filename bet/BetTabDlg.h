@@ -40,8 +40,9 @@ protected:
 	Button allBoughtButton;
 	ListBox resultLists[3];
 	Button calculateButtons[3];
-	NumericEdit initialAmountEdit;
-	HWND hRemainingAmountText;
+	HWND hCurrentAmountCombo;
+	HWND hAutoCurrentAmountCheck;
+	NumericEdit currentAmountEdit;
 	HWND hWinProbSideLeftSelector;
 	NumericEdit winProbEdit;
 	NumericEdit winProbErrorEdit;

@@ -72,6 +72,9 @@
     <ClInclude Include="CutInputDlg.h">
       <Filter>头文件\dialogs</Filter>
     </ClInclude>
+    <ClInclude Include="controls.h">
+      <Filter>头文件\controls</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="bet.cpp">
@@ -109,6 +112,9 @@
     </ClCompile>
     <ClCompile Include="CutInputDlg.cpp">
       <Filter>源文件\dialogs</Filter>
+    </ClCompile>
+    <ClCompile Include="controls.cpp">
+      <Filter>源文件\controls</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

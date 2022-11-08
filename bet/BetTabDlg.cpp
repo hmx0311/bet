@@ -1,6 +1,7 @@
 #include "framework.h"
 #include "BetTabDlg.h"
 
+#include "controls.h"
 #include "tooltip.h"
 #include "common.h"
 #include "CutInputDlg.h"
@@ -63,8 +64,13 @@ INT_PTR BetTabDlg::initDlg(HWND hDlg)
 	{
 		hReferenceOddsTexts[i] = GetDlgItem(hDlg, IDC_L_REC_BANKER_ODDS_TEXT + i);
 	}
-	initialAmountEdit.attach(GetDlgItem(hDlg, IDC_INITIAL_AMOUNT_EDIT));
-	hRemainingAmountText = GetDlgItem(hDlg, IDC_REMAINING_AMOUNT_TEXT);
+	hCurrentAmountCombo = GetDlgItem(hDlg, IDC_CURRENT_AMOUNT_COMBO);
+	SendMessage(hCurrentAmountCombo, WM_UPDATEUISTATE, MAKEWPARAM(UIS_SET, UISF_HIDEFOCUS), 0);
+	SetWindowSubclass(hCurrentAmountCombo, noFocusRectSubclassProc, 0, 0);
+	hAutoCurrentAmountCheck = GetDlgItem(hDlg, IDC_AUTO_CURRENT_AMOUNT_CHECK);
+	SendMessage(hAutoCurrentAmountCheck, WM_UPDATEUISTATE, MAKEWPARAM(UIS_SET, UISF_HIDEFOCUS), 0);
+	SetWindowSubclass(hAutoCurrentAmountCheck, buttonSubclassProc, 0, 0);
+	currentAmountEdit.attach(GetDlgItem(hDlg, IDC_CURRENT_AMOUNT_EDIT));
 	hWinProbSideLeftSelector = GetDlgItem(hDlg, IDC_L_WIN_PROB_SIDE_SELECTOR);
 	SendMessage(hWinProbSideLeftSelector, WM_UPDATEUISTATE, MAKEWPARAM(UIS_SET, UISF_HIDEFOCUS), 0);
 	SetWindowSubclass(hWinProbSideLeftSelector, buttonSubclassProc, 0, 0);
@@ -101,19 +107,23 @@ INT_PTR BetTabDlg::initDlg(HWND hDlg)
 	Edit_LimitText(amountEdits[0].getHwnd(), 7);
 	Edit_LimitText(amountEdits[1].getHwnd(), 7);
 
-	TCHAR resetTipText[] = _T("重置当前竞猜");
-	createToolTip(resetButton.getHwnd(), hDlg, resetTipText);
-
-	resetButton.setIcon(hResetIcon);
 	allBoughtButton.setIcon(hTickIcon);
 	allBoughtButton.setBkgBrush(GetSysColorBrush(COLOR_WINDOW));
-	winProbCalculatorButton.setIcon(hCalculatorIcon);
 
+	TCHAR resetTipText[] = _T("重置当前竞猜");
+	createToolTip(resetButton.getHwnd(), hDlg, resetTipText);
+	resetButton.setIcon(hResetIcon);
+
+	ComboBox_AddString(hCurrentAmountCombo, _T("初始数量"));
+	ComboBox_AddString(hCurrentAmountCombo, _T("剩余数量"));
+	ComboBox_SetCurSel(hCurrentAmountCombo, 0);
+	Button_SetCheck(hAutoCurrentAmountCheck, 1);
 	Button_SetCheck(hWinProbSideLeftSelector, 1);
 	_itot((int)round(config.defProbError * 100), str, 10);
 	winProbErrorEdit.setText(str);
 	winProbError = config.defProbError;
 
+	winProbCalculatorButton.setIcon(hCalculatorIcon);
 	TCHAR winProbCalculatorTipText[] = _T("加载胜率计算器");
 	hWinProbCalculatorTip = createToolTip(winProbCalculatorButton.getHwnd(), hDlg, winProbCalculatorTipText);
 	return (INT_PTR)TRUE;
@@ -199,280 +209,321 @@ INT_PTR BetTabDlg::dlgProc(UINT msg, WPARAM wParam, LPARAM lParam)
 		}
 		break;
 	case WM_COMMAND:
-		switch (LOWORD(wParam))
 		{
-		case ID_CONFIRM:
-			switch (GetDlgCtrlID(GetFocus()))
+			int uid = LOWORD(wParam);
+			switch (uid)
 			{
-			case IDC_L_BANKER_ODDS_EDIT:
-			case IDC_L_BET_ODDS_EDIT:
-				SetFocus(amountEdits[LEFT_SIDE].getHwnd());
-				return (INT_PTR)TRUE;
-			case IDC_R_BANKER_ODDS_EDIT:
-			case IDC_R_BET_ODDS_EDIT:
-				SetFocus(amountEdits[RIGHT_SIDE].getHwnd());
-				return (INT_PTR)TRUE;
-			case IDC_L_AMOUNT_EDIT:
-				add(LEFT_SIDE);
-				return (INT_PTR)TRUE;
-			case IDC_R_AMOUNT_EDIT:
-				add(RIGHT_SIDE);
-				return (INT_PTR)TRUE;
-			case IDC_CHANGE_BOUGHT_EDIT:
-				SetFocus(betLists[selSide].getHwnd());
-				return (INT_PTR)TRUE;
-			case IDC_BALANCE_AIM_BANKER_ODDS_EDIT:
-			case IDC_BALANCE_AIM_BET_ODDS_EDIT:
-				calcBalanceAimAmount();
-				return (INT_PTR)TRUE;
-			case IDC_INITIAL_AMOUNT_EDIT:
-				updateInitialAmount();
-				return (INT_PTR)TRUE;
-			case IDC_WIN_PROB_EDIT:
-				updateWinProb();
-				return (INT_PTR)TRUE;
-			case IDC_WIN_PROB_ERROR_EDIT:
-				updateWinProbError();
-				return (INT_PTR)TRUE;
-			case IDC_L_AIM_BANKER_ODDS_EDIT:
-			case IDC_L_AIM_BET_ODDS_EDIT:
-				calcAimAmount(LEFT_SIDE);
-				return (INT_PTR)TRUE;
-			case IDC_R_AIM_BANKER_ODDS_EDIT:
-			case IDC_R_AIM_BET_ODDS_EDIT:
-				calcAimAmount(RIGHT_SIDE);
-				return (INT_PTR)TRUE;
-			}
-			return (INT_PTR)TRUE;
-		case IDCANCEL:
-			switch (GetDlgCtrlID(GetFocus()))
-			{
-			case IDC_CHANGE_BOUGHT_EDIT:
-				ShowWindow(boughtEdit.getHwnd(), SW_HIDE);
-				SetFocus(betLists[selSide].getHwnd());
-				return (INT_PTR)TRUE;
-			}
-			return (INT_PTR)TRUE;
-		case ID_DELETE:
-			{
-				auto result = betLists[selSide].deleteSel();
-				if (result.first)
+			case ID_CONFIRM:
+				switch (GetDlgCtrlID(GetFocus()))
 				{
-					model.deleteBet(selSide, result.second);
+				case IDC_L_BANKER_ODDS_EDIT:
+				case IDC_L_BET_ODDS_EDIT:
+					SetFocus(amountEdits[LEFT_SIDE].getHwnd());
+					return (INT_PTR)TRUE;
+				case IDC_R_BANKER_ODDS_EDIT:
+				case IDC_R_BET_ODDS_EDIT:
+					SetFocus(amountEdits[RIGHT_SIDE].getHwnd());
+					return (INT_PTR)TRUE;
+				case IDC_L_AMOUNT_EDIT:
+					add(LEFT_SIDE);
+					return (INT_PTR)TRUE;
+				case IDC_R_AMOUNT_EDIT:
+					add(RIGHT_SIDE);
+					return (INT_PTR)TRUE;
+				case IDC_CHANGE_BOUGHT_EDIT:
+					SetFocus(betLists[selSide].getHwnd());
+					return (INT_PTR)TRUE;
+				case IDC_BALANCE_AIM_BANKER_ODDS_EDIT:
+				case IDC_BALANCE_AIM_BET_ODDS_EDIT:
+					calcBalanceAimAmount();
+					return (INT_PTR)TRUE;
+				case IDC_CURRENT_AMOUNT_EDIT:
+					updateInitialAmount();
+					return (INT_PTR)TRUE;
+				case IDC_WIN_PROB_EDIT:
+					updateWinProb();
+					return (INT_PTR)TRUE;
+				case IDC_WIN_PROB_ERROR_EDIT:
+					updateWinProbError();
+					return (INT_PTR)TRUE;
+				case IDC_L_AIM_BANKER_ODDS_EDIT:
+				case IDC_L_AIM_BET_ODDS_EDIT:
+					calcAimAmount(LEFT_SIDE);
+					return (INT_PTR)TRUE;
+				case IDC_R_AIM_BANKER_ODDS_EDIT:
+				case IDC_R_AIM_BET_ODDS_EDIT:
+					calcAimAmount(RIGHT_SIDE);
+					return (INT_PTR)TRUE;
 				}
-				else
-				{
-					model.deleteBanker(selSide, result.second);
-				}
-				updateCurrentProfit();
 				return (INT_PTR)TRUE;
-			}
-		case IDC_RESET_BUTTON:
-			if (!(betLists[0].isEmpty() && betLists[1].isEmpty()) && MessageBox(hDlg, _T("确定要重置当前竞猜吗？"), _T("bet"), MB_YESNO | MB_ICONQUESTION) == IDYES)
-			{
-				model.reset();
-				for (int i = 0; i < 2; i++)
+			case IDCANCEL:
+				switch (GetDlgCtrlID(GetFocus()))
 				{
-					betLists[i].resetContent();
-				}
-				updateCurrentProfit();
-			}
-			return (INT_PTR)TRUE;
-		case IDC_HAVE_CLOSING_CHECK:
-			if (model.changeClosing())
-			{
-				updateCurrentProfit();
-			}
-			return (INT_PTR)TRUE;
-		case IDC_L_BET_LIST:
-		case IDC_R_BET_LIST:
-			switch (HIWORD(wParam))
-			{
-			case LBN_SETFOCUS:
-				selSide = LOWORD(wParam) == IDC_R_BET_LIST;
-				return (INT_PTR)TRUE;
-			}
-			return (INT_PTR)TRUE;
-		case IDC_L_BANKER_SELECTOR:
-		case IDC_L_BET_SELECTOR:
-		case IDC_R_BANKER_SELECTOR:
-		case IDC_R_BET_SELECTOR:
-		case IDC_BALANCE_AIM_BANKER_SELECTOR:
-		case IDC_BALANCE_AIM_BET_SELECTOR:
-		case IDC_L_AIM_BANKER_SELECTOR:
-		case IDC_L_AIM_BET_SELECTOR:
-		case IDC_R_AIM_BANKER_SELECTOR:
-		case IDC_R_AIM_BET_SELECTOR:
-			SetFocus(oddsEdits[LOWORD(wParam) - IDC_L_BANKER_SELECTOR].getHwnd());
-			return (INT_PTR)TRUE;
-		case IDC_L_BANKER_ODDS_EDIT:
-		case IDC_L_BET_ODDS_EDIT:
-		case IDC_R_BANKER_ODDS_EDIT:
-		case IDC_R_BET_ODDS_EDIT:
-		case IDC_BALANCE_AIM_BANKER_ODDS_EDIT:
-		case IDC_BALANCE_AIM_BET_ODDS_EDIT:
-		case IDC_L_AIM_BANKER_ODDS_EDIT:
-		case IDC_L_AIM_BET_ODDS_EDIT:
-		case IDC_R_AIM_BANKER_ODDS_EDIT:
-		case IDC_R_AIM_BET_ODDS_EDIT:
-			switch (HIWORD(wParam))
-			{
-			case EN_SETFOCUS:
-				Button_SetCheck(hBankerBetSelectors[(LOWORD(wParam) - IDC_L_BANKER_ODDS_EDIT) ^ 1], 0);
-				Button_SetCheck(hBankerBetSelectors[LOWORD(wParam) - IDC_L_BANKER_ODDS_EDIT], 1);
-				return (INT_PTR)TRUE;
-			}
-			break;
-		case IDC_L_ADD_AMOUNT_BUTTON1:
-		case IDC_L_ADD_AMOUNT_BUTTON2:
-		case IDC_L_ADD_AMOUNT_BUTTON3:
-		case IDC_L_ADD_AMOUNT_BUTTON4:
-		case IDC_R_ADD_AMOUNT_BUTTON1:
-		case IDC_R_ADD_AMOUNT_BUTTON2:
-		case IDC_R_ADD_AMOUNT_BUTTON3:
-		case IDC_R_ADD_AMOUNT_BUTTON4:
-			{
-				int side = LOWORD(wParam) > IDC_L_ADD_AMOUNT_BUTTON4;
-				TCHAR str[8];
-				amountEdits[side].getText(str, 8);
-				int amount = _ttoi(str) + config.fastAddedAmount[(LOWORD(wParam) - IDC_L_ADD_AMOUNT_BUTTON1) & 3];
-				if (amount > 9999999)
-				{
-					amount = 9999999;
-				}
-				_itot(amount, str, 10);
-				amountEdits[side].setText(str);
-				SetFocus(amountEdits[side].getHwnd());
-				return (INT_PTR)TRUE;
-			}
-		case IDC_L_ADD_BUTTON:
-		case IDC_R_ADD_BUTTON:
-			add(LOWORD(wParam) - IDC_L_ADD_BUTTON);
-			return (INT_PTR)TRUE;
-		case IDC_CHANGE_BOUGHT_EDIT:
-			switch (HIWORD(wParam))
-			{
-			case EN_KILLFOCUS:
-				{
-					if (!IsWindowVisible(boughtEdit.getHwnd()))
-					{
-						return (INT_PTR)TRUE;
-					}
-					TCHAR str[8];
-					boughtEdit.getText(str, 8);
+				case IDC_CHANGE_BOUGHT_EDIT:
 					ShowWindow(boughtEdit.getHwnd(), SW_HIDE);
-					int lineIdx = betLists[selSide].getCurSel();
-					if (GetFocus() != betLists[selSide].getHwnd())
+					SetFocus(betLists[selSide].getHwnd());
+					return (INT_PTR)TRUE;
+				}
+				return (INT_PTR)TRUE;
+			case ID_DELETE:
+				{
+					auto result = betLists[selSide].deleteSel();
+					if (result.first)
 					{
-						SendMessage(betLists[selSide].getHwnd(), WM_KILLFOCUS, 0, 0);
+						model.deleteBet(selSide, result.second);
 					}
-					if (str[0] == '\0')
+					else
 					{
-						return (INT_PTR)TRUE;
+						model.deleteBanker(selSide, result.second);
 					}
-					const Banker& banker = model.changeBought(selSide, lineIdx - betLists[selSide].getBetsSize() - 5, _ttoi(str));
-					betLists[selSide].updateBanker(lineIdx, banker);
 					updateCurrentProfit();
 					return (INT_PTR)TRUE;
 				}
-			}
-			break;
-		case IDC_ALL_BOUGHT_BUTTON:
-			{
-				int lineIdx = betLists[selSide].getCurSel();
-				betLists[selSide].updateBanker(lineIdx, model.allBought(selSide, lineIdx - betLists[selSide].getBetsSize() - 5));
-				updateCurrentProfit();
+			case IDC_RESET_BUTTON:
+				if (!(betLists[0].isEmpty() && betLists[1].isEmpty()) && MessageBox(hDlg, _T("确定要重置当前竞猜吗？"), _T("bet"), MB_YESNO | MB_ICONQUESTION) == IDYES)
+				{
+					model.reset();
+					for (int i = 0; i < 2; i++)
+					{
+						betLists[i].resetContent();
+					}
+					updateCurrentProfit();
+				}
 				return (INT_PTR)TRUE;
-			}
-		case IDC_BALANCE_CALCULATE_BUTTON:
-			{
+			case IDC_HAVE_CLOSING_CHECK:
+				if (model.changeClosing())
+				{
+					updateCurrentProfit();
+				}
+				return (INT_PTR)TRUE;
+			case IDC_L_BET_LIST:
+			case IDC_R_BET_LIST:
+				switch (HIWORD(wParam))
+				{
+				case LBN_SETFOCUS:
+					selSide = uid == IDC_R_BET_LIST;
+					return (INT_PTR)TRUE;
+				}
+				return (INT_PTR)TRUE;
+			case IDC_L_BANKER_SELECTOR:
+			case IDC_L_BET_SELECTOR:
+			case IDC_R_BANKER_SELECTOR:
+			case IDC_R_BET_SELECTOR:
+			case IDC_BALANCE_AIM_BANKER_SELECTOR:
+			case IDC_BALANCE_AIM_BET_SELECTOR:
+			case IDC_L_AIM_BANKER_SELECTOR:
+			case IDC_L_AIM_BET_SELECTOR:
+			case IDC_R_AIM_BANKER_SELECTOR:
+			case IDC_R_AIM_BET_SELECTOR:
+				SetFocus(oddsEdits[uid - IDC_L_BANKER_SELECTOR].getHwnd());
+				return (INT_PTR)TRUE;
+			case IDC_L_BANKER_ODDS_EDIT:
+			case IDC_L_BET_ODDS_EDIT:
+			case IDC_R_BANKER_ODDS_EDIT:
+			case IDC_R_BET_ODDS_EDIT:
+			case IDC_BALANCE_AIM_BANKER_ODDS_EDIT:
+			case IDC_BALANCE_AIM_BET_ODDS_EDIT:
+			case IDC_L_AIM_BANKER_ODDS_EDIT:
+			case IDC_L_AIM_BET_ODDS_EDIT:
+			case IDC_R_AIM_BANKER_ODDS_EDIT:
+			case IDC_R_AIM_BET_ODDS_EDIT:
+				switch (HIWORD(wParam))
+				{
+				case EN_SETFOCUS:
+					Button_SetCheck(hBankerBetSelectors[(uid - IDC_L_BANKER_ODDS_EDIT) ^ 1], 0);
+					Button_SetCheck(hBankerBetSelectors[uid - IDC_L_BANKER_ODDS_EDIT], 1);
+					return (INT_PTR)TRUE;
+				}
+				break;
+			case IDC_L_ADD_AMOUNT_BUTTON1:
+			case IDC_L_ADD_AMOUNT_BUTTON2:
+			case IDC_L_ADD_AMOUNT_BUTTON3:
+			case IDC_L_ADD_AMOUNT_BUTTON4:
+			case IDC_R_ADD_AMOUNT_BUTTON1:
+			case IDC_R_ADD_AMOUNT_BUTTON2:
+			case IDC_R_ADD_AMOUNT_BUTTON3:
+			case IDC_R_ADD_AMOUNT_BUTTON4:
+				{
+					int side = uid > IDC_L_ADD_AMOUNT_BUTTON4;
+					TCHAR str[8];
+					amountEdits[side].getText(str, 8);
+					int amount = _ttoi(str) + GetDlgItemInt(hDlg, uid, nullptr, FALSE);
+					if (amount > 9999999)
+					{
+						amount = 9999999;
+					}
+					_itot(amount, str, 10);
+					amountEdits[side].setText(str);
+					SetFocus(amountEdits[side].getHwnd());
+					return (INT_PTR)TRUE;
+				}
+			case IDC_L_ADD_BUTTON:
+			case IDC_R_ADD_BUTTON:
+				add(uid - IDC_L_ADD_BUTTON);
+				return (INT_PTR)TRUE;
+			case IDC_CHANGE_BOUGHT_EDIT:
+				switch (HIWORD(wParam))
+				{
+				case EN_KILLFOCUS:
+					{
+						if (!IsWindowVisible(boughtEdit.getHwnd()))
+						{
+							return (INT_PTR)TRUE;
+						}
+						TCHAR str[8];
+						boughtEdit.getText(str, 8);
+						ShowWindow(boughtEdit.getHwnd(), SW_HIDE);
+						int lineIdx = betLists[selSide].getCurSel();
+						if (GetFocus() != betLists[selSide].getHwnd())
+						{
+							SendMessage(betLists[selSide].getHwnd(), WM_KILLFOCUS, 0, 0);
+						}
+						if (str[0] == '\0')
+						{
+							return (INT_PTR)TRUE;
+						}
+						const Banker& banker = model.changeBought(selSide, lineIdx - betLists[selSide].getBetsSize() - 5, _ttoi(str));
+						betLists[selSide].updateBanker(lineIdx, banker);
+						updateCurrentProfit();
+						return (INT_PTR)TRUE;
+					}
+				}
+				break;
+			case IDC_ALL_BOUGHT_BUTTON:
+				{
+					int lineIdx = betLists[selSide].getCurSel();
+					betLists[selSide].updateBanker(lineIdx, model.allBought(selSide, lineIdx - betLists[selSide].getBetsSize() - 5));
+					updateCurrentProfit();
+					return (INT_PTR)TRUE;
+				}
+			case IDC_BALANCE_CALCULATE_BUTTON:
 				calcBalanceAimAmount();
 				return (INT_PTR)TRUE;
-			}
-		case IDC_INITIAL_AMOUNT_EDIT:
-			switch (HIWORD(wParam))
-			{
-			case EN_KILLFOCUS:
-				updateInitialAmount();
-				return (INT_PTR)TRUE;
-			}
-			break;
-		case IDC_L_WIN_PROB_SIDE_SELECTOR:
-		case IDC_R_WIN_PROB_SIDE_SELECTOR:
-			if (winProbSide == Button_GetCheck(hWinProbSideLeftSelector))
-			{
-				winProbSide = !winProbSide;
-				if (winProb != 0)
+			case IDC_CURRENT_AMOUNT_COMBO:
+				switch (HIWORD(wParam))
 				{
-					winProb = 1 - winProb;
-					updateMinOdds();
+				case CBN_SELCHANGE:
+					if (Button_GetCheck(hAutoCurrentAmountCheck))
+					{
+						if (ComboBox_GetCurSel(hCurrentAmountCombo) == 0)
+						{
+							TCHAR str[15];
+							_i64tot(initialAmount, str, 10);
+							currentAmountEdit.resetUndo();
+							currentAmountEdit.setText(str);
+						}
+						else
+						{
+							long long remainingAmount = initialAmount - model.getTotalInvest();
+							if (remainingAmount < 0)
+							{
+								ComboBox_SetCurSel(hCurrentAmountCombo, 0);
+								currentAmountEdit.setSel(0, -1);
+							}
+							else
+							{
+								TCHAR str[15];
+								_i64tot(remainingAmount, str, 10);
+								currentAmountEdit.resetUndo();
+								currentAmountEdit.setText(str);
+							}
+						}
+					}
+					else
+					{
+						updateInitialAmount();
+					}
+					return (INT_PTR)TRUE;
+				case CBN_CLOSEUP:
+					SetFocus(currentAmountEdit.getHwnd());
+					return (INT_PTR)TRUE;
 				}
-			}
-			return (INT_PTR)TRUE;
-		case IDC_WIN_PROB_EDIT:
-			switch (HIWORD(wParam))
-			{
-			case EN_KILLFOCUS:
-				updateWinProb();
-				return (INT_PTR)TRUE;
-			}
-			break;
-		case IDC_WIN_PROB_ERROR_EDIT:
-			switch (HIWORD(wParam))
-			{
-			case EN_KILLFOCUS:
-				updateWinProbError();
-				return (INT_PTR)TRUE;
-			}
-			break;
-		case IDC_WIN_PROB_CALCULATOR_BUTTON:
-			if (hProbCalculator == nullptr)
-			{
-				IFileDialog* pfd = nullptr;
-				HRESULT hr = CoCreateInstance(CLSID_FileOpenDialog, nullptr, CLSCTX_INPROC_SERVER, IID_PPV_ARGS(&pfd));
-				if (SUCCEEDED(hr))
+				break;
+			case IDC_CURRENT_AMOUNT_EDIT:
+				switch (HIWORD(wParam))
 				{
-					COMDLG_FILTERSPEC fileType = { _T(""),_T("*.exe") };
-					pfd->SetFileTypes(1, &fileType);
-					pfd->Show(hDlg);
-					IShellItem* psiResult;
-					hr = pfd->GetResult(&psiResult);
+				case EN_KILLFOCUS:
+					updateInitialAmount();
+					return (INT_PTR)TRUE;
+				}
+				break;
+			case IDC_L_WIN_PROB_SIDE_SELECTOR:
+			case IDC_R_WIN_PROB_SIDE_SELECTOR:
+				if (winProbSide == Button_GetCheck(hWinProbSideLeftSelector))
+				{
+					winProbSide = !winProbSide;
+					if (winProb != 0)
+					{
+						winProb = 1 - winProb;
+						updateMinOdds();
+					}
+				}
+				return (INT_PTR)TRUE;
+			case IDC_WIN_PROB_EDIT:
+				switch (HIWORD(wParam))
+				{
+				case EN_KILLFOCUS:
+					updateWinProb();
+					return (INT_PTR)TRUE;
+				}
+				break;
+			case IDC_WIN_PROB_ERROR_EDIT:
+				switch (HIWORD(wParam))
+				{
+				case EN_KILLFOCUS:
+					updateWinProbError();
+					return (INT_PTR)TRUE;
+				}
+				break;
+			case IDC_WIN_PROB_CALCULATOR_BUTTON:
+				if (hProbCalculator == nullptr)
+				{
+					IFileDialog* pfd = nullptr;
+					HRESULT hr = CoCreateInstance(CLSID_FileOpenDialog, nullptr, CLSCTX_INPROC_SERVER, IID_PPV_ARGS(&pfd));
 					if (SUCCEEDED(hr))
 					{
-						PTSTR pszFilePath = nullptr;
-						hr = psiResult->GetDisplayName(SIGDN_FILESYSPATH, &pszFilePath);
+						COMDLG_FILTERSPEC fileType = { _T(""),_T("*.exe") };
+						pfd->SetFileTypes(1, &fileType);
+						pfd->Show(hDlg);
+						IShellItem* psiResult;
+						hr = pfd->GetResult(&psiResult);
 						if (SUCCEEDED(hr))
 						{
-							TCHAR cmdLine[200];
-							_stprintf(cmdLine, _T("bet_probability_calculator "
-								"HWND=%p "
-								"connect_message=%d "
-								"disconnect_message=%d "
-								"probability_message=%d"),
-								hDlg,
-								BPC_CONNECTED,
-								BPC_DISCONNECT,
-								BPC_PROBABILITY);
-							ShellExecute(nullptr, nullptr, pszFilePath, cmdLine, nullptr, SW_SHOWNORMAL);
-							CoTaskMemFree(pszFilePath);
+							PTSTR pszFilePath = nullptr;
+							hr = psiResult->GetDisplayName(SIGDN_FILESYSPATH, &pszFilePath);
+							if (SUCCEEDED(hr))
+							{
+								TCHAR cmdLine[200];
+								_stprintf(cmdLine, _T("bet_probability_calculator "
+									"HWND=%p "
+									"connect_message=%d "
+									"disconnect_message=%d "
+									"probability_message=%d"),
+									hDlg,
+									BPC_CONNECTED,
+									BPC_DISCONNECT,
+									BPC_PROBABILITY);
+								ShellExecute(nullptr, nullptr, pszFilePath, cmdLine, nullptr, SW_SHOWNORMAL);
+								CoTaskMemFree(pszFilePath);
+							}
+							psiResult->Release();
 						}
-						psiResult->Release();
+						pfd->Release();
 					}
-					pfd->Release();
 				}
+				else
+				{
+					PostMessage(hProbCalculator, BPC_DISCONNECT, 0, 0);
+					disconnectCalculator();
+				}
+				return (INT_PTR)TRUE;
+			case IDC_L_CALCULATE_BUTTON:
+			case IDC_R_CALCULATE_BUTTON:
+				calcAimAmount(uid - IDC_L_CALCULATE_BUTTON);
+				return (INT_PTR)TRUE;
 			}
-			else
-			{
-				PostMessage(hProbCalculator, BPC_DISCONNECT, 0, 0);
-				disconnectCalculator();
-			}
-			return (INT_PTR)TRUE;
-		case IDC_L_CALCULATE_BUTTON:
-		case IDC_R_CALCULATE_BUTTON:
-			calcAimAmount(LOWORD(wParam) - IDC_L_CALCULATE_BUTTON);
-			return (INT_PTR)TRUE;
+			break;
 		}
-		break;
 	case WM_NOTIFY:
 		switch (((LPNMHDR)lParam)->idFrom)
 		{
@@ -513,6 +564,29 @@ void BetTabDlg::updateCurrentProfit()
 	_i64tot(model.getProfit(1), str, 10);
 	SetWindowText(hCurrentProfitTexts[1], str);
 	ListBox_ResetContent(resultLists[0].getHwnd());
+	if (Button_GetCheck(hAutoCurrentAmountCheck))
+	{
+		if (ComboBox_GetCurSel(hCurrentAmountCombo) == 1)
+		{
+			long long remainingAmount = initialAmount - model.getTotalInvest();
+			if (remainingAmount < 0)
+			{
+				ComboBox_SetCurSel(hCurrentAmountCombo, 0);
+				_i64tot(initialAmount, str, 10);
+			}
+			else
+			{
+				_i64tot(remainingAmount, str, 10);
+			}
+			currentAmountEdit.resetUndo();
+			currentAmountEdit.setText(str);
+		}
+	}
+	else if (ComboBox_GetCurSel(hCurrentAmountCombo) == 1)
+	{
+		currentAmountEdit.getText(str, 20);
+		initialAmount = _ttoll(str) + model.getTotalInvest();
+	}
 	updateMinOdds();
 }
 
@@ -520,33 +594,24 @@ void BetTabDlg::updateMinOdds()
 {
 	ListBox_ResetContent(resultLists[1].getHwnd());
 	ListBox_ResetContent(resultLists[2].getHwnd());
-	if (initialAmount > model.getTotalInvest())
+	if (initialAmount > model.getTotalInvest() && winProb > 0)
 	{
-		TCHAR str[14];
-		_i64tot(initialAmount - model.getTotalInvest(), str, 10);
-		SetWindowText(hRemainingAmountText, str);
-		if (winProb > 0)
+		double referenceOdds[8]{};
+		model.calcReferenceOdds(initialAmount, winProb, winProbError, referenceOdds);
+		for (int i = 0; i < 8; i++)
 		{
-			double referenceOdds[8]{};
-			model.calcReferenceOdds(initialAmount, winProb, winProbError, referenceOdds);
-			for (int i = 0; i < 8; i++)
+			if (referenceOdds[i] == 0)
 			{
-				if (referenceOdds[i] == 0)
-				{
-					SetWindowText(hReferenceOddsTexts[i], _T("-"));
-				}
-				else
-				{
-					_stprintf(str, _T("%.1f"), referenceOdds[i]);
-					SetWindowText(hReferenceOddsTexts[i], str);
-				}
+				SetWindowText(hReferenceOddsTexts[i], _T("-"));
 			}
-			return;
+			else
+			{
+				TCHAR str[4];
+				_stprintf(str, _T("%.1f"), referenceOdds[i]);
+				SetWindowText(hReferenceOddsTexts[i], str);
+			}
 		}
-	}
-	else
-	{
-		SetWindowText(hRemainingAmountText, _T("N/A"));
+		return;
 	}
 	for (int i = 0; i < 8; i++)
 	{
@@ -556,6 +621,7 @@ void BetTabDlg::updateMinOdds()
 
 void BetTabDlg::add(int side)
 {
+	SetFocus(amountEdits[side].getHwnd());
 	if (betLists[side].getBetsSize() + betLists[side].getBankersSize() >= MAX_BET_COUNT)
 	{
 		return;
@@ -566,7 +632,6 @@ void BetTabDlg::add(int side)
 	if (amount == 0)
 	{
 		amountEdits[side].setSel(0, -1);
-		SetFocus(amountEdits[side].getHwnd());
 		return;
 	}
 	if (Button_GetCheck(hBankerBetSelectors[2 * side + 1]))
@@ -578,7 +643,6 @@ void BetTabDlg::add(int side)
 	{
 		betLists[side].addBanker(model.addBanker(side, oddsEdits[2 * side].getOdds(), amount));
 	}
-	SetFocus(amountEdits[side].getHwnd());
 	updateCurrentProfit();
 }
 
@@ -639,8 +703,12 @@ void BetTabDlg::calcBalanceAimAmount()
 void BetTabDlg::updateInitialAmount()
 {
 	TCHAR str[20];
-	initialAmountEdit.getText(str, 20);
+	currentAmountEdit.getText(str, 20);
 	long long newAmount = _ttoll(str);
+	if (ComboBox_GetCurSel(hCurrentAmountCombo) == 1)
+	{
+		newAmount += model.getTotalInvest();
+	}
 	if (newAmount != initialAmount)
 	{
 		initialAmount = newAmount;
@@ -701,8 +769,8 @@ void BetTabDlg::calcAimAmount(int side)
 			resultLists[side + 1].addString(_T("初始数量过低"), DT_VCENTER | DT_CENTER);
 		}
 		resultLists[side + 1].setCurSel(0);
-		initialAmountEdit.setSel(0, -1);
-		SetFocus(initialAmountEdit.getHwnd());
+		currentAmountEdit.setSel(0, -1);
+		SetFocus(currentAmountEdit.getHwnd());
 		return;
 	}
 	if (winProb == 0)

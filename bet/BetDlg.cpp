@@ -58,18 +58,13 @@ INT_PTR BetDlg::initDlg(HWND hDlg)
 			case WM_KEYDOWN:
 				switch (wParam)
 				{
+				case VK_RETURN:
+					ShowWindow(hEdit, SW_HIDE);
+					break;
 				case VK_ESCAPE:
 					SetWindowText(hEdit, _T(""));
 					ShowWindow(hEdit, SW_HIDE);
 					return 0;
-				}
-				break;
-			case WM_COMMAND:
-				switch (LOWORD(wParam))
-				{
-				case ID_CONFIRM:
-					ShowWindow(hEdit, SW_HIDE);
-					break;
 				}
 				break;
 			}

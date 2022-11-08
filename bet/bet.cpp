@@ -18,7 +18,7 @@ HINSTANCE hInst;                                // 当前实例
 
 int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
 	_In_opt_ HINSTANCE hPrevInstance,
-	_In_ PTSTR     pCmdLine,
+	_In_ PWSTR     pCmdLine,
 	_In_ int       nCmdShow)
 {
 	UNREFERENCED_PARAMETER(hPrevInstance);
@@ -36,8 +36,6 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
 	BetTabDlg::hTickIcon = (HICON)LoadImage(hInstance, MAKEINTRESOURCE(IDI_TICK), IMAGE_ICON, 0, 0, LR_SHARED);
 	BetTabDlg::hCalculatorIcon = (HICON)LoadImage(hInstance, MAKEINTRESOURCE(IDI_CALCULATOR), IMAGE_ICON, 0, 0, LR_SHARED);
 
-	HACCEL hAccel = LoadAccelerators(hInstance, MAKEINTRESOURCE(IDR_ACCELERATOR));
-
 	BetDlg betDlg;
 	betDlg.createDialog();
 
@@ -47,12 +45,12 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
 	}
 
 	MSG msg;
+	
 
 	// 主消息循环:
 	while (GetMessage(&msg, nullptr, 0, 0))
 	{
-		if (!TranslateAccelerator(msg.hwnd, hAccel, &msg) &&
-			!IsDialogMessage(betDlg.getHwnd(), &msg))
+		if (!IsDialogMessage(betDlg.getHwnd(), &msg))
 		{
 			TranslateMessage(&msg);
 			DispatchMessage(&msg);

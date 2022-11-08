@@ -29,6 +29,7 @@ private:
 public:
 	virtual LRESULT wndProc(UINT msg, WPARAM wParam, LPARAM lParam);
 	void setText(PCTSTR str);
+	void resetUndo();
 private:
 	void updateStr();
 };
