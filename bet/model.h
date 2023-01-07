@@ -1,6 +1,8 @@
 #pragma once
 #include <vector>
 
+#define MIN_NOTABLE_DIFF 6
+
 #define INTERVAL_TREE_DEPTH 7
 
 struct Bet

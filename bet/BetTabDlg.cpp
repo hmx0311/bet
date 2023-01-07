@@ -201,8 +201,8 @@ INT_PTR BetTabDlg::dlgProc(UINT msg, WPARAM wParam, LPARAM lParam)
 	case WM_ERASEBKGND:
 		return (INT_PTR)TRUE;
 	case WM_CTLCOLORSTATIC:
-		if ((HWND)lParam == hCurrentProfitTexts[LEFT_SIDE] && model.getProfit(RIGHT_SIDE) - model.getProfit(LEFT_SIDE) > 1 ||
-			(HWND)lParam == hCurrentProfitTexts[RIGHT_SIDE] && model.getProfit(LEFT_SIDE) - model.getProfit(RIGHT_SIDE) > 1)
+		if ((HWND)lParam == hCurrentProfitTexts[LEFT_SIDE] && model.getProfit(RIGHT_SIDE) - model.getProfit(LEFT_SIDE) >= MIN_NOTABLE_DIFF ||
+			(HWND)lParam == hCurrentProfitTexts[RIGHT_SIDE] && model.getProfit(LEFT_SIDE) - model.getProfit(RIGHT_SIDE) >= MIN_NOTABLE_DIFF)
 		{
 			SetTextColor((HDC)wParam, RGB(255, 0, 0));
 			SetBkColor((HDC)wParam, GetSysColor(COLOR_BTNFACE));
