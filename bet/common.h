@@ -1,6 +1,12 @@
 #pragma once
 
+#define _STR(x) #x
+#define STR(x) _STR(x)
+
 #define CONFIG_FILE_NAME _T("bet.cfg")
+
+#define MAX_BET_AMOUNT_LEN 7
+#define MAX_INITIAL_AMOUNT_LEN 13
 
 struct Config
 {
@@ -10,6 +16,12 @@ struct Config
 	int fastAddedAmount[4];
 	double defProbError;
 };
+
+#define DEFAULT_CONFIG {1,\
+						false,\
+						false,\
+						1000,5000,10000,50000,\
+						0}
 
 extern HINSTANCE hInst;
 
@@ -21,5 +33,12 @@ extern HFONT hFont;
 extern HFONT hBoldFont;
 extern UINT DRAGLISTMSG;
 
-
-void loadConfig(Config& cfg);
+constexpr long long maxNumLen(int len)
+{
+	long long num = 1;
+	for (int i = 0; i < len; i++)
+	{
+		num *= 10;
+	}
+	return num - 1;
+}

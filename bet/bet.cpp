@@ -7,11 +7,16 @@
 #include "BetDlg.h"
 #include "common.h"
 
+#include <fstream>
+
 #pragma comment(lib,"comctl32.lib")
 #pragma comment(lib,"UxTheme.lib")
+#pragma comment(lib,"imm32.lib")
 
-#define MAX_LOADSTRING 100
+using namespace std;
 
+
+void loadConfig(Config& cfg);
 
 // 全局变量:
 HINSTANCE hInst;                                // 当前实例
@@ -60,4 +65,31 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
 	BufferedPaintUnInit();
 
 	return (int)msg.wParam;
+}
+
+void loadConfig(Config& cfg)
+{
+	fstream file(CONFIG_FILE_NAME, ios::_Nocreate | ios::in | ios::binary);
+	if (file.good())
+	{
+		if (file.read((char*)&cfg, sizeof(Config)).good() &&
+			cfg.defCut > 0 && cfg.defCut <= 1 &&
+			cfg.fastAddedAmount[0] > 0 && cfg.fastAddedAmount[0] < 100000 &&
+			cfg.fastAddedAmount[1] > 0 && cfg.fastAddedAmount[1] < 100000 &&
+			cfg.fastAddedAmount[2] > 0 && cfg.fastAddedAmount[2] < 100000 &&
+			cfg.fastAddedAmount[3] > 0 && cfg.fastAddedAmount[3] < 100000 &&
+			cfg.defProbError >= 0 && cfg.defProbError < 1)
+		{
+			file.close();
+			return;
+		}
+		file.close();
+	}
+	cfg = DEFAULT_CONFIG;
+	file.open(CONFIG_FILE_NAME, ios::out | ios::binary);
+	if (file.good())
+	{
+		file.write((char*)&cfg, sizeof(Config));
+		file.close();
+	}
 }

@@ -10,7 +10,7 @@ HWND createToolTip(HWND hTool, HWND hDlg, PTSTR pszText)
 	INITCOMMONCONTROLSEX icex = { sizeof(icex),ICC_TREEVIEW_CLASSES };
 	InitCommonControlsEx(&icex);
 	HWND hTip = CreateWindow(TOOLTIPS_CLASS, nullptr,
-		WS_POPUP | TTS_ALWAYSTIP | TTS_NOPREFIX,
+		WS_POPUP,
 		CW_USEDEFAULT, CW_USEDEFAULT,
 		CW_USEDEFAULT, CW_USEDEFAULT,
 		hDlg, nullptr,

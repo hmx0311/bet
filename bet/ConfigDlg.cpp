@@ -29,6 +29,7 @@ INT_PTR ConfigDlg::initDlg(HWND hDlg)
 
 	SendMessage(hDefCutCombo, WM_UPDATEUISTATE, MAKEWPARAM(UIS_SET, UISF_HIDEFOCUS), 0);
 	SetWindowSubclass(hDefCutCombo, noFocusRectSubclassProc, 0, 0);
+	ImmAssociateContext(hDefCutCombo, nullptr);
 	SendMessage(GetDlgItem(hDlg, IDOK), WM_UPDATEUISTATE, MAKEWPARAM(UIS_SET, UISF_HIDEFOCUS), 0);
 	SetWindowSubclass(GetDlgItem(hDlg, IDOK), noFocusRectSubclassProc, 0, 0);
 	SendMessage(GetDlgItem(hDlg, IDCANCEL), WM_UPDATEUISTATE, MAKEWPARAM(UIS_SET, UISF_HIDEFOCUS), 0);
@@ -39,15 +40,15 @@ INT_PTR ConfigDlg::initDlg(HWND hDlg)
 	ComboBox_SetCurSel(hDefCutCombo, config.useDefCut);
 	TCHAR str[6];
 	_stprintf(str, _T("%04d"), (int)round((1 - config.defCut) * 10000));
-	defCutEdit.setText(str);
+	defCutEdit.setText(str, false);
 	Button_SetCheck(hDefClosingCheck, config.defClosing);
 	for (int i = 0; i < 4; i++)
 	{
 		_itot(config.fastAddedAmount[i], str, 10);
-		fastAddedAmountEdit[i].setText(str);
+		fastAddedAmountEdit[i].setText(str, false);
 	}
 	_itot((int)round(config.defProbError * 100), str, 10);
-	defProbErrorEdit.setText(str);
+	defProbErrorEdit.setText(str, false);
 
 	return (INT_PTR)TRUE;  // 除非将焦点设置到控件，否则返回 TRUE
 }

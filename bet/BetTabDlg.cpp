@@ -13,12 +13,12 @@
 
 #define MAX_BET_COUNT 50000
 
-#define BPC_CONNECTED (WM_APP)
-#define BPC_DISCONNECT (WM_APP+1)
-#define BPC_PROBABILITY (WM_APP+2)
+#define BPC_CONNECTED	(WM_APP)
+#define BPC_DISCONNECT	(WM_APP+1)
+#define BPC_PROBABILITY	(WM_APP+2)
 
-#define LEFT_SIDE 0
-#define RIGHT_SIDE 1
+#define LEFT_SIDE	0
+#define RIGHT_SIDE	1
 
 HICON BetTabDlg::hResetIcon;
 HICON BetTabDlg::hClearIcon;
@@ -67,6 +67,7 @@ INT_PTR BetTabDlg::initDlg(HWND hDlg)
 	hCurrentAmountCombo = GetDlgItem(hDlg, IDC_CURRENT_AMOUNT_COMBO);
 	SendMessage(hCurrentAmountCombo, WM_UPDATEUISTATE, MAKEWPARAM(UIS_SET, UISF_HIDEFOCUS), 0);
 	SetWindowSubclass(hCurrentAmountCombo, noFocusRectSubclassProc, 0, 0);
+	ImmAssociateContext(hCurrentAmountCombo, nullptr);
 	hAutoCurrentAmountCheck = GetDlgItem(hDlg, IDC_AUTO_CURRENT_AMOUNT_CHECK);
 	SendMessage(hAutoCurrentAmountCheck, WM_UPDATEUISTATE, MAKEWPARAM(UIS_SET, UISF_HIDEFOCUS), 0);
 	SetWindowSubclass(hAutoCurrentAmountCheck, buttonSubclassProc, 0, 0);
@@ -104,8 +105,8 @@ INT_PTR BetTabDlg::initDlg(HWND hDlg)
 		addAmountButtons[i].setText(str);
 		addAmountButtons[i + 4].setText(str);
 	}
-	Edit_LimitText(amountEdits[0].getHwnd(), 7);
-	Edit_LimitText(amountEdits[1].getHwnd(), 7);
+	Edit_LimitText(amountEdits[0].getHwnd(), MAX_BET_AMOUNT_LEN);
+	Edit_LimitText(amountEdits[1].getHwnd(), MAX_BET_AMOUNT_LEN);
 
 	allBoughtButton.setIcon(hTickIcon);
 	allBoughtButton.setBkgBrush(GetSysColorBrush(COLOR_WINDOW));
@@ -120,7 +121,7 @@ INT_PTR BetTabDlg::initDlg(HWND hDlg)
 	Button_SetCheck(hAutoCurrentAmountCheck, 1);
 	Button_SetCheck(hWinProbSideLeftSelector, 1);
 	_itot((int)round(config.defProbError * 100), str, 10);
-	winProbErrorEdit.setText(str);
+	winProbErrorEdit.setText(str, false);
 	winProbError = config.defProbError;
 
 	winProbCalculatorButton.setIcon(hCalculatorIcon);
@@ -192,7 +193,7 @@ INT_PTR BetTabDlg::dlgProc(UINT msg, WPARAM wParam, LPARAM lParam)
 			{
 				TCHAR str[5];
 				_stprintf(str, _T("%04d"), probDecimal);
-				winProbEdit.setText(str);
+				winProbEdit.setText(str, true);
 				updateWinProb();
 			}
 		}
@@ -206,6 +207,13 @@ INT_PTR BetTabDlg::dlgProc(UINT msg, WPARAM wParam, LPARAM lParam)
 			SetTextColor((HDC)wParam, RGB(255, 0, 0));
 			SetBkColor((HDC)wParam, GetSysColor(COLOR_BTNFACE));
 			return (INT_PTR)GetSysColorBrush(COLOR_BTNFACE);
+		}
+		break;
+	case WM_CTLCOLOREDIT:
+		if ((HWND)lParam == currentAmountEdit.getHwnd() && GetFocus() != (HWND)lParam && initialAmount <= model.getTotalInvest())
+		{
+			SetTextColor((HDC)wParam, RGB(255, 0, 0));
+			return (INT_PTR)GetSysColorBrush(COLOR_WINDOW);
 		}
 		break;
 	case WM_COMMAND:
@@ -345,15 +353,15 @@ INT_PTR BetTabDlg::dlgProc(UINT msg, WPARAM wParam, LPARAM lParam)
 			case IDC_R_ADD_AMOUNT_BUTTON4:
 				{
 					int side = uid > IDC_L_ADD_AMOUNT_BUTTON4;
-					TCHAR str[8];
-					amountEdits[side].getText(str, 8);
+					TCHAR str[MAX_BET_AMOUNT_LEN + 1];
+					amountEdits[side].getText(str, MAX_BET_AMOUNT_LEN + 1);
 					int amount = _ttoi(str) + GetDlgItemInt(hDlg, uid, nullptr, FALSE);
-					if (amount > 9999999)
+					if (amount > maxNumLen(MAX_BET_AMOUNT_LEN))
 					{
-						amount = 9999999;
+						amount = maxNumLen(MAX_BET_AMOUNT_LEN);
 					}
 					_itot(amount, str, 10);
-					amountEdits[side].setText(str);
+					amountEdits[side].setText(str, true);
 					SetFocus(amountEdits[side].getHwnd());
 					return (INT_PTR)TRUE;
 				}
@@ -370,8 +378,8 @@ INT_PTR BetTabDlg::dlgProc(UINT msg, WPARAM wParam, LPARAM lParam)
 						{
 							return (INT_PTR)TRUE;
 						}
-						TCHAR str[8];
-						boughtEdit.getText(str, 8);
+						TCHAR str[MAX_BET_AMOUNT_LEN + 1];
+						boughtEdit.getText(str, MAX_BET_AMOUNT_LEN + 1);
 						ShowWindow(boughtEdit.getHwnd(), SW_HIDE);
 						int lineIdx = betLists[selSide].getCurSel();
 						if (GetFocus() != betLists[selSide].getHwnd())
@@ -407,35 +415,45 @@ INT_PTR BetTabDlg::dlgProc(UINT msg, WPARAM wParam, LPARAM lParam)
 					{
 						if (ComboBox_GetCurSel(hCurrentAmountCombo) == 0)
 						{
-							if (initialAmount > 9999999999999)
-							{
-								initialAmount = 9999999999999;
-							}
-							TCHAR str[14];
+							TCHAR str[MAX_INITIAL_AMOUNT_LEN + 1];
 							_i64tot(initialAmount, str, 10);
-							currentAmountEdit.resetUndo();
-							currentAmountEdit.setText(str);
+							currentAmountEdit.setText(str, false);
 						}
 						else
 						{
 							long long remainingAmount = initialAmount - model.getTotalInvest();
 							if (remainingAmount < 0)
 							{
-								ComboBox_SetCurSel(hCurrentAmountCombo, 0);
-								currentAmountEdit.setSel(0, -1);
+								initialAmount += model.getTotalInvest();
+								updateMinOdds();
 							}
 							else
 							{
-								TCHAR str[14];
+								TCHAR str[MAX_INITIAL_AMOUNT_LEN + 1];
 								_i64tot(remainingAmount, str, 10);
-								currentAmountEdit.resetUndo();
-								currentAmountEdit.setText(str);
+								currentAmountEdit.setText(str, false);
 							}
 						}
 					}
-					else
+					else if (model.getTotalInvest() != 0)
 					{
-						updateInitialAmount();
+						if (ComboBox_GetCurSel(hCurrentAmountCombo) == 0)
+						{
+							initialAmount -= model.getTotalInvest();
+							updateMinOdds();
+						}
+						else
+						{
+							if (initialAmount + model.getTotalInvest() > maxNumLen(MAX_INITIAL_AMOUNT_LEN))
+							{
+								ComboBox_SetCurSel(hCurrentAmountCombo, 0);
+							}
+							else
+							{
+								initialAmount += model.getTotalInvest();
+								updateMinOdds();
+							}
+						}
 					}
 					return (INT_PTR)TRUE;
 				case CBN_CLOSEUP:
@@ -560,12 +578,16 @@ INT_PTR BetTabDlg::dlgProc(UINT msg, WPARAM wParam, LPARAM lParam)
 
 void BetTabDlg::updateInvestAmount()
 {
-	if (Button_GetCheck(hAutoCurrentAmountCheck))
+	if (ComboBox_GetCurSel(hCurrentAmountCombo) == 0)
 	{
-		if (ComboBox_GetCurSel(hCurrentAmountCombo) == 1)
+		InvalidateRect(currentAmountEdit.getHwnd(), nullptr, FALSE);
+	}
+	else
+	{
+		if (Button_GetCheck(hAutoCurrentAmountCheck))
 		{
-			TCHAR str[15];
 			long long remainingAmount = initialAmount - model.getTotalInvest();
+			TCHAR str[MAX_INITIAL_AMOUNT_LEN + 1];
 			if (remainingAmount < 0)
 			{
 				ComboBox_SetCurSel(hCurrentAmountCombo, 0);
@@ -573,22 +595,24 @@ void BetTabDlg::updateInvestAmount()
 			}
 			else
 			{
-				if (remainingAmount > 9999999999999)
-				{
-					remainingAmount = 9999999999999;
-					initialAmount = remainingAmount + model.getTotalInvest();
-				}
 				_i64tot(remainingAmount, str, 10);
 			}
-			currentAmountEdit.resetUndo();
-			currentAmountEdit.setText(str);
+			currentAmountEdit.setText(str, false);
 		}
-	}
-	else if (ComboBox_GetCurSel(hCurrentAmountCombo) == 1)
-	{
-		TCHAR str[15];
-		currentAmountEdit.getText(str, 20);
-		initialAmount = _ttoll(str) + model.getTotalInvest();
+		else
+		{
+			TCHAR str[MAX_INITIAL_AMOUNT_LEN + 1];
+			currentAmountEdit.getText(str, MAX_INITIAL_AMOUNT_LEN + 1);
+			initialAmount = _ttoll(str);
+			if (initialAmount + model.getTotalInvest() > maxNumLen(MAX_INITIAL_AMOUNT_LEN))
+			{
+				ComboBox_SetCurSel(hCurrentAmountCombo, 0);
+			}
+			else
+			{
+				initialAmount += model.getTotalInvest();
+			}
+		}
 	}
 	updateCurrentProfit();
 }
@@ -642,8 +666,8 @@ void BetTabDlg::add(int side)
 	{
 		return;
 	}
-	TCHAR str[8];
-	amountEdits[side].getText(str, 8);
+	TCHAR str[MAX_BET_AMOUNT_LEN + 1];
+	amountEdits[side].getText(str, MAX_BET_AMOUNT_LEN + 1);
 	int amount = _ttoi(str);
 	if (amount == 0)
 	{
@@ -710,7 +734,7 @@ void BetTabDlg::calcBalanceAimAmount()
 				_stprintf(&str[i], _T(" %7.*f亿"), decimal, result.second * 1e-8);
 			}
 		}
-		int index = resultLists[0].addString(str, DT_VCENTER);
+		resultLists[0].addString(str);
 	}
 	ListBox_SelectString(resultLists[0].getHwnd(), -1, str);
 	SetFocus(oddsEdits[4 + isBet].getHwnd());
@@ -718,12 +742,19 @@ void BetTabDlg::calcBalanceAimAmount()
 
 void BetTabDlg::updateInitialAmount()
 {
-	TCHAR str[20];
-	currentAmountEdit.getText(str, 20);
+	TCHAR str[MAX_INITIAL_AMOUNT_LEN + 1];
+	currentAmountEdit.getText(str, MAX_INITIAL_AMOUNT_LEN + 1);
 	long long newAmount = _ttoll(str);
 	if (ComboBox_GetCurSel(hCurrentAmountCombo) == 1)
 	{
-		newAmount += model.getTotalInvest();
+		if (newAmount + model.getTotalInvest() > maxNumLen(MAX_INITIAL_AMOUNT_LEN))
+		{
+			ComboBox_SetCurSel(hCurrentAmountCombo, 0);
+		}
+		else
+		{
+			newAmount += model.getTotalInvest();
+		}
 	}
 	if (newAmount != initialAmount)
 	{
@@ -780,24 +811,16 @@ void BetTabDlg::calcAimAmount(int side)
 	bool isBet = Button_GetCheck(hBankerBetSelectors[2 * side + 7]);
 	if (initialAmount <= model.getTotalInvest())
 	{
-		if (ListBox_FindString(resultLists[side + 1].getHwnd(), -1, _T("初始数量过低")) == -1)
-		{
-			resultLists[side + 1].addString(_T("初始数量过低"), DT_VCENTER | DT_CENTER);
-		}
-		resultLists[side + 1].setCurSel(0);
 		currentAmountEdit.setSel(0, -1);
-		SetFocus(currentAmountEdit.getHwnd());
+		EDITBALLOONTIP editBalloonTip = { sizeof(EDITBALLOONTIP),_T("初始数量不足"),_T("初始数量需大于已投入数量。"),TTI_ERROR };
+		Edit_ShowBalloonTip(currentAmountEdit.getHwnd(), &editBalloonTip);
 		return;
 	}
 	if (winProb == 0)
 	{
-		if (ListBox_FindString(resultLists[side + 1].getHwnd(), -1, _T("输入胜率为0")) == -1)
-		{
-			resultLists[side + 1].addString(_T("输入胜率为0"), DT_VCENTER | DT_CENTER);
-		}
-		resultLists[side + 1].setCurSel(0);
 		winProbEdit.setSel(0, -1);
-		SetFocus(winProbEdit.getHwnd());
+		EDITBALLOONTIP editBalloonTip = { sizeof(EDITBALLOONTIP),_T("无效的胜率"),_T("输入胜率不能为0"),TTI_ERROR };
+		Edit_ShowBalloonTip(winProbEdit.getHwnd(), &editBalloonTip);
 		return;
 	}
 	TCHAR str[20];
@@ -823,7 +846,7 @@ void BetTabDlg::calcAimAmount(int side)
 			for (long long i = 100000000000LL; i > aimAmount; decimal++, i /= 10);
 			_stprintf(&str[6], _T(" %5.*f亿"), decimal, aimAmount * 1e-8);
 		}
-		resultLists[side + 1].addString(str, DT_VCENTER);
+		resultLists[side + 1].addString(str);
 	}
 	ListBox_SelectString(resultLists[side + 1].getHwnd(), -1, str);
 	SetFocus(oddsEdits[6 + 2 * side + isBet].getHwnd());

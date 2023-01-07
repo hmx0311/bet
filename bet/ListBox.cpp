@@ -38,6 +38,7 @@ void ListBox::attach(HWND hLB)
 	GetWindowRect(hLB, &rcLB);
 	MapWindowRect(HWND_DESKTOP, GetParent(hLB), &rcLB);
 	maxDisplayedItemCnt = (rcLB.bottom - rcLB.top) / listItemHeight;
+	ImmAssociateContext(hLB, nullptr);
 }
 
 LRESULT ListBox::wndProc(UINT msg, WPARAM wParam, LPARAM lParam)
@@ -76,16 +77,10 @@ void ListBox::drawItem(HDC hDC, int itemID, UINT itemState, ULONG_PTR itemData, 
 	FillRect(hDC, &rcItem, GetSysColorBrush(itemState & ODS_SELECTED ? COLOR_HIGHLIGHT : COLOR_WINDOW));
 
 	SetBkMode(hDC, TRANSPARENT);
-	COLORREF color = itemData >> 8;
-	if (color == 0)
-	{
-		color = GetSysColor(COLOR_WINDOWTEXT);
-	}
-	SetTextColor(hDC, itemState & ODS_SELECTED ? ::GetSysColor(COLOR_HIGHLIGHTTEXT) : color);
+	SetTextColor(hDC, itemState & ODS_SELECTED ? ::GetSysColor(COLOR_HIGHLIGHTTEXT) : GetSysColor(COLOR_WINDOWTEXT));
 	TCHAR sText[30];
 	ListBox_GetText(hLB, itemID, sText);
-	BYTE style = itemData & 0xff;
-	DrawText(hDC, sText, -1, &rcItem, style | DT_SINGLELINE);
+	DrawText(hDC, sText, -1, &rcItem, DT_SINGLELINE);
 }
 
 HWND ListBox::getHwnd()
@@ -93,11 +88,9 @@ HWND ListBox::getHwnd()
 	return hLB;
 }
 
-int ListBox::addString(PCTSTR pszItem, BYTE style, COLORREF color)
+int ListBox::addString(PCTSTR pszItem)
 {
-	int index = ListBox_AddString(hLB, pszItem);
-	ListBox_SetItemData(hLB, index, ((color << 8) | style));
-	return index;
+	return ListBox_AddString(hLB, pszItem);
 }
 
 void ListBox::setCurSel(int nSelect)
@@ -643,7 +636,7 @@ int BetList::getCurSel()
 void BetList::addBet(double odds, int amount)
 {
 	TCHAR str[13];
-	_stprintf(str, _T("%0.1f  %7d"), odds, amount);
+	_stprintf(str, _T("%0.1f  %" STR(MAX_BET_AMOUNT_LEN) "d"), odds, amount);
 	insertString(betsSize + 2, str, DT_CENTER);
 	betsSize++;
 	ListBox_SetTopIndex(hLB, betsSize > maxDisplayedItemCnt - 2 ? betsSize + 2 - maxDisplayedItemCnt : 0);
@@ -652,8 +645,8 @@ void BetList::addBet(double odds, int amount)
 void BetList::addBanker(const Banker& banker)
 {
 	TCHAR str[20];
-	_stprintf(str, _T("%0.1f %7d       0"), banker.odds, banker.amount);
-	int nIndex = addString(str, DT_RIGHT, RGB(255, 0, 0));
+	_stprintf(str, _T("%0.1f %" STR(MAX_BET_AMOUNT_LEN) "d       0"), banker.odds, banker.amount);
+	addString(str, DT_RIGHT, RGB(255, 0, 0));
 	bankersSize++;
 	ListBox_SetTopIndex(hLB, betsSize + bankersSize + 6 - maxDisplayedItemCnt);
 }
@@ -661,7 +654,7 @@ void BetList::addBanker(const Banker& banker)
 void BetList::updateBanker(int nIndex, const Banker& banker)
 {
 	TCHAR str[20];
-	_stprintf(str, _T("%0.1f %7d %7d"), banker.odds, banker.amount, banker.bought);
+	_stprintf(str, _T("%0.1f %" STR(MAX_BET_AMOUNT_LEN) "d %" STR(MAX_BET_AMOUNT_LEN) "d"), banker.odds, banker.amount, banker.bought);
 	SetWindowRedraw(hLB, FALSE);
 	ShowWindow(allBoughtButton.getHwnd(), SW_HIDE);
 	insertString(nIndex, str, DT_RIGHT, banker.maxBought == banker.bought ? GetSysColor(COLOR_WINDOWTEXT) : RGB(255, 0, 0));
@@ -726,11 +719,16 @@ void BetList::resetContent()
 	addString(_T("赔率 已投入   已买"));
 }
 
-int BetList::insertString(int nIndex, PCTSTR pszItem, BYTE style, COLORREF color)
+void BetList::addString(PCTSTR pszItem, BYTE style, COLORREF color)
+{
+	int index = ListBox::addString(pszItem);
+	ListBox_SetItemData(hLB, index, ((color << 8) | style));
+}
+
+void BetList::insertString(int nIndex, PCTSTR pszItem, BYTE style, COLORREF color)
 {
 	int index = ListBox_InsertString(hLB, nIndex, pszItem);
 	ListBox_SetItemData(hLB, index, ((color << 8) | style));
-	return index;
 }
 
 void BetList::showAllBoughtButton(int nIndex)
@@ -757,7 +755,7 @@ void BetList::showChangeBoughtEdit()
 	ListBox_GetText(hLB, curSel, str);
 	int i;
 	for (i = 12; str[i] == ' '; i++);
-	boughtEdit.setText(&str[i]);
+	boughtEdit.setText(&str[i], false);
 	boughtEdit.setSel(0, -1);
 	SetFocus(boughtEdit.getHwnd());
 }

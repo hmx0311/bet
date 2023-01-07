@@ -87,6 +87,7 @@ void Edit::attach(HWND hEdit)
 	SetWindowLongPtr(hEdit, GWLP_USERDATA, (LONG_PTR)this);
 	SetWindowSubclass(hEdit, editSubclassProc, 0, 0);
 	setVCentered(hEdit);
+	ImmAssociateContext(hEdit, nullptr);
 }
 
 HWND Edit::getHwnd()
@@ -206,28 +207,27 @@ LRESULT NumericEdit::wndProc(UINT msg, WPARAM wParam, LPARAM lParam)
 	case WM_KILLFOCUS:
 		updateStr();
 		break;
-	case WM_SHOWWINDOW:
-		resetUndo();
-		break;
 	}
 	return DefSubclassProc(hEdit, msg, wParam, lParam);
 }
 
-void NumericEdit::setText(PCTSTR str)
+void NumericEdit::setText(PCTSTR str, bool canUndo)
 {
-	updateStr();
+	if (canUndo)
+	{
+		updateStr();
+	}
+	else
+	{
+		curUndo.clear();
+		lastUndo.clear();
+	}
 	if (str[0] != '\0' && str != curUndo)
 	{
 		lastUndo = curUndo;
 		curUndo = str;
 	}
 	Edit::setText(str);
-}
-
-void NumericEdit::resetUndo()
-{
-	lastUndo.clear();
-	curUndo.clear();
 }
 
 void NumericEdit::updateStr()
@@ -288,7 +288,7 @@ LRESULT AmountEdit::wndProc(UINT msg, WPARAM wParam, LPARAM lParam)
 		switch (LOWORD(wParam))
 		{
 		case IDC_CLEAR_BUTTON:
-			setText(_T(""));
+			setText(_T(""), true);
 			SetFocus(hEdit);
 			return 0;
 		}

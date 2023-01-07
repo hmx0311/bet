@@ -16,7 +16,7 @@ public:
 	virtual LRESULT wndProc(UINT msg, WPARAM wParam, LPARAM lParam);
 	virtual void drawItem(HDC hDC, int itemID, UINT itemState, ULONG_PTR itemData, RECT& rcItem);
 	HWND getHwnd();
-	int addString(PCTSTR pszItem, BYTE style = 0, COLORREF color = 0);
+	int addString(PCTSTR pszItem);
 	void setCurSel(int nSelect);
 protected:
 	void onDPIChanged();
@@ -55,7 +55,8 @@ public:
 	bool isEmpty();
 	void resetContent();
 private:
-	int insertString(int nIndex, PCTSTR pszItem, BYTE style, COLORREF color = 0);
+	void addString(PCTSTR pszItem, BYTE style = 0, COLORREF color = 0);
+	void insertString(int nIndex, PCTSTR pszItem, BYTE style, COLORREF color = 0);
 	void showAllBoughtButton(int nIndex);
 	void showChangeBoughtEdit();
 	void eraseDragLine(HDC hDC);
