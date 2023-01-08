@@ -71,7 +71,7 @@ const Banker& Model::addBanker(bool side, double odds, int amount)
 {
 	Banker& banker = bankers[side].emplace_back(odds, amount);
 	totalInvest += banker.amount;
-	int oddsIdx = round(10 * banker.odds);
+	int oddsIdx = lround(10 * banker.odds);
 	potentialProfit[side][0].deltaUpdate(oddsIdx, banker.maxBought / banker.odds * cut * DBL_PRECISION_COMPENSATE);
 	potentialProfit[side][1].deltaUpdate(oddsIdx, -banker.maxBought);
 	if (!haveClosing)
@@ -97,7 +97,7 @@ const Banker& Model::changeBought(bool side, int index, int amount)
 	{
 		return banker;
 	}
-	int oddsIdx = round(10 * banker.odds);
+	int oddsIdx = lround(10 * banker.odds);
 	if (haveClosing)
 	{
 		profit[!side] += banker.bought - amount;
@@ -154,7 +154,7 @@ void Model::deleteBanker(bool side, int index)
 {
 	vector<Banker>::iterator banker = bankers[side].begin() + index;
 	totalInvest -= banker->amount;
-	int oddsIdx = round(10 * banker->odds);
+	int oddsIdx = lround(10 * banker->odds);
 	profit[side] -= banker->profit;
 	potentialProfit[side][0].deltaUpdate(oddsIdx, banker->profit - int(int(banker->amount / banker->odds) * cut));
 	profit[!side] += haveClosing ? banker->bought : banker->maxBought;
@@ -201,23 +201,23 @@ pair<long long, long long> Model::calcAimAmountBalance(bool isBet, double odds)
 	{
 		if (haveClosing)
 		{
-			difference -= potentialProfit[!side][1].getSum(round(10 * odds), 100);
+			difference -= potentialProfit[!side][1].getSum(lround(10 * odds), 100);
 		}
-		balancedProfit += potentialProfit[!side][0].getSum(round(10 * odds), 100);
+		balancedProfit += potentialProfit[!side][0].getSum(lround(10 * odds), 100);
 	}
 	else
 	{
-		difference -= potentialProfit[side][0].getSum(round(10 * odds), 100);
+		difference -= potentialProfit[side][0].getSum(lround(10 * odds), 100);
 		if (haveClosing)
 		{
-			balancedProfit += potentialProfit[side][1].getSum(round(10 * odds), 100);
+			balancedProfit += potentialProfit[side][1].getSum(lround(10 * odds), 100);
 		}
 	}
 	difference += balancedProfit;
-	long long aimAmount = round(difference / (cut * (isBet ? odds : 1 / odds) + 1));
-	if (aimAmount <= 0)
+	long long aimAmount = llround(difference / (cut * (isBet ? odds : 1 / odds) + 1));
+	if (aimAmount < 0)
 	{
-		return { 0,0 };
+		aimAmount = 0;
 	}
 	balancedProfit -= aimAmount;
 	if (!isBet)
@@ -308,34 +308,34 @@ long long Model::calcAimAmountProb(long long initialAmount, double winProb, doub
 	{
 		if (haveClosing)
 		{
-			winAmount += potentialProfit[!side][1].getSum(round(10 * odds), 100);
+			winAmount += potentialProfit[!side][1].getSum(lround(10 * odds), 100);
 		}
-		loseAmount += potentialProfit[!side][0].getSum(round(10 * odds), 100);
+		loseAmount += potentialProfit[!side][0].getSum(lround(10 * odds), 100);
 	}
 	else
 	{
-		winAmount += potentialProfit[side][0].getSum(round(10 * odds), 100);
+		winAmount += potentialProfit[side][0].getSum(lround(10 * odds), 100);
 		if (haveClosing)
 		{
-			loseAmount += potentialProfit[side][1].getSum(round(10 * odds), 100);
+			loseAmount += potentialProfit[side][1].getSum(lround(10 * odds), 100);
 		}
 	}
 	double equivalentOdds = cut * (isBet ? odds : 1 / odds);
 	long long aimAmount;
 	if (loseAmount - winAmount < MIN_NOTABLE_DIFF)
 	{
-		aimAmount = round(lowerWinProb * loseAmount - (1 - lowerWinProb) / equivalentOdds * winAmount);
+		aimAmount = llround(lowerWinProb * loseAmount - (1 - lowerWinProb) / equivalentOdds * winAmount);
 	}
 	else
 	{
-		long long lowerAmount = round(lowerWinProb * loseAmount - (1 - lowerWinProb) / equivalentOdds * winAmount);
-		long long upperAmount = round(upperWinProb * loseAmount - (1 - upperWinProb) / equivalentOdds * winAmount);
-		long long balanceAmount = round((loseAmount - winAmount) / (equivalentOdds + 1));
+		long long lowerAmount = llround(lowerWinProb * loseAmount - (1 - lowerWinProb) / equivalentOdds * winAmount);
+		long long upperAmount = llround(upperWinProb * loseAmount - (1 - upperWinProb) / equivalentOdds * winAmount);
+		long long balanceAmount = llround((loseAmount - winAmount) / (equivalentOdds + 1));
 		aimAmount = lowerAmount > balanceAmount ? lowerAmount : upperAmount > balanceAmount ? balanceAmount : upperAmount;
 	}
 	if (aimAmount < 0)
 	{
-		return 0;
+		aimAmount = 0;
 	}
 	if (!isBet)
 	{

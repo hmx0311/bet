@@ -162,7 +162,6 @@ LRESULT NumericEdit::wndProc(UINT msg, WPARAM wParam, LPARAM lParam)
 		break;
 	case WM_PASTE:
 		{
-			wstring str;
 			OpenClipboard(hEdit);
 			char* text = (char*)GetClipboardData(CF_TEXT);
 			if (text == nullptr)
@@ -170,6 +169,7 @@ LRESULT NumericEdit::wndProc(UINT msg, WPARAM wParam, LPARAM lParam)
 				CloseClipboard();
 				return 0;
 			}
+			wstring str;
 			for (; *text != '\0'; text++)
 			{
 				switch (*text)

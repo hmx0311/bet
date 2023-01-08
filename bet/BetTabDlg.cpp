@@ -120,7 +120,7 @@ INT_PTR BetTabDlg::initDlg(HWND hDlg)
 	ComboBox_SetCurSel(hCurrentAmountCombo, 0);
 	Button_SetCheck(hAutoCurrentAmountCheck, 1);
 	Button_SetCheck(hWinProbSideLeftSelector, 1);
-	_itot((int)round(config.defProbError * 100), str, 10);
+	_itot(lround(config.defProbError * 100), str, 10);
 	winProbErrorEdit.setText(str, false);
 	winProbError = config.defProbError;
 
@@ -188,7 +188,7 @@ INT_PTR BetTabDlg::dlgProc(UINT msg, WPARAM wParam, LPARAM lParam)
 	case BPC_PROBABILITY:
 		if (hProbCalculator != nullptr && hProbCalculator == (HWND)wParam)
 		{
-			int probDecimal = round(10000 * *(double*)&lParam);
+			int probDecimal = lround(10000 * *(double*)&lParam);
 			if (probDecimal > 0 && probDecimal < 10000)
 			{
 				TCHAR str[5];
@@ -694,45 +694,38 @@ void BetTabDlg::calcBalanceAimAmount()
 	if (ListBox_FindString(resultLists[0].getHwnd(), -1, str) == LB_ERR)
 	{
 		auto result = model.calcAimAmountBalance(isBet, isBet ? oddsEdits[5].getOdds() : oddsEdits[4].getOdds());
-		if (result.first <= 0)
+		int i = 6;
+		if (result.first < 10000000LL)
 		{
-			lstrcat(str, _T("     收益已平衡"));
+			i += _stprintf(&str[i], _T("  %7lld"), result.first);
+		}
+		else if (result.first < 100000000LL)
+		{
+			i += _stprintf(&str[i], _T(" %.1f万"), result.first * 1e-4);
+		}
+		else if (result.first < 1000000000LL)
+		{
+			i += _stprintf(&str[i], _T("  %lld万"), llround(result.first * 1e-4));
 		}
 		else
 		{
-			int i = 6;
-			if (result.first < 10000000LL)
-			{
-				i += _stprintf(&str[i], _T("  %7lld"), result.first);
-			}
-			else if (result.first < 100000000LL)
-			{
-				i += _stprintf(&str[i], _T(" %.1f万"), result.first * 1e-4);
-			}
-			else if (result.first < 1000000000LL)
-			{
-				i += _stprintf(&str[i], _T("  %lld万"), (long long)round(result.first * 1e-4));
-			}
-			else
-			{
-				int decimal = 0;
-				for (long long j = 1000000000000LL; j > result.first; decimal++, j /= 10);
-				i += _stprintf(&str[i], _T(" %6.*f亿"), decimal, result.first * 1e-8);
-			}
-			if (result.second < 1000000000LL && result.second > -100000000LL)
-			{
-				_stprintf(&str[i], _T(" %9lld"), result.second);
-			}
-			else if (result.second < 100000000000LL && result.second > -10000000000LL)
-			{
-				_stprintf(&str[i], _T(" %7lld万"), (long long)round(result.second * 1e-4));
-			}
-			else if (result.second < 10000000000000LL && result.second > -1000000000000LL)
-			{
-				int decimal = 0;
-				for (long long j = 1000000000000LL; j * 10 > result.second && -j < result.second; decimal++, j /= 10);
-				_stprintf(&str[i], _T(" %7.*f亿"), decimal, result.second * 1e-8);
-			}
+			int decimal = 0;
+			for (long long j = 1000000000000LL; j > result.first; decimal++, j /= 10);
+			i += _stprintf(&str[i], _T(" %6.*f亿"), decimal, result.first * 1e-8);
+		}
+		if (result.second < 1000000000LL && result.second > -100000000LL)
+		{
+			_stprintf(&str[i], _T(" %9lld"), result.second);
+		}
+		else if (result.second < 100000000000LL && result.second > -10000000000LL)
+		{
+			_stprintf(&str[i], _T(" %7lld万"), llround(result.second * 1e-4));
+		}
+		else if (result.second < 10000000000000LL && result.second > -1000000000000LL)
+		{
+			int decimal = 0;
+			for (long long j = 1000000000000LL; j * 10 > result.second && -j < result.second; decimal++, j /= 10);
+			_stprintf(&str[i], _T(" %7.*f亿"), decimal, result.second * 1e-8);
 		}
 		resultLists[0].addString(str);
 	}
@@ -819,7 +812,7 @@ void BetTabDlg::calcAimAmount(int side)
 	if (winProb == 0)
 	{
 		winProbEdit.setSel(0, -1);
-		EDITBALLOONTIP editBalloonTip = { sizeof(EDITBALLOONTIP),_T("无效的胜率"),_T("输入胜率不能为0"),TTI_ERROR };
+		EDITBALLOONTIP editBalloonTip = { sizeof(EDITBALLOONTIP),_T("胜率无效"),_T("输入胜率不能为0"),TTI_ERROR };
 		Edit_ShowBalloonTip(winProbEdit.getHwnd(), &editBalloonTip);
 		return;
 	}
@@ -838,7 +831,7 @@ void BetTabDlg::calcAimAmount(int side)
 		}
 		else if (aimAmount < 1000000000LL)
 		{
-			_stprintf(&str[6], _T(" %5lld万"), (long long)round(aimAmount * 1e-4));
+			_stprintf(&str[6], _T(" %5lld万"), llround(aimAmount * 1e-4));
 		}
 		else
 		{

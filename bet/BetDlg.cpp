@@ -9,13 +9,13 @@
 #include <CommCtrl.h>
 #include <ctime>
 
-#define TAB_WIDTH (int)roundf(142 * xScale)
+#define TAB_WIDTH lroundf(142 * xScale)
 int TAB_HEIGHT;
 #define ADD_TAB_X (TAB_WIDTH+4)
 int ADD_TAB_Y;
 #define MAX_TAB 4
-#define TAB_NAME_EDIT_MARGIN_X (int)roundf(2*xScale)
-#define TAB_NAME_EDIT_MARGIN_Y (int)roundf(3.45f*yScale)
+#define TAB_NAME_EDIT_MARGIN_X lroundf(2*xScale)
+#define TAB_NAME_EDIT_MARGIN_Y lroundf(3.45f*yScale)
 int TAB_NAME_EDIT_X;
 int TAB_NAME_EDIT_Y;
 #define TAB_NAME_EDIT_WIDTH (TAB_WIDTH - 2 * TAB_NAME_EDIT_MARGIN_X)

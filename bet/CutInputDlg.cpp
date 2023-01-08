@@ -14,7 +14,7 @@ INT_PTR CutInputDlg::initDlg(HWND hDlg)
 	SendMessage(GetDlgItem(hDlg, IDOK), WM_UPDATEUISTATE, MAKEWPARAM(UIS_SET, UISF_HIDEFOCUS), 0);
 	SetWindowSubclass(GetDlgItem(hDlg, IDOK), buttonSubclassProc, 0, 0);
 	TCHAR str[5];
-	_stprintf(str, _T("%04d"), (int)round((1 - config.defCut) * 10000));
+	_stprintf(str, _T("%04d"), lround((1 - config.defCut) * 10000));
 	cutEdit.setText(str, false);
 	return (INT_PTR)TRUE;
 }
