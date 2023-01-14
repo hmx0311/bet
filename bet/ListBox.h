@@ -11,6 +11,7 @@ protected:
 	HWND hLB;
 	RECT rcLB;
 	int maxDisplayedItemCnt;
+	int focusAnimationFrame = 0;
 public:
 	void attach(HWND hLB);
 	virtual LRESULT wndProc(UINT msg, WPARAM wParam, LPARAM lParam);
@@ -50,13 +51,13 @@ public:
 	void addBet(double odds, int amount);
 	void addBanker(const Banker& banker);
 	void updateBanker(int nIndex, const Banker& banker);
-	void moveCurSel(int nSelect);
 	std::pair<bool, int> deleteSel();
 	bool isEmpty();
 	void resetContent();
 private:
 	void addString(PCTSTR pszItem, BYTE style = 0, COLORREF color = 0);
 	void insertString(int nIndex, PCTSTR pszItem, BYTE style, COLORREF color = 0);
+	void moveCurSel(int nSelect);
 	void showAllBoughtButton(int nIndex);
 	void showChangeBoughtEdit();
 	void eraseDragLine(HDC hDC);

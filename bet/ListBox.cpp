@@ -174,7 +174,7 @@ LRESULT BetList::wndProc(UINT msg, WPARAM wParam, LPARAM lParam)
 			{
 				return 0;
 			}
-			if (getCurSel() > betsSize + 2)
+			if (getCurSel() > betsSize + 3)
 			{
 				isScrolling = true;
 				SetWindowPos(allBoughtButton.getHwnd(), nullptr, 0, 0, 0, 0, SWP_NOMOVE | SWP_NOSIZE | SWP_NOZORDER | SWP_NOREDRAW | SWP_HIDEWINDOW);
@@ -190,10 +190,10 @@ LRESULT BetList::wndProc(UINT msg, WPARAM wParam, LPARAM lParam)
 				}
 				if (curSel == 5 + betsSize)
 				{
-					moveCurSel(1 + betsSize);
+					setCurSel(1 + betsSize);
 					return 0;
 				}
-				if (curSel > betsSize + 2)
+				if (curSel > betsSize + 3)
 				{
 					isScrolling = true;
 					SetWindowPos(allBoughtButton.getHwnd(), nullptr, 0, 0, 0, 0, SWP_NOMOVE | SWP_NOSIZE | SWP_NOZORDER | SWP_NOREDRAW | SWP_HIDEWINDOW);
@@ -210,14 +210,13 @@ LRESULT BetList::wndProc(UINT msg, WPARAM wParam, LPARAM lParam)
 				}
 				if (curSel == 1 + betsSize)
 				{
-					if (bankersSize == 0)
+					if (bankersSize > 0)
 					{
-						return 0;
+						setCurSel(5 + betsSize);
 					}
-					moveCurSel(5 + betsSize);
 					return 0;
 				}
-				if (curSel > betsSize + 2)
+				if (curSel > betsSize + 3)
 				{
 					isScrolling = true;
 					SetWindowPos(allBoughtButton.getHwnd(), nullptr, 0, 0, 0, 0, SWP_NOMOVE | SWP_NOSIZE | SWP_NOZORDER | SWP_NOREDRAW | SWP_HIDEWINDOW);
@@ -269,7 +268,7 @@ LRESULT BetList::wndProc(UINT msg, WPARAM wParam, LPARAM lParam)
 	case WM_MOUSEWHEEL:
 		{
 			int curSel = getCurSel();
-			if (curSel > betsSize + 2)
+			if (curSel > betsSize + 3)
 			{
 				isScrolling = true;
 				LRESULT result;
@@ -336,20 +335,21 @@ LRESULT BetList::wndProc(UINT msg, WPARAM wParam, LPARAM lParam)
 					curSel = ListBox_GetCurSel(hLB);
 					if (curSel < 2)
 					{
-						moveCurSel(2);
-						break;
+						setCurSel(2);
 					}
-					if (bankersSize == 0)
+					else if (bankersSize == 0 || curSel < betsSize + 3)
 					{
-						moveCurSel(betsSize + 1);
-						break;
+						setCurSel(betsSize + 1);
 					}
-					moveCurSel(betsSize + (curSel > betsSize + 2 ? 5 : 1));
+					else
+					{
+						moveCurSel(betsSize + 5);
+					}
 					break;
 				}
 				if (isScrolling)
 				{
-					if (curSel > betsSize + 2)
+					if (curSel > betsSize + 3)
 					{
 						showAllBoughtButton(curSel);
 					}
@@ -376,11 +376,14 @@ void BetList::drawItem(HDC hDC, int itemID, UINT itemState, ULONG_PTR itemData, 
 		int posY = rcLB.top + rcItem.top + 2;
 		if (!IsWindowVisible(boughtEdit.getHwnd()))
 		{
-			if (itemID > betsSize + 2)
+			if (itemID > betsSize + 3)
 			{
-				RECT rcAllBoughtButton = { rcItem.right - listItemHeight,rcItem.top,rcItem.right,rcItem.bottom };
-				allBoughtButton.drawButton(hDC, PBS_NORMAL, rcAllBoughtButton);
-				if (!isScrolling)
+				if (isScrolling)
+				{
+					RECT rcAllBoughtButton = { rcItem.right - listItemHeight,rcItem.top,rcItem.right,rcItem.bottom };
+					allBoughtButton.drawButton(hDC, PBS_NORMAL, rcAllBoughtButton);
+				}
+				else
 				{
 					if (rcItem.top >= 0 && rcItem.bottom <= rcLB.bottom - rcLB.top)
 					{
@@ -420,7 +423,7 @@ void BetList::drawItem(HDC hDC, int itemID, UINT itemState, ULONG_PTR itemData, 
 		color = GetSysColor(COLOR_WINDOWTEXT);
 	}
 	SetTextColor(hDC, itemState & ODS_SELECTED ? ::GetSysColor(COLOR_HIGHLIGHTTEXT) : color);
-	if (itemID == 0 || itemID == betsSize + 3)
+	if (itemID == 0 || itemID == betsSize + 2)
 	{
 		SelectObject(hDC, hBoldFont);
 	}
@@ -455,7 +458,7 @@ UINT BetList::dragging(POINT ptCursor)
 	{
 		dragIdx = (ptCursor.y + listItemHeight / 2) / listItemHeight;
 		int curScroll = GetScrollPos(hLB, SB_VERT);
-		if (curSel < betsSize + 2)
+		if (curSel < betsSize + 3)
 		{
 			isDragging = true;
 			if (dragIdx <= 0)
@@ -481,7 +484,7 @@ UINT BetList::dragging(POINT ptCursor)
 			{
 				dragIdx = 2;
 			}
-			else if (dragIdx > betsSize + 2)
+			else if (dragIdx > betsSize + 3)
 			{
 				dragIdx = -1;
 			}
@@ -575,7 +578,7 @@ int BetList::dropped(POINT ptCursor)
 		moveCurSel(lastDragIdx);
 		SetWindowRedraw(hLB, TRUE);
 	}
-	if (curSel > betsSize + 2)
+	if (curSel > betsSize + 3)
 	{
 		ListBox_DeleteString(hLB, betsSize + bankersSize + 5);
 		if (GetScrollPos(hLB, SB_VERT) >= betsSize + bankersSize + 5 - maxDisplayedItemCnt)
@@ -603,7 +606,7 @@ void BetList::cancelDrag()
 		ReleaseDC(hLB, hDC);
 		lastDragIdx = -1;
 	}
-	if (getCurSel() > betsSize + 2)
+	if (getCurSel() > betsSize + 3)
 	{
 		ListBox_DeleteString(hLB, betsSize + bankersSize + 5);
 		if (GetScrollPos(hLB, SB_VERT) >= betsSize + bankersSize + 5 - maxDisplayedItemCnt)
@@ -666,7 +669,7 @@ pair<bool, int> BetList::deleteSel()
 {
 	int lineIdx = getCurSel();
 	pair<bool, int> result;
-	result.first = lineIdx < betsSize + 2;
+	result.first = lineIdx < betsSize + 3;
 	if (result.first)
 	{
 		result.second = lineIdx - 2;
@@ -685,21 +688,6 @@ pair<bool, int> BetList::deleteSel()
 	ShowWindow(allBoughtButton.getHwnd(), SW_HIDE);
 	ShowWindow(boughtEdit.getHwnd(), SW_HIDE);
 	return result;
-}
-
-void BetList::moveCurSel(int nSelect)
-{
-	int curSel = getCurSel();
-	if (curSel < betsSize + 2 || nSelect < betsSize + 2)
-	{
-		setCurSel(nSelect);
-		return;
-	}
-	isScrolling = true;
-	SetWindowPos(allBoughtButton.getHwnd(), nullptr, 0, 0, 0, 0, SWP_NOMOVE | SWP_NOSIZE | SWP_NOZORDER | SWP_NOREDRAW | SWP_HIDEWINDOW);
-	setCurSel(nSelect);
-	showAllBoughtButton(nSelect);
-	isScrolling = false;
 }
 
 bool BetList::isEmpty()
@@ -729,6 +717,18 @@ void BetList::insertString(int nIndex, PCTSTR pszItem, BYTE style, COLORREF colo
 {
 	int index = ListBox_InsertString(hLB, nIndex, pszItem);
 	ListBox_SetItemData(hLB, index, ((color << 8) | style));
+}
+
+void BetList::moveCurSel(int nSelect)
+{
+	isScrolling = true;
+	SetWindowPos(allBoughtButton.getHwnd(), nullptr, 0, 0, 0, 0, SWP_NOMOVE | SWP_NOSIZE | SWP_NOZORDER | SWP_NOREDRAW | SWP_HIDEWINDOW);
+	setCurSel(nSelect);
+	if (nSelect > betsSize + 3)
+	{
+		showAllBoughtButton(nSelect);
+	}
+	isScrolling = false;
 }
 
 void BetList::showAllBoughtButton(int nIndex)

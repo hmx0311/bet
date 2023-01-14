@@ -150,7 +150,7 @@ INT_PTR BetTabDlg::dlgProc(UINT msg, WPARAM wParam, LPARAM lParam)
 				if (newIdx != -1)
 				{
 					int betsSize = betLists[selSide].getBetsSize();
-					if (curSel < betsSize + 2)
+					if (curSel < betsSize + 3)
 					{
 						model.moveBet(selSide, curSel - 2, newIdx - 2);
 					}
