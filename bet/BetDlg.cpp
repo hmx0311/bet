@@ -328,7 +328,7 @@ void BetDlg::calcPos()
 	GetObject(hFont, sizeof(LOGFONT), &logFont);
 	listItemHeight = abs(logFont.lfHeight);
 	logFont.lfWeight = FW_BOLD;
-	DeleteObject(hBoldFont);
+	DeleteFont(hBoldFont);
 	hBoldFont = CreateFontIndirect(&logFont);
 
 	SetWindowFont(GetDlgItem(hDlg, IDC_BALANCE_MODE_CAPTION), hBoldFont, FALSE);

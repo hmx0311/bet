@@ -74,13 +74,18 @@ LRESULT ListBox::wndProc(UINT msg, WPARAM wParam, LPARAM lParam)
 
 void ListBox::drawItem(HDC hDC, int itemID, UINT itemState, ULONG_PTR itemData, RECT& rcItem)
 {
-	FillRect(hDC, &rcItem, GetSysColorBrush(itemState & ODS_SELECTED ? COLOR_HIGHLIGHT : COLOR_WINDOW));
+	HDC hDCMem;
+	HPAINTBUFFER hPaintBuffer = BeginBufferedPaint(hDC, &rcItem, BPBF_COMPATIBLEBITMAP, nullptr, &hDCMem);
+	HFONT hOldFont = SelectFont(hDCMem, hFont);
+	FillRect(hDCMem, &rcItem, GetSysColorBrush(itemState & ODS_SELECTED ? COLOR_HIGHLIGHT : COLOR_WINDOW));
 
-	SetBkMode(hDC, TRANSPARENT);
-	SetTextColor(hDC, itemState & ODS_SELECTED ? ::GetSysColor(COLOR_HIGHLIGHTTEXT) : GetSysColor(COLOR_WINDOWTEXT));
+	SetBkMode(hDCMem, TRANSPARENT);
+	SetTextColor(hDCMem, itemState & ODS_SELECTED ? ::GetSysColor(COLOR_HIGHLIGHTTEXT) : GetSysColor(COLOR_WINDOWTEXT));
 	TCHAR sText[30];
 	ListBox_GetText(hLB, itemID, sText);
-	DrawText(hDC, sText, -1, &rcItem, DT_SINGLELINE);
+	DrawText(hDCMem, sText, -1, &rcItem, DT_SINGLELINE);
+	SelectFont(hDCMem, hOldFont);
+	EndBufferedPaint(hPaintBuffer, TRUE);
 }
 
 HWND ListBox::getHwnd()
@@ -174,11 +179,7 @@ LRESULT BetList::wndProc(UINT msg, WPARAM wParam, LPARAM lParam)
 			{
 				return 0;
 			}
-			if (getCurSel() > betsSize + 3)
-			{
-				isScrolling = true;
-				SetWindowPos(allBoughtButton.getHwnd(), nullptr, 0, 0, 0, 0, SWP_NOMOVE | SWP_NOSIZE | SWP_NOZORDER | SWP_NOREDRAW | SWP_HIDEWINDOW);
-			}
+			beginScroll();
 			break;
 		case VK_LEFT:
 		case VK_UP:
@@ -193,11 +194,7 @@ LRESULT BetList::wndProc(UINT msg, WPARAM wParam, LPARAM lParam)
 					setCurSel(1 + betsSize);
 					return 0;
 				}
-				if (curSel > betsSize + 3)
-				{
-					isScrolling = true;
-					SetWindowPos(allBoughtButton.getHwnd(), nullptr, 0, 0, 0, 0, SWP_NOMOVE | SWP_NOSIZE | SWP_NOZORDER | SWP_NOREDRAW | SWP_HIDEWINDOW);
-				}
+				beginScroll();
 				break;
 			}
 		case VK_RIGHT:
@@ -216,11 +213,7 @@ LRESULT BetList::wndProc(UINT msg, WPARAM wParam, LPARAM lParam)
 					}
 					return 0;
 				}
-				if (curSel > betsSize + 3)
-				{
-					isScrolling = true;
-					SetWindowPos(allBoughtButton.getHwnd(), nullptr, 0, 0, 0, 0, SWP_NOMOVE | SWP_NOSIZE | SWP_NOZORDER | SWP_NOREDRAW | SWP_HIDEWINDOW);
-				}
+				beginScroll();
 				break;
 			}
 		case VK_DELETE:
@@ -270,23 +263,20 @@ LRESULT BetList::wndProc(UINT msg, WPARAM wParam, LPARAM lParam)
 			int curSel = getCurSel();
 			if (curSel > betsSize + 3)
 			{
-				isScrolling = true;
-				LRESULT result;
+				beginScroll();
+				LRESULT result = DefSubclassProc(hLB, msg, wParam, lParam);
 				if (!IsWindowVisible(boughtEdit.getHwnd()))
 				{
-					SetWindowPos(allBoughtButton.getHwnd(), nullptr, 0, 0, 0, 0, SWP_NOMOVE | SWP_NOSIZE | SWP_NOZORDER | SWP_NOREDRAW | SWP_HIDEWINDOW);
-					result = DefSubclassProc(hLB, msg, wParam, lParam);
 					showAllBoughtButton(curSel);
 				}
 				else
 				{
-					result = DefSubclassProc(hLB, msg, wParam, lParam);
 					RECT rcSel;
 					ListBox_GetItemRect(hLB, curSel, &rcSel);
 					MapWindowRect(hLB, GetParent(hLB), &rcSel);
 					if (rcSel.top > rcLB.top && rcSel.bottom < rcLB.bottom)
 					{
-						SetWindowPos(boughtEdit.getHwnd(), HWND_TOP, rcSel.right - listItemHeight + X_CHANGE, rcSel.top, 0, 0, SWP_NOSIZE | SWP_NOZORDER);
+						SetWindowPos(boughtEdit.getHwnd(), HWND_TOP, rcSel.right - listItemHeight + X_CHANGE, rcSel.top, 0, 0, SWP_NOSIZE | SWP_NOZORDER);						
 					}
 					else
 					{
@@ -294,7 +284,7 @@ LRESULT BetList::wndProc(UINT msg, WPARAM wParam, LPARAM lParam)
 						SetFocus(hLB);
 					}
 				}
-				isScrolling = false;
+				endScroll();
 				return result;
 			}
 			break;
@@ -327,33 +317,32 @@ LRESULT BetList::wndProc(UINT msg, WPARAM wParam, LPARAM lParam)
 				int curSel = getCurSel();
 				if (curSel == -1)
 				{
+					curSel = ListBox_GetCurSel(hLB);
 					if (betsSize == 0)
 					{
-						moveCurSel(5);
-						break;
+						curSel = 5;
 					}
-					curSel = ListBox_GetCurSel(hLB);
-					if (curSel < 2)
+					else if (curSel < 2)
 					{
-						setCurSel(2);
+						curSel = 2;
 					}
 					else if (bankersSize == 0 || curSel < betsSize + 3)
 					{
-						setCurSel(betsSize + 1);
+						curSel = betsSize + 1;
 					}
 					else
 					{
-						moveCurSel(betsSize + 5);
+						curSel = betsSize + 5;
 					}
-					break;
+					setCurSel(curSel);
 				}
 				if (isScrolling)
 				{
+					endScroll();
 					if (curSel > betsSize + 3)
 					{
 						showAllBoughtButton(curSel);
 					}
-					isScrolling = false;
 				}
 				break;
 			}
@@ -370,9 +359,21 @@ void BetList::drawItem(HDC hDC, int itemID, UINT itemState, ULONG_PTR itemData, 
 		itemState -= ODS_SELECTED;
 		ShowWindow(allBoughtButton.getHwnd(), SW_HIDE);
 	}
+	if (hScrollingBm != nullptr && itemState & ODS_SELECTED)
+	{
+		HDC hScrollingDC = CreateCompatibleDC(hDC);
+		HGDIOBJ hOldBm = SelectObject(hScrollingDC, hScrollingBm);
+		BitBlt(hDC, rcItem.left, rcItem.top, rcItem.right - rcItem.left, rcItem.bottom - rcItem.top, hScrollingDC, 0, 0, SRCCOPY);
+		SelectObject(hScrollingDC, hOldBm);
+		DeleteDC(hScrollingDC);
+		return;
+	}
+	HDC hMemDC;
+	HPAINTBUFFER hPaintBuffer = BeginBufferedPaint(hDC, &rcItem, BPBF_COMPATIBLEBITMAP, nullptr, &hMemDC);
+	HFONT hOldFont = SelectFont(hMemDC, hFont);
 	if (itemState & ODS_SELECTED)
 	{
-		FillRect(hDC, &rcItem, GetSysColorBrush(COLOR_HIGHLIGHT));
+		FillRect(hMemDC, &rcItem, GetSysColorBrush(COLOR_HIGHLIGHT));
 		int posY = rcLB.top + rcItem.top + 2;
 		if (!IsWindowVisible(boughtEdit.getHwnd()))
 		{
@@ -381,7 +382,7 @@ void BetList::drawItem(HDC hDC, int itemID, UINT itemState, ULONG_PTR itemData, 
 				if (isScrolling)
 				{
 					RECT rcAllBoughtButton = { rcItem.right - listItemHeight,rcItem.top,rcItem.right,rcItem.bottom };
-					allBoughtButton.drawButton(hDC, PBS_NORMAL, rcAllBoughtButton);
+					allBoughtButton.drawButton(hMemDC, PBS_NORMAL, rcAllBoughtButton);
 				}
 				else
 				{
@@ -403,34 +404,38 @@ void BetList::drawItem(HDC hDC, int itemID, UINT itemState, ULONG_PTR itemData, 
 	}
 	else
 	{
-		FillRect(hDC, &rcItem, GetSysColorBrush(COLOR_WINDOW));
+		FillRect(hMemDC, &rcItem, GetSysColorBrush(COLOR_WINDOW));
 	}
 	if (itemID == betsSize + 2)
 	{
 		rcItem.top += (rcItem.bottom - rcItem.top) / 2;
 		rcItem.bottom = rcItem.top + 1;
-		FillRect(hDC, &rcItem, GetSysColorBrush(COLOR_WINDOWTEXT));
-		return;
+		FillRect(hMemDC, &rcItem, GetSysColorBrush(COLOR_WINDOWTEXT));
 	}
-	if (itemID > betsSize + 4)
+	else
 	{
-		rcItem.right -= listItemHeight + xScale;
+		if (itemID > betsSize + 4)
+		{
+			rcItem.right -= listItemHeight + xScale;
+		}
+		SetBkMode(hMemDC, TRANSPARENT);
+		COLORREF color = itemData >> 8;
+		if (color == 0)
+		{
+			color = GetSysColor(COLOR_WINDOWTEXT);
+		}
+		SetTextColor(hMemDC, itemState & ODS_SELECTED ? ::GetSysColor(COLOR_HIGHLIGHTTEXT) : color);
+		if (itemID == 0 || itemID == betsSize + 2)
+		{
+			SelectFont(hMemDC, hBoldFont);
+		}
+		TCHAR sText[30];
+		ListBox_GetText(hLB, itemID, sText);
+		BYTE style = itemData & 0xff;
+		DrawText(hMemDC, sText, -1, &rcItem, style);
 	}
-	SetBkMode(hDC, TRANSPARENT);
-	COLORREF color = itemData >> 8;
-	if (color == 0)
-	{
-		color = GetSysColor(COLOR_WINDOWTEXT);
-	}
-	SetTextColor(hDC, itemState & ODS_SELECTED ? ::GetSysColor(COLOR_HIGHLIGHTTEXT) : color);
-	if (itemID == 0 || itemID == betsSize + 2)
-	{
-		SelectObject(hDC, hBoldFont);
-	}
-	TCHAR sText[30];
-	ListBox_GetText(hLB, itemID, sText);
-	BYTE style = itemData & 0xff;
-	DrawText(hDC, sText, -1, &rcItem, style);
+	SelectFont(hMemDC, hOldFont);
+	EndBufferedPaint(hPaintBuffer, TRUE);
 }
 
 BOOL BetList::beginDrag(POINT ptCursor)
@@ -484,7 +489,7 @@ UINT BetList::dragging(POINT ptCursor)
 			{
 				dragIdx = 2;
 			}
-			else if (dragIdx > betsSize + 3)
+			else if (dragIdx > betsSize + 2)
 			{
 				dragIdx = -1;
 			}
@@ -575,7 +580,7 @@ int BetList::dropped(POINT ptCursor)
 		}
 		ListBox_InsertString(hLB, lastDragIdx, str);
 		ListBox_SetItemData(hLB, lastDragIdx, itemData);
-		moveCurSel(lastDragIdx);
+		setCurSel(lastDragIdx);
 		SetWindowRedraw(hLB, TRUE);
 	}
 	if (curSel > betsSize + 3)
@@ -719,18 +724,6 @@ void BetList::insertString(int nIndex, PCTSTR pszItem, BYTE style, COLORREF colo
 	ListBox_SetItemData(hLB, index, ((color << 8) | style));
 }
 
-void BetList::moveCurSel(int nSelect)
-{
-	isScrolling = true;
-	SetWindowPos(allBoughtButton.getHwnd(), nullptr, 0, 0, 0, 0, SWP_NOMOVE | SWP_NOSIZE | SWP_NOZORDER | SWP_NOREDRAW | SWP_HIDEWINDOW);
-	setCurSel(nSelect);
-	if (nSelect > betsSize + 3)
-	{
-		showAllBoughtButton(nSelect);
-	}
-	isScrolling = false;
-}
-
 void BetList::showAllBoughtButton(int nIndex)
 {
 	RECT rcSel;
@@ -739,6 +732,10 @@ void BetList::showAllBoughtButton(int nIndex)
 	if (rcSel.top > rcLB.top && rcSel.bottom < rcLB.bottom)
 	{
 		SetWindowPos(allBoughtButton.getHwnd(), nullptr, rcSel.right - listItemHeight, rcSel.top, 0, 0, SWP_NOSIZE | SWP_NOZORDER | SWP_SHOWWINDOW);
+	}
+	else
+	{
+		ShowWindow(allBoughtButton.getHwnd(), SW_HIDE);
 	}
 }
 
@@ -758,6 +755,41 @@ void BetList::showChangeBoughtEdit()
 	boughtEdit.setText(&str[i], false);
 	boughtEdit.setSel(0, -1);
 	SetFocus(boughtEdit.getHwnd());
+}
+
+void BetList::beginScroll()
+{
+	int curSel = getCurSel();
+	if (isScrolling || curSel < betsSize + 3)
+	{
+		return;
+	}
+	isScrolling = true;
+	RECT rcSel;
+	ListBox_GetItemRect(hLB, curSel, &rcSel);
+	if (rcSel.top<0 || rcSel.bottom>rcLB.bottom - rcLB.top)
+	{
+		return;
+	}
+	SetWindowRgn(allBoughtButton.getHwnd(), CreateRectRgn(0, 0, 0, 0), FALSE);
+	SetWindowRgn(boughtEdit.getHwnd(), CreateRectRgn(0, 0, 0, 0), FALSE);
+	HDC hDCLB = GetDC(hLB);
+	HDC hDCScrolling = CreateCompatibleDC(hDCLB);
+	hScrollingBm = CreateCompatibleBitmap(hDCLB, rcSel.right - rcSel.left, rcSel.bottom - rcSel.top);
+	HGDIOBJ hOldBm = SelectObject(hDCScrolling, hScrollingBm);
+	BitBlt(hDCScrolling, 0, 0, rcSel.right - rcSel.left, rcSel.bottom - rcSel.top, hDCLB, rcSel.left, rcSel.top, SRCCOPY);
+	SelectObject(hDCScrolling, hOldBm);
+	DeleteDC(hDCScrolling);
+	ReleaseDC(hLB, hDCLB);
+}
+
+void BetList::endScroll()
+{
+	SetWindowRgn(allBoughtButton.getHwnd(), nullptr, TRUE);
+	SetWindowRgn(boughtEdit.getHwnd(), nullptr, TRUE);
+	isScrolling = false;
+	DeleteObject(hScrollingBm);
+	hScrollingBm = nullptr;
 }
 
 void BetList::eraseDragLine(HDC hDC)

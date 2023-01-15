@@ -31,6 +31,7 @@ private:
 	Button& allBoughtButton;
 	NumericEdit& boughtEdit;
 	bool isScrolling = false;
+	HBITMAP hScrollingBm = nullptr;
 	bool isDragging = false;
 	int lastDragIdx = -1;
 	int betsSize = 0;
@@ -57,8 +58,9 @@ public:
 private:
 	void addString(PCTSTR pszItem, BYTE style = 0, COLORREF color = 0);
 	void insertString(int nIndex, PCTSTR pszItem, BYTE style, COLORREF color = 0);
-	void moveCurSel(int nSelect);
 	void showAllBoughtButton(int nIndex);
 	void showChangeBoughtEdit();
+	void beginScroll();
+	void endScroll();
 	void eraseDragLine(HDC hDC);
 };

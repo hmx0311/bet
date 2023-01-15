@@ -20,12 +20,8 @@ INT_PTR CALLBACK dlgProc(HWND hDlg, UINT msg, WPARAM wParam, LPARAM lParam)
 				{
 					return (INT_PTR)TRUE;
 				}
-				HDC hDCMem;
-				HPAINTBUFFER hPaintBuffer = BeginBufferedPaint(pDrawItemStruct->hDC, &pDrawItemStruct->rcItem, BPBF_COMPATIBLEBITMAP, nullptr, &hDCMem);
-				SelectObject(hDCMem, hFont);
 				((ListBox*)GetWindowLongPtr(pDrawItemStruct->hwndItem, GWLP_USERDATA))->
-					drawItem(hDCMem, pDrawItemStruct->itemID, pDrawItemStruct->itemState, pDrawItemStruct->itemData, pDrawItemStruct->rcItem);
-				EndBufferedPaint(hPaintBuffer, TRUE);
+					drawItem(pDrawItemStruct->hDC, pDrawItemStruct->itemID, pDrawItemStruct->itemState, pDrawItemStruct->itemData, pDrawItemStruct->rcItem);
 			}
 			return (INT_PTR)TRUE;
 		}
