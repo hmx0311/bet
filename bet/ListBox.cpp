@@ -74,17 +74,17 @@ LRESULT ListBox::wndProc(UINT msg, WPARAM wParam, LPARAM lParam)
 
 void ListBox::drawItem(HDC hDC, int itemID, UINT itemState, ULONG_PTR itemData, RECT& rcItem)
 {
-	HDC hDCMem;
-	HPAINTBUFFER hPaintBuffer = BeginBufferedPaint(hDC, &rcItem, BPBF_COMPATIBLEBITMAP, nullptr, &hDCMem);
-	HFONT hOldFont = SelectFont(hDCMem, hFont);
-	FillRect(hDCMem, &rcItem, GetSysColorBrush(itemState & ODS_SELECTED ? COLOR_HIGHLIGHT : COLOR_WINDOW));
+	HDC hMemDC;
+	HPAINTBUFFER hPaintBuffer = BeginBufferedPaint(hDC, &rcItem, BPBF_COMPATIBLEBITMAP, nullptr, &hMemDC);
+	HFONT hOldFont = SelectFont(hMemDC, hFont);
+	FillRect(hMemDC, &rcItem, GetSysColorBrush(itemState & ODS_SELECTED ? COLOR_HIGHLIGHT : COLOR_WINDOW));
 
-	SetBkMode(hDCMem, TRANSPARENT);
-	SetTextColor(hDCMem, itemState & ODS_SELECTED ? ::GetSysColor(COLOR_HIGHLIGHTTEXT) : GetSysColor(COLOR_WINDOWTEXT));
+	SetBkMode(hMemDC, TRANSPARENT);
+	SetTextColor(hMemDC, itemState & ODS_SELECTED ? ::GetSysColor(COLOR_HIGHLIGHTTEXT) : GetSysColor(COLOR_WINDOWTEXT));
 	TCHAR sText[30];
 	ListBox_GetText(hLB, itemID, sText);
-	DrawText(hDCMem, sText, -1, &rcItem, DT_SINGLELINE);
-	SelectFont(hDCMem, hOldFont);
+	DrawText(hMemDC, sText, -1, &rcItem, DT_SINGLELINE);
+	SelectFont(hMemDC, hOldFont);
 	EndBufferedPaint(hPaintBuffer, TRUE);
 }
 
@@ -239,7 +239,7 @@ LRESULT BetList::wndProc(UINT msg, WPARAM wParam, LPARAM lParam)
 	case WM_CONTEXTMENU:
 		{
 			int curSel = getCurSel();
-			if (curSel < 0)
+			if (curSel < 0 || IsWindowVisible(boughtEdit.getHwnd()))
 			{
 				return 0;
 			}
@@ -276,7 +276,7 @@ LRESULT BetList::wndProc(UINT msg, WPARAM wParam, LPARAM lParam)
 					MapWindowRect(hLB, GetParent(hLB), &rcSel);
 					if (rcSel.top > rcLB.top && rcSel.bottom < rcLB.bottom)
 					{
-						SetWindowPos(boughtEdit.getHwnd(), HWND_TOP, rcSel.right - listItemHeight + X_CHANGE, rcSel.top, 0, 0, SWP_NOSIZE | SWP_NOZORDER);						
+						SetWindowPos(boughtEdit.getHwnd(), HWND_TOP, rcSel.right - listItemHeight + X_CHANGE, rcSel.top, 0, 0, SWP_NOSIZE | SWP_NOZORDER);
 					}
 					else
 					{
@@ -773,14 +773,14 @@ void BetList::beginScroll()
 	}
 	SetWindowRgn(allBoughtButton.getHwnd(), CreateRectRgn(0, 0, 0, 0), FALSE);
 	SetWindowRgn(boughtEdit.getHwnd(), CreateRectRgn(0, 0, 0, 0), FALSE);
-	HDC hDCLB = GetDC(hLB);
-	HDC hDCScrolling = CreateCompatibleDC(hDCLB);
-	hScrollingBm = CreateCompatibleBitmap(hDCLB, rcSel.right - rcSel.left, rcSel.bottom - rcSel.top);
-	HGDIOBJ hOldBm = SelectObject(hDCScrolling, hScrollingBm);
-	BitBlt(hDCScrolling, 0, 0, rcSel.right - rcSel.left, rcSel.bottom - rcSel.top, hDCLB, rcSel.left, rcSel.top, SRCCOPY);
-	SelectObject(hDCScrolling, hOldBm);
-	DeleteDC(hDCScrolling);
-	ReleaseDC(hLB, hDCLB);
+	HDC hLBDC = GetDC(hLB);
+	HDC hScrollingDC = CreateCompatibleDC(hLBDC);
+	hScrollingBm = CreateCompatibleBitmap(hLBDC, rcSel.right - rcSel.left, rcSel.bottom - rcSel.top);
+	HGDIOBJ hOldBm = SelectObject(hScrollingDC, hScrollingBm);
+	BitBlt(hScrollingDC, 0, 0, rcSel.right - rcSel.left, rcSel.bottom - rcSel.top, hLBDC, rcSel.left, rcSel.top, SRCCOPY);
+	SelectObject(hScrollingDC, hOldBm);
+	DeleteDC(hScrollingDC);
+	ReleaseDC(hLB, hLBDC);
 }
 
 void BetList::endScroll()

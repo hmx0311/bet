@@ -83,9 +83,9 @@ LRESULT Button::wndProc(UINT msg, WPARAM wParam, LPARAM lParam)
 				}
 				if (lastState == state || hButtonTheme == nullptr)
 				{
-					HDC hDCMem;
-					HPAINTBUFFER hPaintBuffer = BeginBufferedPaint(hDC, &rcItem, BPBF_COMPATIBLEBITMAP, nullptr, &hDCMem);
-					drawButton(hDCMem, state, rcItem);
+					HDC hMemDC;
+					HPAINTBUFFER hPaintBuffer = BeginBufferedPaint(hDC, &rcItem, BPBF_COMPATIBLEBITMAP, nullptr, &hMemDC);
+					drawButton(hMemDC, state, rcItem);
 					EndBufferedPaint(hPaintBuffer, TRUE);
 				}
 				else

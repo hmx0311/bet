@@ -191,10 +191,6 @@ bool Model::changeClosing()
 pair<long long, long long> Model::calcAimAmountBalance(bool isBet, double odds)
 {
 	bool side = profit[0] > profit[1];
-	if (profit[!side] - profit[side] < MIN_NOTABLE_DIFF)
-	{
-		return { 0,0 };
-	}
 	long long difference = -profit[side];
 	long long balancedProfit = profit[!side];
 	if (isBet)
@@ -214,6 +210,10 @@ pair<long long, long long> Model::calcAimAmountBalance(bool isBet, double odds)
 		}
 	}
 	difference += balancedProfit;
+	if (difference < MIN_NOTABLE_DIFF)
+	{
+		return { 0,balancedProfit };
+	}
 	long long aimAmount = llround(difference / (cut * (isBet ? odds : 1 / odds) + 1));
 	if (aimAmount < 0)
 	{
@@ -257,7 +257,7 @@ void Model::calcReferenceOdds(long long initialAmount, double winProb, double wi
 			}
 			lastOdds10 = odds10;
 		}
-		if (loseAmount - winAmount <= 1)
+		if (loseAmount - winAmount < MIN_NOTABLE_DIFF)
 		{
 			referenceOdds[4 * i + 1] = 0;
 		}
