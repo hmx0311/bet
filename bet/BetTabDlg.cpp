@@ -691,7 +691,8 @@ void BetTabDlg::calcBalanceAimAmount()
 	bool isBet = Button_GetCheck(hBankerBetSelectors[5]);
 	TCHAR str[30];
 	_stprintf(str, _T("%s %0.1f"), isBet ? _T("下注") : _T("庄家"), oddsEdits[4 + isBet].getOdds());
-	if (ListBox_FindString(resultLists[0].getHwnd(), -1, str) == LB_ERR)
+	int strIdx = ListBox_FindString(resultLists[0].getHwnd(), -1, str);
+	if (strIdx == LB_ERR)
 	{
 		auto result = model.calcAimAmountBalance(isBet, isBet ? oddsEdits[5].getOdds() : oddsEdits[4].getOdds());
 		int i = 6;
@@ -727,9 +728,9 @@ void BetTabDlg::calcBalanceAimAmount()
 			for (long long j = 1000000000000LL; j * 10 > result.second && -j < result.second; decimal++, j /= 10);
 			_stprintf(&str[i], _T(" %7.*f亿"), decimal, result.second * 1e-8);
 		}
-		resultLists[0].addString(str);
+		strIdx = resultLists[0].addString(str);
 	}
-	ListBox_SelectString(resultLists[0].getHwnd(), -1, str);
+	resultLists[0].setCurSel(strIdx);
 	SetFocus(oddsEdits[4 + isBet].getHwnd());
 }
 
@@ -818,7 +819,8 @@ void BetTabDlg::calcAimAmount(int side)
 	}
 	TCHAR str[20];
 	_stprintf(str, _T("%s %0.1f"), isBet ? _T("下注") : _T("庄家"), oddsEdits[6 + 2 * side + isBet].getOdds());
-	if (ListBox_FindString(resultLists[side + 1].getHwnd(), -1, str) == LB_ERR)
+	int strIdx = ListBox_FindString(resultLists[side + 1].getHwnd(), -1, str);
+	if (strIdx == LB_ERR)
 	{
 		long long aimAmount = model.calcAimAmountProb(initialAmount, winProb, winProbError, side, isBet, oddsEdits[6 + 2 * side + isBet].getOdds());
 		if (aimAmount > initialAmount - model.getTotalInvest())
@@ -839,8 +841,8 @@ void BetTabDlg::calcAimAmount(int side)
 			for (long long i = 100000000000LL; i > aimAmount; decimal++, i /= 10);
 			_stprintf(&str[6], _T(" %5.*f亿"), decimal, aimAmount * 1e-8);
 		}
-		resultLists[side + 1].addString(str);
+		strIdx = resultLists[side + 1].addString(str);
 	}
-	ListBox_SelectString(resultLists[side + 1].getHwnd(), -1, str);
+	resultLists[side + 1].setCurSel(strIdx);
 	SetFocus(oddsEdits[6 + 2 * side + isBet].getHwnd());
 }
