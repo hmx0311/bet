@@ -421,7 +421,7 @@ INT_PTR BetTabDlg::dlgProc(UINT msg, WPARAM wParam, LPARAM lParam)
 						}
 						else
 						{
-							long long remainingAmount = initialAmount - model.getTotalInvest();
+							__int64 remainingAmount = initialAmount - model.getTotalInvest();
 							if (remainingAmount < 0)
 							{
 								initialAmount += model.getTotalInvest();
@@ -586,7 +586,7 @@ void BetTabDlg::updateInvestAmount()
 	{
 		if (Button_GetCheck(hAutoCurrentAmountCheck))
 		{
-			long long remainingAmount = initialAmount - model.getTotalInvest();
+			__int64 remainingAmount = initialAmount - model.getTotalInvest();
 			TCHAR str[MAX_INITIAL_AMOUNT_LEN + 1];
 			if (remainingAmount < 0)
 			{
@@ -636,11 +636,11 @@ void BetTabDlg::updateMinOdds()
 	ListBox_ResetContent(resultLists[2].getHwnd());
 	if (initialAmount > model.getTotalInvest() && winProb > 0)
 	{
-		double referenceOdds[8]{};
+		double referenceOdds[8];
 		model.calcReferenceOdds(initialAmount, winProb, winProbError, referenceOdds);
 		for (int i = 0; i < 8; i++)
 		{
-			if (referenceOdds[i] == 0)
+			if (referenceOdds[i] == 0 || referenceOdds[i] > 9.95)
 			{
 				SetWindowText(hReferenceOddsTexts[i], _T("-"));
 			}
@@ -711,7 +711,7 @@ void BetTabDlg::calcBalanceAimAmount()
 		else
 		{
 			int decimal = 0;
-			for (long long j = 1000000000000LL; j > result.first; decimal++, j /= 10);
+			for (__int64 j = 1000000000000LL; j > result.first; decimal++, j /= 10);
 			i += _stprintf(&str[i], _T(" %6.*f亿"), decimal, result.first * 1e-8);
 		}
 		if (result.second < 1000000000LL && result.second > -100000000LL)
@@ -725,7 +725,7 @@ void BetTabDlg::calcBalanceAimAmount()
 		else if (result.second < 10000000000000LL && result.second > -1000000000000LL)
 		{
 			int decimal = 0;
-			for (long long j = 1000000000000LL; j * 10 > result.second && -j < result.second; decimal++, j /= 10);
+			for (__int64 j = 1000000000000LL; j * 10 > result.second && -j < result.second; decimal++, j /= 10);
 			_stprintf(&str[i], _T(" %7.*f亿"), decimal, result.second * 1e-8);
 		}
 		strIdx = resultLists[0].addString(str);
@@ -738,7 +738,7 @@ void BetTabDlg::updateInitialAmount()
 {
 	TCHAR str[MAX_INITIAL_AMOUNT_LEN + 1];
 	currentAmountEdit.getText(str, MAX_INITIAL_AMOUNT_LEN + 1);
-	long long newAmount = _ttoll(str);
+	__int64 newAmount = _ttoll(str);
 	if (ComboBox_GetCurSel(hCurrentAmountCombo) == 1)
 	{
 		if (newAmount + model.getTotalInvest() > maxNumLen(MAX_INITIAL_AMOUNT_LEN))
@@ -822,7 +822,7 @@ void BetTabDlg::calcAimAmount(int side)
 	int strIdx = ListBox_FindString(resultLists[side + 1].getHwnd(), -1, str);
 	if (strIdx == LB_ERR)
 	{
-		long long aimAmount = model.calcAimAmountProb(initialAmount, winProb, winProbError, side, isBet, oddsEdits[6 + 2 * side + isBet].getOdds());
+		__int64 aimAmount = model.calcAimAmountProb(initialAmount, winProb, winProbError, side, isBet, oddsEdits[6 + 2 * side + isBet].getOdds());
 		if (aimAmount > initialAmount - model.getTotalInvest())
 		{
 			lstrcat(&str[6], _T("   全部"));
@@ -838,7 +838,7 @@ void BetTabDlg::calcAimAmount(int side)
 		else
 		{
 			int decimal = 0;
-			for (long long i = 100000000000LL; i > aimAmount; decimal++, i /= 10);
+			for (__int64 i = 100000000000LL; i > aimAmount; decimal++, i /= 10);
 			_stprintf(&str[6], _T(" %5.*f亿"), decimal, aimAmount * 1e-8);
 		}
 		strIdx = resultLists[side + 1].addString(str);

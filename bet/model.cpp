@@ -19,12 +19,12 @@ void Banker::changeBought(int newBought, double cut)
 	profit = bought / odds * cut * DBL_PRECISION_COMPENSATE;
 }
 
-long long Model::IntervalSumTree::getAmount(int index)
+__int64 Model::IntervalSumTree::getAmount(uint32_t index)
 {
 	return amount[index | (1 << INTERVAL_TREE_DEPTH)];
 }
 
-void Model::IntervalSumTree::deltaUpdate(int index, long long deltaAmount)
+void Model::IntervalSumTree::deltaUpdate(uint32_t index, __int64 deltaAmount)
 {
 	for (index |= 1 << INTERVAL_TREE_DEPTH; index > 0; index >>= 1)
 	{
@@ -32,7 +32,7 @@ void Model::IntervalSumTree::deltaUpdate(int index, long long deltaAmount)
 	}
 }
 
-long long Model::IntervalSumTree::getSum(int begin, int end)
+__int64 Model::IntervalSumTree::getSum(uint32_t begin, uint32_t end)
 {
 	if (begin == end)
 	{
@@ -44,7 +44,7 @@ long long Model::IntervalSumTree::getSum(int begin, int end)
 	}
 	begin |= 1 << INTERVAL_TREE_DEPTH;
 	end |= 1 << INTERVAL_TREE_DEPTH;
-	long long sum = amount[begin];
+	__int64 sum = amount[begin];
 	for (; end - begin > 1; begin >>= 1, end >>= 1)
 	{
 		sum += amount[begin + 1] * !(begin & 1) + amount[end - 1] * (end & 1);
@@ -52,7 +52,7 @@ long long Model::IntervalSumTree::getSum(int begin, int end)
 	return sum;
 }
 
-long long Model::IntervalSumTree::total()
+__int64 Model::IntervalSumTree::total()
 {
 	return amount[1];
 }
@@ -188,11 +188,11 @@ bool Model::changeClosing()
 	return true;
 }
 
-pair<long long, long long> Model::calcAimAmountBalance(bool isBet, double odds)
+pair<__int64, __int64> Model::calcAimAmountBalance(bool isBet, double odds)
 {
 	bool side = profit[0] > profit[1];
-	long long difference = -profit[side];
-	long long balancedProfit = profit[!side];
+	__int64 difference = -profit[side];
+	__int64 balancedProfit = profit[!side];
 	if (isBet)
 	{
 		if (haveClosing)
@@ -214,7 +214,7 @@ pair<long long, long long> Model::calcAimAmountBalance(bool isBet, double odds)
 	{
 		return { 0,balancedProfit };
 	}
-	long long aimAmount = llround(difference / (cut * (isBet ? odds : 1 / odds) + 1));
+	__int64 aimAmount = llround(difference / (cut * (isBet ? odds : 1 / odds) + 1));
 	if (aimAmount < 0)
 	{
 		aimAmount = 0;
@@ -222,27 +222,30 @@ pair<long long, long long> Model::calcAimAmountBalance(bool isBet, double odds)
 	balancedProfit -= aimAmount;
 	if (!isBet)
 	{
-		for (long long temp = aimAmount; long long(long long(aimAmount / odds * DBL_PRECISION_COMPENSATE) * odds) < temp; aimAmount++);
+		for (__int64 temp = aimAmount; __int64(__int64(aimAmount / odds * DBL_PRECISION_COMPENSATE) * odds) < temp; aimAmount++);
 	}
 	return { aimAmount, balancedProfit };
 }
 
-void Model::calcReferenceOdds(long long initialAmount, double winProb, double winProbError, double* __restrict referenceOdds)
+double calcError(double p, double errorFactor)
 {
-	winProbError *= (winProb > 0.5 ? 1 - winProb : winProb);
+	double a = (1 - p) * errorFactor;
+	double b = p * (1 - errorFactor);
+	return errorFactor * (a * p + b * sqrt(p * (1 - p))) / (a + b);
+}
+
+void Model::calcReferenceOdds(__int64 initialAmount, double winProb, double errorFactor, double* __restrict referenceOdds)
+{
 	for (int i = 0; i < 2; i++)
 	{
-		long long winAmount = initialAmount + profit[i];
-		long long loseAmount = initialAmount + profit[!i];
-		int lastOdds10 = 100;
+		__int64 winAmount = initialAmount + profit[i];
+		__int64 loseAmount = initialAmount + profit[!i];
+		uint32_t lastOdds10 = 100;
+		double winProbError = calcError(winProb, errorFactor);
 		double correctedWinProb = winProb - winProbError;
 		for (int j = 0; j < 2;)
 		{
-			int odds10 = 10 / DBL_PRECISION_COMPENSATE * cut * (correctedWinProb * loseAmount) / ((1 - correctedWinProb) * winAmount);
-			if (odds10 > 99)
-			{
-				odds10 = 99;
-			}
+			uint32_t odds10 = fmin(10 / DBL_PRECISION_COMPENSATE * cut * (correctedWinProb * loseAmount) / ((1 - correctedWinProb) * winAmount), 99);
 			if (odds10 == lastOdds10)
 			{
 				referenceOdds[4 * i + j] = odds10 * 0.1;
@@ -267,13 +270,7 @@ void Model::calcReferenceOdds(long long initialAmount, double winProb, double wi
 		correctedWinProb = winProb - winProbError;
 		for (int j = 2; j < 4;)
 		{
-			int odds10 = ceil(10 / cut * ((1 - correctedWinProb) * winAmount) / (correctedWinProb * loseAmount));
-			if (odds10 > 99)
-			{
-				j++;
-				correctedWinProb = winProb;
-				continue;
-			}
+			uint32_t odds10 = fmin(ceil(10 / cut * ((1 - correctedWinProb) * winAmount) / (correctedWinProb * loseAmount)), 100);
 			if (odds10 == lastOdds10)
 			{
 				referenceOdds[4 * i + j] = odds10 * 0.1;
@@ -296,14 +293,13 @@ void Model::calcReferenceOdds(long long initialAmount, double winProb, double wi
 	}
 }
 
-long long Model::calcAimAmountProb(long long initialAmount, double winProb, double winProbError, bool side, bool isBet, double odds)
+__int64 Model::calcAimAmountProb(__int64 initialAmount, double winProb, double errorFactor, bool side, bool isBet, double odds)
 {
 	winProb = side ? 1 - winProb : winProb;
-	winProbError *= (winProb > 0.5 ? 1 - winProb : winProb);
-	double lowerWinProb = winProb - winProbError;
+	double lowerWinProb = winProb - calcError(winProb, errorFactor);
 	double upperWinProb = winProb;
-	long long winAmount = initialAmount + profit[side];
-	long long loseAmount = initialAmount + profit[!side];
+	__int64 winAmount = initialAmount + profit[side];
+	__int64 loseAmount = initialAmount + profit[!side];
 	if (isBet)
 	{
 		if (haveClosing)
@@ -321,16 +317,16 @@ long long Model::calcAimAmountProb(long long initialAmount, double winProb, doub
 		}
 	}
 	double equivalentOdds = cut * (isBet ? odds : 1 / odds);
-	long long aimAmount;
+	__int64 aimAmount;
 	if (loseAmount - winAmount < MIN_NOTABLE_DIFF)
 	{
 		aimAmount = llround(lowerWinProb * loseAmount - (1 - lowerWinProb) / equivalentOdds * winAmount);
 	}
 	else
 	{
-		long long lowerAmount = llround(lowerWinProb * loseAmount - (1 - lowerWinProb) / equivalentOdds * winAmount);
-		long long upperAmount = llround(upperWinProb * loseAmount - (1 - upperWinProb) / equivalentOdds * winAmount);
-		long long balanceAmount = llround((loseAmount - winAmount) / (equivalentOdds + 1));
+		__int64 lowerAmount = llround(lowerWinProb * loseAmount - (1 - lowerWinProb) / equivalentOdds * winAmount);
+		__int64 upperAmount = llround(upperWinProb * loseAmount - (1 - upperWinProb) / equivalentOdds * winAmount);
+		__int64 balanceAmount = llround((loseAmount - winAmount) / (equivalentOdds + 1));
 		aimAmount = lowerAmount > balanceAmount ? lowerAmount : upperAmount > balanceAmount ? balanceAmount : upperAmount;
 	}
 	if (aimAmount < 0)
@@ -339,7 +335,7 @@ long long Model::calcAimAmountProb(long long initialAmount, double winProb, doub
 	}
 	if (!isBet)
 	{
-		for (long long temp = aimAmount; long long(long long(aimAmount / odds * DBL_PRECISION_COMPENSATE) * odds) < temp; aimAmount++);
+		for (__int64 temp = aimAmount; __int64(__int64(aimAmount / odds * DBL_PRECISION_COMPENSATE) * odds) < temp; aimAmount++);
 	}
 	return aimAmount;
 }
@@ -349,12 +345,12 @@ double Model::getCut()
 	return cut;
 }
 
-long long Model::getProfit(bool side)
+__int64 Model::getProfit(bool side)
 {
 	return profit[side];
 }
 
-long long Model::getTotalInvest()
+__int64 Model::getTotalInvest()
 {
 	return totalInvest;
 }

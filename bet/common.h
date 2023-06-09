@@ -32,9 +32,9 @@ extern HFONT hFont;
 extern HFONT hBoldFont;
 extern UINT DRAGLISTMSG;
 
-constexpr long long maxNumLen(int len)
+constexpr __int64 maxNumLen(int len)
 {
-	long long num = 1;
+	__int64 num = 1;
 	for (int i = 0; i < len; i++)
 	{
 		num *= 10;

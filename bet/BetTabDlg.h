@@ -16,7 +16,7 @@ public:
 	static HICON hCalculatorIcon;
 private:
 	bool selSide = 0;
-	long long initialAmount = 0;
+	__int64 initialAmount = 0;
 	bool winProbSide = 0;
 	double winProb = 0;
 	double winProbError = 0;

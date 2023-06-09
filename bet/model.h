@@ -31,18 +31,18 @@ private:
 	class IntervalSumTree
 	{
 	private:
-		long long amount[(1 << (INTERVAL_TREE_DEPTH + 1)) - 1]{};
+		__int64 amount[(1 << (INTERVAL_TREE_DEPTH + 1)) - 1]{};
 
 	public:
-		long long getAmount(int index);
-		void deltaUpdate(int index, long long deltaAmount);
-		long long getSum(int begin, int end);	//sum between [begin,end)
-		long long total();
+		__int64 getAmount(uint32_t index);
+		void deltaUpdate(uint32_t index, __int64 deltaAmount);
+		__int64 getSum(uint32_t begin, uint32_t end);	//sum between [begin,end)
+		__int64 total();
 	};
 
 	double cut;
-	long long totalInvest = 0;
-	long long profit[2] = { 0,0 };
+	__int64 totalInvest = 0;
+	__int64 profit[2] = { 0,0 };
 	std::vector<Bet> bets[2];
 	std::vector<Banker> bankers[2];
 	bool haveClosing;
@@ -62,10 +62,10 @@ public:
 	void deleteBanker(bool side, int index);
 	void reset();
 	bool changeClosing();
-	std::pair<long long, long long> calcAimAmountBalance(bool isBet, double odds);
-	void calcReferenceOdds(long long initialAmount, double winningProb, double winProbError, double* __restrict referenceOdds);
-	long long calcAimAmountProb(long long initialAmount, double winningProb, double winProbError, bool side, bool isBet, double odds);
+	std::pair<__int64, __int64> calcAimAmountBalance(bool isBet, double odds);
+	void calcReferenceOdds(__int64 initialAmount, double winProb, double errorFactor, double* __restrict referenceOdds);
+	__int64 calcAimAmountProb(__int64 initialAmount, double winProb, double errorFactor, bool side, bool isBet, double odds);
 	double getCut();
-	long long getProfit(bool side);
-	long long getTotalInvest();
+	__int64 getProfit(bool side);
+	__int64 getTotalInvest();
 };
