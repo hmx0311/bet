@@ -1,7 +1,7 @@
 #include "framework.h"
 #include "common.h"
 
-#include <fstream>
+#include<Windowsx.h>
 
 using namespace std;
 
@@ -12,3 +12,12 @@ int listItemHeight;
 HFONT hFont;
 HFONT hBoldFont;
 UINT DRAGLISTMSG;
+
+HFONT createBoldFont(HFONT hFont)
+{
+	LOGFONT logFont;
+	GetObject(hFont, sizeof(LOGFONT), &logFont);
+	listItemHeight = abs(logFont.lfHeight);
+	logFont.lfWeight = FW_BOLD;
+	return CreateFontIndirect(&logFont);
+}

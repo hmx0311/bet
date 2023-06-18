@@ -78,7 +78,7 @@ INT_PTR BetDlg::initDlg(HWND hDlg)
 	createToolTip(settingsButton.getHwnd(), hDlg, settingsTipText);
 
 	SetWindowPos(hTabNameEdit, HWND_TOP, 0, 0, 0, 0, SWP_NOMOVE | SWP_NOSIZE);
-	SetWindowFont(hTabNameEdit, (WPARAM)hFont, FALSE);
+	SetWindowFont(hTabNameEdit, hFont, FALSE);
 	setVCentered(hTabNameEdit);
 
 	createTab();
@@ -91,6 +91,7 @@ INT_PTR BetDlg::dlgProc(UINT msg, WPARAM wParam, LPARAM lParam)
 	switch (msg)
 	{
 	case WM_DPICHANGED:
+		DeleteFont(hBoldFont);
 		RECT rcTab, rcDlg;
 		GetWindowRect(hBetTab, &rcTab);
 		MapWindowRect(HWND_DESKTOP, hDlg, &rcTab);
@@ -104,6 +105,7 @@ INT_PTR BetDlg::dlgProc(UINT msg, WPARAM wParam, LPARAM lParam)
 		SendMessage(hDlg, WM_SETICON, ICON_BIG, (LPARAM)hIcon);
 		SendMessage(hDlg, WM_SETICON, ICON_SMALL, (LPARAM)hIcon);
 		needErase = true;
+		InvalidateRect(hDlg, nullptr, TRUE);
 		break;
 	case WM_THEMECHANGED:
 		CloseThemeData(hButtonTheme);
@@ -324,12 +326,7 @@ void BetDlg::calcPos()
 	xScale = pos.right / 641.0f;
 	yScale = pos.bottom / 530.0f;
 	hFont = GetWindowFont(hDlg);
-	LOGFONT logFont;
-	GetObject(hFont, sizeof(LOGFONT), &logFont);
-	listItemHeight = abs(logFont.lfHeight);
-	logFont.lfWeight = FW_BOLD;
-	DeleteFont(hBoldFont);
-	hBoldFont = CreateFontIndirect(&logFont);
+	hBoldFont = createBoldFont(hFont);
 
 	SetWindowFont(GetDlgItem(hDlg, IDC_BALANCE_MODE_CAPTION), hBoldFont, FALSE);
 	SetWindowFont(GetDlgItem(hDlg, IDC_WIN_PROB_MODE_CAPTION), hBoldFont, FALSE);

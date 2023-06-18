@@ -15,7 +15,7 @@ void setVCentered(HWND hEdit)
 	RECT rcVCentered;
 	GetClientRect(hEdit, &rcVCentered);
 	LOGFONT logFont;
-	GetObject(hFont, sizeof(LOGFONT), &logFont);
+	GetObject(GetWindowFont(hEdit), sizeof(LOGFONT), &logFont);
 	rcVCentered.top = 0.5f * (rcVCentered.bottom - rcVCentered.top - (abs(logFont.lfHeight) + 1.5f));
 	Edit_SetRectNoPaint(hEdit, &rcVCentered);
 }

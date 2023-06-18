@@ -370,7 +370,6 @@ void BetList::drawItem(HDC hDC, int itemID, UINT itemState, ULONG_PTR itemData, 
 	}
 	HDC hMemDC;
 	HPAINTBUFFER hPaintBuffer = BeginBufferedPaint(hDC, &rcItem, BPBF_COMPATIBLEBITMAP, nullptr, &hMemDC);
-	HFONT hOldFont = SelectFont(hMemDC, hFont);
 	if (itemState & ODS_SELECTED)
 	{
 		FillRect(hMemDC, &rcItem, GetSysColorBrush(COLOR_HIGHLIGHT));
@@ -425,23 +424,20 @@ void BetList::drawItem(HDC hDC, int itemID, UINT itemState, ULONG_PTR itemData, 
 			color = GetSysColor(COLOR_WINDOWTEXT);
 		}
 		SetTextColor(hMemDC, itemState & ODS_SELECTED ? ::GetSysColor(COLOR_HIGHLIGHTTEXT) : color);
-		if (itemID == 0 || itemID == betsSize + 2)
-		{
-			SelectFont(hMemDC, hBoldFont);
-		}
+		HFONT hOldFont = SelectFont(hMemDC, itemID == 0 || itemID == betsSize + 3 ? hBoldFont : hFont);
 		TCHAR sText[30];
 		ListBox_GetText(hLB, itemID, sText);
 		BYTE style = itemData & 0xff;
 		DrawText(hMemDC, sText, -1, &rcItem, style);
+		SelectFont(hMemDC, hOldFont);
 	}
-	SelectFont(hMemDC, hOldFont);
 	EndBufferedPaint(hPaintBuffer, TRUE);
 }
 
 BOOL BetList::beginDrag(POINT ptCursor)
 {
 	int dragIdx = LBItemFromPt(hLB, ptCursor, FALSE);
-	return dragIdx > 1 && dragIdx < 2 + betsSize && betsSize>1 || dragIdx > betsSize + 4 && bankersSize > 1;
+	return dragIdx > 1 && dragIdx < 2 + betsSize && betsSize > 1 || dragIdx > betsSize + 4 && bankersSize > 1;
 }
 
 UINT BetList::dragging(POINT ptCursor)

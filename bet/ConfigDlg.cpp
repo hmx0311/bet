@@ -1,6 +1,7 @@
 #include "framework.h"
 #include "ConfigDlg.h"
 
+#include "common.h"
 #include "controls.h"
 #include "button.h"
 
@@ -9,12 +10,15 @@
 
 using namespace std;
 
+HFONT hCfgDlgBoldFont;
+
 ConfigDlg::ConfigDlg()
 	:Dialog(IDD_CONFIG_DIALOG) {}
 
 INT_PTR ConfigDlg::initDlg(HWND hDlg)
 {
 	Dialog::initDlg(hDlg);
+	SetDialogDpiChangeBehavior(hDlg, DDC_DISABLE_RESIZE, DDC_DISABLE_RESIZE);
 
 	hDefCutCombo = GetDlgItem(hDlg, IDC_DEF_CUT_COMBO);
 	defCutEdit.attach(GetDlgItem(hDlg, IDC_DEF_CUT_EDIT));
@@ -26,6 +30,7 @@ INT_PTR ConfigDlg::initDlg(HWND hDlg)
 		fastAddedAmountEdit[i].attach(GetDlgItem(hDlg, IDC_FAST_ADDED_AMOUNT_EDIT1 + i));
 	}
 	defProbErrorEdit.attach(GetDlgItem(hDlg, IDC_DEF_PROB_ERROR_EDIT));
+	hCurrentAmountCfgCombo = GetDlgItem(hDlg, IDC_CURRENT_AMOUNT_CFG_COMBO);
 
 	SendMessage(hDefCutCombo, WM_UPDATEUISTATE, MAKEWPARAM(UIS_SET, UISF_HIDEFOCUS), 0);
 	SetWindowSubclass(hDefCutCombo, noFocusRectSubclassProc, 0, 0);
@@ -34,6 +39,11 @@ INT_PTR ConfigDlg::initDlg(HWND hDlg)
 	SetWindowSubclass(GetDlgItem(hDlg, IDOK), noFocusRectSubclassProc, 0, 0);
 	SendMessage(GetDlgItem(hDlg, IDCANCEL), WM_UPDATEUISTATE, MAKEWPARAM(UIS_SET, UISF_HIDEFOCUS), 0);
 	SetWindowSubclass(GetDlgItem(hDlg, IDCANCEL), noFocusRectSubclassProc, 0, 0);
+	SendMessage(hCurrentAmountCfgCombo, WM_UPDATEUISTATE, MAKEWPARAM(UIS_SET, UISF_HIDEFOCUS), 0);
+	SetWindowSubclass(hCurrentAmountCfgCombo, noFocusRectSubclassProc, 0, 0);
+	ImmAssociateContext(hCurrentAmountCfgCombo, nullptr);
+
+	setCaptionFont();
 
 	ComboBox_AddString(hDefCutCombo, _T("新建时输入"));
 	ComboBox_AddString(hDefCutCombo, _T("使用默认值"));
@@ -47,6 +57,9 @@ INT_PTR ConfigDlg::initDlg(HWND hDlg)
 		_itot(config.fastAddedAmount[i], str, 10);
 		fastAddedAmountEdit[i].setText(str, false);
 	}
+	ComboBox_AddString(hCurrentAmountCfgCombo, _T("初始数量"));
+	ComboBox_AddString(hCurrentAmountCfgCombo, _T("剩余数量"));
+	ComboBox_SetCurSel(hCurrentAmountCfgCombo, config.currentAmountDisplayMode);
 	_itot(lround(config.defProbError * 100), str, 10);
 	defProbErrorEdit.setText(str, false);
 
@@ -57,6 +70,14 @@ INT_PTR ConfigDlg::dlgProc(UINT msg, WPARAM wParam, LPARAM lParam)
 {
 	switch (msg)
 	{
+	case WM_DPICHANGED:
+		{
+			DeleteObject(hCfgDlgBoldFont);
+			setCaptionFont();
+			RECT* rect = (RECT*)lParam;
+			MoveWindow(hDlg, rect->left, rect->top, rect->right - rect->left, rect->bottom - rect->top, TRUE);
+		}
+		break;
 	case WM_COMMAND:
 		switch (LOWORD(wParam))
 		{
@@ -93,6 +114,7 @@ INT_PTR ConfigDlg::dlgProc(UINT msg, WPARAM wParam, LPARAM lParam)
 					}
 					config.fastAddedAmount[i] = amount;
 				}
+				config.currentAmountDisplayMode = ComboBox_GetCurSel(hCurrentAmountCfgCombo);
 				defProbErrorEdit.getText(str, 6);
 				config.defProbError = _ttoi(str) / 100.0;
 				ofstream file(CONFIG_FILE_NAME, ios::out | ios::binary);
@@ -109,4 +131,11 @@ INT_PTR ConfigDlg::dlgProc(UINT msg, WPARAM wParam, LPARAM lParam)
 		}
 	}
 	return (INT_PTR)FALSE;
+}
+
+void ConfigDlg::setCaptionFont()
+{
+	hCfgDlgBoldFont = createBoldFont(GetWindowFont(hDlg));
+	SetWindowFont(GetDlgItem(hDlg, IDC_GENERAL_CFG_CAPTION), hCfgDlgBoldFont, FALSE);
+	SetWindowFont(GetDlgItem(hDlg, IDC_WIN_PROB_MODE_CFG_CAPTION), hCfgDlgBoldFont, FALSE);
 }

@@ -103,6 +103,9 @@
 #define IDC_FAST_ADDED_AMOUNT_EDIT4     1086
 #define IDC_DEF_PROB_ERROR_EDIT         1087
 #define IDC_WIN_PROB_CALCULATOR_BUTTON  1088
+#define IDC_GENERAL_CFG_CAPTION         1089
+#define IDC_WIN_PROB_MODE_CFG_CAPTION   1090
+#define IDC_CURRENT_AMOUNT_CFG_COMBO    1091
 #define ID_CONFIRM                      32771
 #define ID_DELETE                       32772
 #define IDC_STATIC                      -1
@@ -114,7 +117,7 @@
 #define _APS_NO_MFC                     1
 #define _APS_NEXT_RESOURCE_VALUE        134
 #define _APS_NEXT_COMMAND_VALUE         32773
-#define _APS_NEXT_CONTROL_VALUE         1089
+#define _APS_NEXT_CONTROL_VALUE         1092
 #define _APS_NEXT_SYMED_VALUE           101
 #endif
 #endif

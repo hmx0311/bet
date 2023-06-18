@@ -10,7 +10,8 @@
 #define DEFAULT_CONFIG {1,\
 						false,\
 						false,\
-						1000,5000,10000,50000,\
+						1000, 5000, 10000, 50000,\
+						0,\
 						0}
 
 struct Config
@@ -19,6 +20,7 @@ struct Config
 	bool useDefCut;
 	bool defClosing;
 	int fastAddedAmount[4];
+	int currentAmountDisplayMode;
 	double defProbError;
 };
 
@@ -31,6 +33,8 @@ extern int listItemHeight;
 extern HFONT hFont;
 extern HFONT hBoldFont;
 extern UINT DRAGLISTMSG;
+
+HFONT createBoldFont(HFONT hFont);
 
 constexpr __int64 maxNumLen(int len)
 {

@@ -117,7 +117,7 @@ INT_PTR BetTabDlg::initDlg(HWND hDlg)
 
 	ComboBox_AddString(hCurrentAmountCombo, _T("初始数量"));
 	ComboBox_AddString(hCurrentAmountCombo, _T("剩余数量"));
-	ComboBox_SetCurSel(hCurrentAmountCombo, 0);
+	ComboBox_SetCurSel(hCurrentAmountCombo, config.currentAmountDisplayMode);
 	Button_SetCheck(hAutoCurrentAmountCheck, 1);
 	Button_SetCheck(hWinProbSideLeftSelector, 1);
 	_itot(lround(config.defProbError * 100), str, 10);
