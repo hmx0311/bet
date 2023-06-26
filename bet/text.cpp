@@ -22,7 +22,6 @@ LRESULT CALLBACK copyableTextSubclassProc(HWND hText, UINT msg, WPARAM wParam, L
 				EmptyClipboard();
 				SetClipboardData(CF_UNICODETEXT, hStr);
 				CloseClipboard();
-				//GlobalFree(hStr);
 			}
 			DestroyMenu(hMenu);
 			return 0;
