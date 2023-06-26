@@ -1,6 +1,7 @@
 #include "framework.h"
 #include "BetTabDlg.h"
 
+#include "text.h"
 #include "controls.h"
 #include "tooltip.h"
 #include "common.h"
@@ -34,6 +35,7 @@ INT_PTR BetTabDlg::initDlg(HWND hDlg)
 
 	resetButton.attach(GetDlgItem(hDlg, IDC_RESET_BUTTON));
 	hTotalInvestText = GetDlgItem(hDlg, IDC_TOTAL_INVEST_TEXT);
+	SetWindowSubclass(hTotalInvestText, copyableTextSubclassProc, 0, 0);
 	hCurrentProfitTexts[0] = GetDlgItem(hDlg, IDC_L_CURRENT_PROFIT_TEXT);
 	hCurrentProfitTexts[1] = GetDlgItem(hDlg, IDC_R_CURRENT_PROFIT_TEXT);
 	hHaveClosingCheck = GetDlgItem(hDlg, IDC_HAVE_CLOSING_CHECK);

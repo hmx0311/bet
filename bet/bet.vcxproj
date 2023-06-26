@@ -176,6 +176,7 @@
     <ClInclude Include="model.h" />
     <ClInclude Include="Resource.h" />
     <ClInclude Include="targetver.h" />
+    <ClInclude Include="text.h" />
     <ClInclude Include="tooltip.h" />
   </ItemGroup>
   <ItemGroup>
@@ -191,6 +192,7 @@
     <ClCompile Include="edit.cpp" />
     <ClCompile Include="listBox.cpp" />
     <ClCompile Include="model.cpp" />
+    <ClCompile Include="text.cpp" />
     <ClCompile Include="tooltip.cpp" />
   </ItemGroup>
   <ItemGroup>

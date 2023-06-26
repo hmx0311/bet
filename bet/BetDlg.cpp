@@ -1,6 +1,7 @@
 #include "framework.h"
 #include "BetDlg.h"
 
+#include "controls.h"
 #include "common.h"
 #include "tooltip.h"
 #include "ConfigDlg.h"
@@ -72,6 +73,9 @@ INT_PTR BetDlg::initDlg(HWND hDlg)
 		}, 0, 0);
 
 	hButtonTheme = OpenThemeData(hDlg, _T("Button"));
+
+	SendMessage(hBetTab, WM_UPDATEUISTATE, MAKEWPARAM(UIS_SET, UISF_HIDEFOCUS), 0);
+	SetWindowSubclass(hBetTab, noFocusRectSubclassProc, 0, 0);
 
 	settingsButton.setIcon((HICON)LoadImage(hInst, MAKEINTRESOURCE(IDI_SETTINGS), IMAGE_ICON, 0, 0, LR_SHARED));
 	TCHAR settingsTipText[] = _T("…Ë÷√");

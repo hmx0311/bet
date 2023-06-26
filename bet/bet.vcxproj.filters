@@ -75,6 +75,9 @@
     <ClInclude Include="controls.h">
       <Filter>头文件\controls</Filter>
     </ClInclude>
+    <ClInclude Include="text.h">
+      <Filter>头文件\controls</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="bet.cpp">
@@ -114,6 +117,9 @@
       <Filter>源文件\dialogs</Filter>
     </ClCompile>
     <ClCompile Include="controls.cpp">
+      <Filter>源文件\controls</Filter>
+    </ClCompile>
+    <ClCompile Include="text.cpp">
       <Filter>源文件\controls</Filter>
     </ClCompile>
   </ItemGroup>
