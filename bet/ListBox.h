@@ -15,12 +15,11 @@ protected:
 public:
 	void attach(HWND hLB);
 	virtual LRESULT wndProc(UINT msg, WPARAM wParam, LPARAM lParam);
-	virtual void drawItem(HDC hDC, int itemID, UINT itemState, ULONG_PTR itemData, RECT& rcItem);
+	virtual void drawItem(PDRAWITEMSTRUCT pDrawItemStruct) = 0;
 	HWND getHwnd();
-	int addString(PCTSTR pszItem);
 	void setCurSel(int nSelect);
 protected:
-	void onDPIChanged();
+	int addString(PCTSTR str);
 	void drawFocus();
 };
 
@@ -41,7 +40,7 @@ public:
 	BetList(Button& allBoughtButton, NumericEdit& boughtEdit);
 	void attach(HWND hLB);
 	virtual LRESULT wndProc(UINT msg, WPARAM wParam, LPARAM lParam);
-	virtual void drawItem(HDC hDC, int itemID, UINT itemState, ULONG_PTR itemData, RECT& rcItem);
+	virtual void drawItem(PDRAWITEMSTRUCT pDrawItemStruct);
 	BOOL beginDrag(POINT ptCursor);
 	UINT dragging(POINT ptCursor);
 	int dropped(POINT ptCursor);
@@ -56,11 +55,20 @@ public:
 	bool isEmpty();
 	void resetContent();
 private:
-	void addString(PCTSTR pszItem, BYTE style = 0, COLORREF color = 0);
-	void insertString(int nIndex, PCTSTR pszItem, BYTE style, COLORREF color = 0);
+	void addString(PCTSTR str, BYTE style = 0, COLORREF color = 0);
+	void insertString(int nIndex, PCTSTR str, BYTE style, COLORREF color = 0);
 	void showAllBoughtButton(int nIndex);
 	void showChangeBoughtEdit();
 	void beginScroll();
 	void endScroll();
 	void eraseDragLine(HDC hDC);
+};
+
+class ResultList :
+	public ListBox
+{
+public:
+	virtual LRESULT wndProc(UINT msg, WPARAM wParam, LPARAM lParam);
+	virtual void drawItem(PDRAWITEMSTRUCT pDrawItemStruct);
+	int addResult(PCTSTR str, __int64 aimAmount);
 };

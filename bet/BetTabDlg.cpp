@@ -730,7 +730,7 @@ void BetTabDlg::calcBalanceAimAmount()
 			for (__int64 j = 1000000000000LL; j * 10 > result.second && -j < result.second; decimal++, j /= 10);
 			_stprintf(&str[i], _T(" %7.*fвк"), decimal, result.second * 1e-8);
 		}
-		strIdx = resultLists[0].addString(str);
+		strIdx = resultLists[0].addResult(str, result.first);
 	}
 	resultLists[0].setCurSel(strIdx);
 	SetFocus(oddsEdits[4 + isBet].getHwnd());
@@ -843,7 +843,7 @@ void BetTabDlg::calcAimAmount(int side)
 			for (__int64 i = 100000000000LL; i > aimAmount; decimal++, i /= 10);
 			_stprintf(&str[6], _T(" %5.*fвк"), decimal, aimAmount * 1e-8);
 		}
-		strIdx = resultLists[side + 1].addString(str);
+		strIdx = resultLists[side + 1].addResult(str, aimAmount);
 	}
 	resultLists[side + 1].setCurSel(strIdx);
 	SetFocus(oddsEdits[6 + 2 * side + isBet].getHwnd());

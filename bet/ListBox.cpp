@@ -12,18 +12,6 @@ using namespace std;
 
 static LRESULT CALLBACK listBoxSubclassProc(HWND hLB, UINT msg, WPARAM wParam, LPARAM lParam, UINT_PTR uIdSubclass, DWORD_PTR dwRefData)
 {
-	switch (msg)
-	{
-	case WM_ERASEBKGND:
-		RECT rect;
-		GetClientRect(hLB, &rect);
-		rect.top += (ListBox_GetCount(hLB) - GetScrollPos(hLB, SB_VERT)) * listItemHeight;
-		if (rect.top < rect.bottom)
-		{
-			FillRect((HDC)wParam, &rect, GetSysColorBrush(COLOR_WINDOW));
-		}
-		return (LRESULT)TRUE;
-	}
 	return ((ListBox*)GetWindowLongPtr(hLB, GWLP_USERDATA))->wndProc(msg, wParam, lParam);
 }
 
@@ -46,14 +34,27 @@ LRESULT ListBox::wndProc(UINT msg, WPARAM wParam, LPARAM lParam)
 	switch (msg)
 	{
 	case WM_DPICHANGED_AFTERPARENT:
-		onDPIChanged();
+		ListBox_SetItemHeight(hLB, 0, listItemHeight);
+		GetWindowRect(hLB, &rcLB);
+		MapWindowRect(HWND_DESKTOP, GetParent(hLB), &rcLB);
+		rcLB.bottom = rcLB.top + listItemHeight * maxDisplayedItemCnt + 4;
+		SetWindowPos(hLB, nullptr, 0, 0, rcLB.right - rcLB.left, rcLB.bottom - rcLB.top, SWP_NOMOVE | SWP_NOZORDER | SWP_NOREDRAW);
+		if (GetFocus() == hLB)
+		{
+			SetWindowRgn(hLB, CreateRectRgn(0, 0, rcLB.right - rcLB.left - 2, rcLB.bottom - rcLB.top), FALSE);
+		}
 		break;
+	case WM_ERASEBKGND:
+		RECT rect;
+		GetClientRect(hLB, &rect);
+		rect.top += (ListBox_GetCount(hLB) - GetScrollPos(hLB, SB_VERT)) * listItemHeight;
+		if (rect.top < rect.bottom)
+		{
+			FillRect((HDC)wParam, &rect, GetSysColorBrush(COLOR_WINDOW));
+		}
+		return LRESULT(TRUE);
 	case WM_SETFOCUS:
 		SetWindowRgn(hLB, CreateRectRgn(0, 0, rcLB.right - rcLB.left - 2, rcLB.bottom - rcLB.top), FALSE);
-		break;
-	case WM_KILLFOCUS:
-		SetWindowRgn(hLB, nullptr, FALSE);
-		RedrawWindow(hLB, nullptr, nullptr, RDW_FRAME | RDW_INVALIDATE);
 		break;
 	}
 
@@ -61,31 +62,8 @@ LRESULT ListBox::wndProc(UINT msg, WPARAM wParam, LPARAM lParam)
 
 	switch (msg)
 	{
-	case WM_PAINT:
-	case WM_NCPAINT:
-		if (GetFocus() == hLB)
-		{
-			drawFocus();
-		}
-		break;
 	}
 	return result;
-}
-
-void ListBox::drawItem(HDC hDC, int itemID, UINT itemState, ULONG_PTR itemData, RECT& rcItem)
-{
-	HDC hMemDC;
-	HPAINTBUFFER hPaintBuffer = BeginBufferedPaint(hDC, &rcItem, BPBF_COMPATIBLEBITMAP, nullptr, &hMemDC);
-	HFONT hOldFont = SelectFont(hMemDC, hFont);
-	FillRect(hMemDC, &rcItem, GetSysColorBrush(itemState & ODS_SELECTED ? COLOR_HIGHLIGHT : COLOR_WINDOW));
-
-	SetBkMode(hMemDC, TRANSPARENT);
-	SetTextColor(hMemDC, itemState & ODS_SELECTED ? ::GetSysColor(COLOR_HIGHLIGHTTEXT) : GetSysColor(COLOR_WINDOWTEXT));
-	TCHAR sText[30];
-	ListBox_GetText(hLB, itemID, sText);
-	DrawText(hMemDC, sText, -1, &rcItem, DT_SINGLELINE);
-	SelectFont(hMemDC, hOldFont);
-	EndBufferedPaint(hPaintBuffer, TRUE);
 }
 
 HWND ListBox::getHwnd()
@@ -101,19 +79,6 @@ int ListBox::addString(PCTSTR pszItem)
 void ListBox::setCurSel(int nSelect)
 {
 	ListBox_SetCurSel(hLB, nSelect);
-}
-
-void ListBox::onDPIChanged()
-{
-	ListBox_SetItemHeight(hLB, 0, listItemHeight);
-	GetWindowRect(hLB, &rcLB);
-	MapWindowRect(HWND_DESKTOP, GetParent(hLB), &rcLB);
-	rcLB.bottom = rcLB.top + listItemHeight * maxDisplayedItemCnt + 4;
-	SetWindowPos(hLB, nullptr, 0, 0, rcLB.right - rcLB.left, rcLB.bottom - rcLB.top, SWP_NOMOVE | SWP_NOZORDER | SWP_NOREDRAW);
-	if (GetFocus() == hLB)
-	{
-		SetWindowRgn(hLB, CreateRectRgn(0, 0, rcLB.right - rcLB.left - 2, rcLB.bottom - rcLB.top), FALSE);
-	}
 }
 
 void ListBox::drawFocus()
@@ -141,12 +106,6 @@ LRESULT BetList::wndProc(UINT msg, WPARAM wParam, LPARAM lParam)
 {
 	switch (msg)
 	{
-	case WM_DPICHANGED_AFTERPARENT:
-		onDPIChanged();
-		break;
-	case WM_SETFOCUS:
-		SetWindowRgn(hLB, CreateRectRgn(0, 0, rcLB.right - rcLB.left - 2, rcLB.bottom - rcLB.top), FALSE);
-		break;
 	case WM_KILLFOCUS:
 		if ((HWND)wParam != allBoughtButton.getHwnd() && (HWND)wParam != boughtEdit.getHwnd())
 		{
@@ -291,7 +250,7 @@ LRESULT BetList::wndProc(UINT msg, WPARAM wParam, LPARAM lParam)
 		}
 	}
 
-	LRESULT result = DefSubclassProc(hLB, msg, wParam, lParam);
+	LRESULT result = ListBox::wndProc(msg, wParam, lParam);
 
 	switch (msg)
 	{
@@ -352,8 +311,12 @@ LRESULT BetList::wndProc(UINT msg, WPARAM wParam, LPARAM lParam)
 	return result;
 }
 
-void BetList::drawItem(HDC hDC, int itemID, UINT itemState, ULONG_PTR itemData, RECT& rcItem)
+void BetList::drawItem(PDRAWITEMSTRUCT pDrawItemStruct)
 {
+	HDC hDC = pDrawItemStruct->hDC;
+	UINT itemID = pDrawItemStruct->itemID;
+	UINT itemState = pDrawItemStruct->itemState;
+	RECT& rcItem = pDrawItemStruct->rcItem;
 	if ((itemID < 2 || betsSize + 1 < itemID && itemID < betsSize + 5) && itemState & ODS_SELECTED)
 	{
 		itemState -= ODS_SELECTED;
@@ -418,7 +381,7 @@ void BetList::drawItem(HDC hDC, int itemID, UINT itemState, ULONG_PTR itemData, 
 			rcItem.right -= listItemHeight + xScale;
 		}
 		SetBkMode(hMemDC, TRANSPARENT);
-		COLORREF color = itemData >> 8;
+		COLORREF color = pDrawItemStruct->itemData >> 8;
 		if (color == 0)
 		{
 			color = GetSysColor(COLOR_WINDOWTEXT);
@@ -427,7 +390,7 @@ void BetList::drawItem(HDC hDC, int itemID, UINT itemState, ULONG_PTR itemData, 
 		HFONT hOldFont = SelectFont(hMemDC, itemID == 0 || itemID == betsSize + 3 ? hBoldFont : hFont);
 		TCHAR sText[30];
 		ListBox_GetText(hLB, itemID, sText);
-		BYTE style = itemData & 0xff;
+		BYTE style = pDrawItemStruct->itemData & 0xff;
 		DrawText(hMemDC, sText, -1, &rcItem, style);
 		SelectFont(hMemDC, hOldFont);
 	}
@@ -795,4 +758,82 @@ void BetList::eraseDragLine(HDC hDC)
 	rcLastLine.top--;
 	rcLastLine.bottom = rcLastLine.top + 2;
 	FillRect(hDC, &rcLastLine, GetSysColorBrush(COLOR_WINDOW));
+}
+
+
+// class ResultList
+
+LRESULT ResultList::wndProc(UINT msg, WPARAM wParam, LPARAM lParam)
+{
+	switch (msg)
+	{
+	case WM_KILLFOCUS:
+		SetWindowRgn(hLB, nullptr, FALSE);
+		RedrawWindow(hLB, nullptr, nullptr, RDW_FRAME | RDW_INVALIDATE);
+		break;
+	case WM_CONTEXTMENU:
+		{
+			int curSel = ListBox_GetCurSel(hLB);
+			RECT rect;
+			ListBox_GetItemRect(hLB, curSel, &rect);
+			MapWindowRect(hLB, HWND_DESKTOP, &rect);
+			POINT pos = lParam == -1 ? POINT((rect.left + rect.right) / 2, (rect.top + rect.bottom) / 2) : POINT(GET_X_LPARAM(lParam), GET_Y_LPARAM(lParam));
+			if (!PtInRect(&rect, pos))
+			{
+				return 0;
+			}
+			HMENU menu = CreatePopupMenu();
+			AppendMenu(menu, 0, 1, _T("复制投入数量(&C)"));
+			if (TrackPopupMenu(menu, TPM_NONOTIFY | TPM_RETURNCMD, pos.x, pos.y, 0, hLB, nullptr) == 1)
+			{
+				__int64 aimAmount = ListBox_GetItemData(hLB, curSel);
+				HANDLE hStr = GlobalAlloc(GMEM_MOVEABLE, (MAX_INITIAL_AMOUNT_LEN + 1) * sizeof(TCHAR));
+				_i64tot(aimAmount, (PWSTR)GlobalLock(hStr), 10);
+				GlobalUnlock(hStr);
+				OpenClipboard(hLB);
+				EmptyClipboard();
+				SetClipboardData(CF_UNICODETEXT, hStr);
+				CloseClipboard();
+			}
+			DestroyMenu(menu);
+			return 0;
+		}
+	}
+
+	LRESULT result = ListBox::wndProc(msg, wParam, lParam);
+
+	switch (msg)
+	{
+	case WM_PAINT:
+	case WM_NCPAINT:
+		if (GetFocus() == hLB)
+		{
+			drawFocus();
+		}
+		break;
+	}
+	return result;
+}
+
+void ResultList::drawItem(PDRAWITEMSTRUCT pDrawItemStruct)
+{
+	HDC hMemDC;
+	HPAINTBUFFER hPaintBuffer = BeginBufferedPaint(pDrawItemStruct->hDC, &pDrawItemStruct->rcItem, BPBF_COMPATIBLEBITMAP, nullptr, &hMemDC);
+	HFONT hOldFont = SelectFont(hMemDC, hFont);
+	FillRect(hMemDC, &pDrawItemStruct->rcItem, GetSysColorBrush(pDrawItemStruct->itemState & ODS_SELECTED ? COLOR_HIGHLIGHT : COLOR_WINDOW));
+
+	SetBkMode(hMemDC, TRANSPARENT);
+	SetTextColor(hMemDC, pDrawItemStruct->itemState & ODS_SELECTED ? ::GetSysColor(COLOR_HIGHLIGHTTEXT) : GetSysColor(COLOR_WINDOWTEXT));
+	TCHAR sText[30];
+	ListBox_GetText(hLB, pDrawItemStruct->itemID, sText);
+	DrawText(hMemDC, sText, -1, &pDrawItemStruct->rcItem, DT_SINGLELINE);
+	SelectFont(hMemDC, hOldFont);
+	EndBufferedPaint(hPaintBuffer, TRUE);
+}
+
+int ResultList::addResult(PCTSTR str, __int64 aimAmount)
+{
+	int index = addString(str);
+	ListBox_SetItemData(hLB, index, aimAmount);
+	return index;
 }

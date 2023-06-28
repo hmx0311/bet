@@ -38,7 +38,7 @@ protected:
 	Button addButtons[2];
 	NumericEdit boughtEdit;
 	Button allBoughtButton;
-	ListBox resultLists[3];
+	ResultList resultLists[3];
 	Button calculateButtons[3];
 	HWND hCurrentAmountCombo;
 	HWND hAutoCurrentAmountCheck;
