@@ -39,7 +39,7 @@ INT_PTR BetTabDlg::initDlg(HWND hDlg)
 	hCurrentProfitTexts[0] = GetDlgItem(hDlg, IDC_L_CURRENT_PROFIT_TEXT);
 	hCurrentProfitTexts[1] = GetDlgItem(hDlg, IDC_R_CURRENT_PROFIT_TEXT);
 	hHaveClosingCheck = GetDlgItem(hDlg, IDC_HAVE_CLOSING_CHECK);
-	SendMessage(hHaveClosingCheck, WM_UPDATEUISTATE, MAKEWPARAM(UIS_SET, UISF_HIDEFOCUS), 0);
+	SNDMSG(hHaveClosingCheck, WM_UPDATEUISTATE, MAKEWPARAM(UIS_SET, UISF_HIDEFOCUS), 0);
 	SetWindowSubclass(hHaveClosingCheck, buttonSubclassProc, 0, 0);
 	allBoughtButton.attach(GetDlgItem(hDlg, IDC_ALL_BOUGHT_BUTTON));
 	boughtEdit.attach(GetDlgItem(hDlg, IDC_CHANGE_BOUGHT_EDIT));
@@ -48,7 +48,7 @@ INT_PTR BetTabDlg::initDlg(HWND hDlg)
 	for (int i = 0; i < 10; i++)
 	{
 		hBankerBetSelectors[i] = GetDlgItem(hDlg, IDC_L_BANKER_SELECTOR + i);
-		SendMessage(hBankerBetSelectors[i], WM_UPDATEUISTATE, MAKEWPARAM(UIS_SET, UISF_HIDEFOCUS), 0);
+		SNDMSG(hBankerBetSelectors[i], WM_UPDATEUISTATE, MAKEWPARAM(UIS_SET, UISF_HIDEFOCUS), 0);
 		SetWindowSubclass(hBankerBetSelectors[i], buttonSubclassProc, 0, 0);
 		oddsEdits[i].attach(GetDlgItem(hDlg, IDC_L_BANKER_ODDS_EDIT + i));
 	}
@@ -67,17 +67,17 @@ INT_PTR BetTabDlg::initDlg(HWND hDlg)
 		hReferenceOddsTexts[i] = GetDlgItem(hDlg, IDC_L_REC_BANKER_ODDS_TEXT + i);
 	}
 	hCurrentAmountCombo = GetDlgItem(hDlg, IDC_CURRENT_AMOUNT_COMBO);
-	SendMessage(hCurrentAmountCombo, WM_UPDATEUISTATE, MAKEWPARAM(UIS_SET, UISF_HIDEFOCUS), 0);
+	SNDMSG(hCurrentAmountCombo, WM_UPDATEUISTATE, MAKEWPARAM(UIS_SET, UISF_HIDEFOCUS), 0);
 	SetWindowSubclass(hCurrentAmountCombo, noFocusRectSubclassProc, 0, 0);
 	ImmAssociateContext(hCurrentAmountCombo, nullptr);
 	hAutoCurrentAmountCheck = GetDlgItem(hDlg, IDC_AUTO_CURRENT_AMOUNT_CHECK);
-	SendMessage(hAutoCurrentAmountCheck, WM_UPDATEUISTATE, MAKEWPARAM(UIS_SET, UISF_HIDEFOCUS), 0);
+	SNDMSG(hAutoCurrentAmountCheck, WM_UPDATEUISTATE, MAKEWPARAM(UIS_SET, UISF_HIDEFOCUS), 0);
 	SetWindowSubclass(hAutoCurrentAmountCheck, buttonSubclassProc, 0, 0);
 	currentAmountEdit.attach(GetDlgItem(hDlg, IDC_CURRENT_AMOUNT_EDIT));
 	hWinProbSideLeftSelector = GetDlgItem(hDlg, IDC_L_WIN_PROB_SIDE_SELECTOR);
-	SendMessage(hWinProbSideLeftSelector, WM_UPDATEUISTATE, MAKEWPARAM(UIS_SET, UISF_HIDEFOCUS), 0);
+	SNDMSG(hWinProbSideLeftSelector, WM_UPDATEUISTATE, MAKEWPARAM(UIS_SET, UISF_HIDEFOCUS), 0);
 	SetWindowSubclass(hWinProbSideLeftSelector, buttonSubclassProc, 0, 0);
-	SendMessage(GetDlgItem(hDlg, IDC_R_WIN_PROB_SIDE_SELECTOR), WM_UPDATEUISTATE, MAKEWPARAM(UIS_SET, UISF_HIDEFOCUS), 0);
+	SNDMSG(GetDlgItem(hDlg, IDC_R_WIN_PROB_SIDE_SELECTOR), WM_UPDATEUISTATE, MAKEWPARAM(UIS_SET, UISF_HIDEFOCUS), 0);
 	SetWindowSubclass(GetDlgItem(hDlg, IDC_R_WIN_PROB_SIDE_SELECTOR), buttonSubclassProc, 0, 0);
 	winProbEdit.attach(GetDlgItem(hDlg, IDC_WIN_PROB_EDIT));
 	winProbErrorEdit.attach(GetDlgItem(hDlg, IDC_WIN_PROB_ERROR_EDIT));
@@ -175,7 +175,7 @@ INT_PTR BetTabDlg::dlgProc(UINT msg, WPARAM wParam, LPARAM lParam)
 		if (hProbCalculator == nullptr && wParam != NULL)
 		{
 			hProbCalculator = (HWND)wParam;
-			hProbCalculatorIcon = CopyIcon((HICON)SendMessage(hProbCalculator, WM_GETICON, ICON_BIG, 0));
+			hProbCalculatorIcon = CopyIcon((HICON)SNDMSG(hProbCalculator, WM_GETICON, ICON_BIG, 0));
 			winProbCalculatorButton.setIcon(hProbCalculatorIcon);
 			TCHAR winProbCalculatorTipText[] = _T("¶Ï¿ªÊ¤ÂÊ¼ÆËãÆ÷");
 			setToolTipText(hWinProbCalculatorTip, winProbCalculatorButton.getHwnd(), hDlg, winProbCalculatorTipText);
@@ -386,7 +386,7 @@ INT_PTR BetTabDlg::dlgProc(UINT msg, WPARAM wParam, LPARAM lParam)
 						int lineIdx = betLists[selSide].getCurSel();
 						if (GetFocus() != betLists[selSide].getHwnd())
 						{
-							SendMessage(betLists[selSide].getHwnd(), WM_KILLFOCUS, 0, 0);
+							SNDMSG(betLists[selSide].getHwnd(), WM_KILLFOCUS, 0, 0);
 						}
 						if (str[0] == '\0')
 						{

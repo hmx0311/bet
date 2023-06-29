@@ -22,7 +22,7 @@ HWND createToolTip(HWND hTool, HWND hDlg, PTSTR pszText)
 	toolInfo.uFlags = TTF_IDISHWND | TTF_SUBCLASS;
 	toolInfo.uId = (UINT_PTR)hTool;
 	toolInfo.lpszText = pszText;
-	SendMessage(hTip, TTM_ADDTOOL, 0, (LPARAM)&toolInfo);
+	SNDMSG(hTip, TTM_ADDTOOL, 0, (LPARAM)&toolInfo);
 	return hTip;
 }
 
@@ -34,5 +34,5 @@ void setToolTipText(HWND hTip, HWND hTool, HWND hDlg, PTSTR pszText)
 	toolInfo.uFlags = TTF_IDISHWND | TTF_SUBCLASS;
 	toolInfo.uId = (UINT_PTR)hTool;
 	toolInfo.lpszText = pszText;
-	SendMessage(hTip, TTM_UPDATETIPTEXT, 0, (LPARAM)&toolInfo);
+	SNDMSG(hTip, TTM_UPDATETIPTEXT, 0, (LPARAM)&toolInfo);
 }

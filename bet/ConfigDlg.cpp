@@ -21,9 +21,11 @@ INT_PTR ConfigDlg::initDlg(HWND hDlg)
 	SetDialogDpiChangeBehavior(hDlg, DDC_DISABLE_RESIZE, DDC_DISABLE_RESIZE);
 
 	hDefCutCombo = GetDlgItem(hDlg, IDC_DEF_CUT_COMBO);
+	SNDMSG(hDefCutCombo, WM_UPDATEUISTATE, MAKEWPARAM(UIS_SET, UISF_HIDEFOCUS), 0);
+	SetWindowSubclass(hDefCutCombo, noFocusRectSubclassProc, 0, 0);
 	defCutEdit.attach(GetDlgItem(hDlg, IDC_DEF_CUT_EDIT));
 	hDefClosingCheck = GetDlgItem(hDlg, IDC_DEF_CLOSING_CHECK);
-	SendMessage(hDefClosingCheck, WM_UPDATEUISTATE, MAKEWPARAM(UIS_SET, UISF_HIDEFOCUS), 0);
+	SNDMSG(hDefClosingCheck, WM_UPDATEUISTATE, MAKEWPARAM(UIS_SET, UISF_HIDEFOCUS), 0);
 	SetWindowSubclass(hDefClosingCheck, buttonSubclassProc, 0, 0);
 	for (int i = 0; i < 4; i++)
 	{
@@ -31,20 +33,16 @@ INT_PTR ConfigDlg::initDlg(HWND hDlg)
 	}
 	defProbErrorEdit.attach(GetDlgItem(hDlg, IDC_DEF_PROB_ERROR_EDIT));
 	hCurrentAmountCfgCombo = GetDlgItem(hDlg, IDC_CURRENT_AMOUNT_CFG_COMBO);
-
-	SendMessage(hDefCutCombo, WM_UPDATEUISTATE, MAKEWPARAM(UIS_SET, UISF_HIDEFOCUS), 0);
-	SetWindowSubclass(hDefCutCombo, noFocusRectSubclassProc, 0, 0);
-	ImmAssociateContext(hDefCutCombo, nullptr);
-	SendMessage(GetDlgItem(hDlg, IDOK), WM_UPDATEUISTATE, MAKEWPARAM(UIS_SET, UISF_HIDEFOCUS), 0);
-	SetWindowSubclass(GetDlgItem(hDlg, IDOK), noFocusRectSubclassProc, 0, 0);
-	SendMessage(GetDlgItem(hDlg, IDCANCEL), WM_UPDATEUISTATE, MAKEWPARAM(UIS_SET, UISF_HIDEFOCUS), 0);
-	SetWindowSubclass(GetDlgItem(hDlg, IDCANCEL), noFocusRectSubclassProc, 0, 0);
-	SendMessage(hCurrentAmountCfgCombo, WM_UPDATEUISTATE, MAKEWPARAM(UIS_SET, UISF_HIDEFOCUS), 0);
+	SNDMSG(hCurrentAmountCfgCombo, WM_UPDATEUISTATE, MAKEWPARAM(UIS_SET, UISF_HIDEFOCUS), 0);
 	SetWindowSubclass(hCurrentAmountCfgCombo, noFocusRectSubclassProc, 0, 0);
-	ImmAssociateContext(hCurrentAmountCfgCombo, nullptr);
+	SNDMSG(GetDlgItem(hDlg, IDOK), WM_UPDATEUISTATE, MAKEWPARAM(UIS_SET, UISF_HIDEFOCUS), 0);
+	SetWindowSubclass(GetDlgItem(hDlg, IDOK), noFocusRectSubclassProc, 0, 0);
+	SNDMSG(GetDlgItem(hDlg, IDCANCEL), WM_UPDATEUISTATE, MAKEWPARAM(UIS_SET, UISF_HIDEFOCUS), 0);
+	SetWindowSubclass(GetDlgItem(hDlg, IDCANCEL), noFocusRectSubclassProc, 0, 0);
 
 	setCaptionFont();
 
+	ImmAssociateContext(hDefCutCombo, nullptr);
 	ComboBox_AddString(hDefCutCombo, _T("新建时输入"));
 	ComboBox_AddString(hDefCutCombo, _T("使用默认值"));
 	ComboBox_SetCurSel(hDefCutCombo, config.useDefCut);
@@ -57,6 +55,7 @@ INT_PTR ConfigDlg::initDlg(HWND hDlg)
 		_itot(config.fastAddedAmount[i], str, 10);
 		fastAddedAmountEdit[i].setText(str, false);
 	}
+	ImmAssociateContext(hCurrentAmountCfgCombo, nullptr);
 	ComboBox_AddString(hCurrentAmountCfgCombo, _T("初始数量"));
 	ComboBox_AddString(hCurrentAmountCfgCombo, _T("剩余数量"));
 	ComboBox_SetCurSel(hCurrentAmountCfgCombo, config.currentAmountDisplayMode);

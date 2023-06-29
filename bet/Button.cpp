@@ -120,7 +120,7 @@ void Button::setText(PCTSTR str)
 
 void Button::setIcon(HICON hIcon)
 {
-	SendMessage(hButton, BM_SETIMAGE, IMAGE_ICON, (WPARAM)hIcon);
+	SNDMSG(hButton, BM_SETIMAGE, IMAGE_ICON, (WPARAM)hIcon);
 	if (hIcon != nullptr)
 	{
 		ICONINFO iconInfo;
@@ -182,7 +182,7 @@ void Button::drawButton(HDC hDC, PUSHBUTTONSTATES state, RECT& rcItem)
 	rcContent.right -= padding;
 	rcContent.bottom -= padding;
 
-	HICON hIcon = (HICON)SendMessage(hButton, BM_GETIMAGE, IMAGE_ICON, 0);
+	HICON hIcon = (HICON)SNDMSG(hButton, BM_GETIMAGE, IMAGE_ICON, 0);
 	if (hIcon != nullptr)
 	{
 		HDC hImageDC = CreateCompatibleDC(hDC);

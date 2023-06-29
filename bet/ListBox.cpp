@@ -178,7 +178,7 @@ LRESULT BetList::wndProc(UINT msg, WPARAM wParam, LPARAM lParam)
 		case VK_DELETE:
 			if (getCurSel() > 0)
 			{
-				SendMessage(GetParent(hLB), WM_COMMAND, ID_DELETE, 0);
+				SNDMSG(GetParent(hLB), WM_COMMAND, ID_DELETE, 0);
 			}
 			return 0;
 		case VK_RETURN:

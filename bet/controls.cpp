@@ -8,7 +8,7 @@ LRESULT CALLBACK noFocusRectSubclassProc(HWND hCtrl, UINT msg, WPARAM wParam, LP
 	switch (msg)
 	{
 	case WM_UPDATEUISTATE:
-		wParam &= ~MAKELONG(0, UISF_HIDEFOCUS);
+		wParam &= ~MAKELONG(0, UISF_HIDEFOCUS | UISF_HIDEACCEL);
 		break;
 	}
 	return DefSubclassProc(hCtrl, msg, wParam, lParam);

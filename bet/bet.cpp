@@ -34,6 +34,8 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
 	// 执行应用程序初始化:
 	loadConfig(config);
 	BufferedPaintInit();
+	INITCOMMONCONTROLSEX icex = { sizeof(icex), ICC_STANDARD_CLASSES };
+	InitCommonControlsEx(&icex);
 
 	BetDlg::hIcon = LoadIcon(hInstance, MAKEINTRESOURCE(IDI_BET));
 	BetTabDlg::hResetIcon = (HICON)LoadImage(hInstance, MAKEINTRESOURCE(IDI_RESET), IMAGE_ICON, 0, 0, LR_SHARED);

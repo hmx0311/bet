@@ -47,13 +47,13 @@ static LRESULT CALLBACK editSubclassProc(HWND hEdit, UINT msg, WPARAM wParam, LP
 				Edit_Undo(hEdit);
 				break;
 			case 2:
-				SendMessage(hEdit, WM_CUT, 0, 0);
+				SNDMSG(hEdit, WM_CUT, 0, 0);
 				break;
 			case 3:
-				SendMessage(hEdit, WM_COPY, 0, 0);
+				SNDMSG(hEdit, WM_COPY, 0, 0);
 				break;
 			case 4:
-				SendMessage(hEdit, WM_PASTE, 0, 0);
+				SNDMSG(hEdit, WM_PASTE, 0, 0);
 				break;
 			case 5:
 				Edit_ReplaceSel(hEdit, _T(""));
@@ -153,7 +153,7 @@ LRESULT NumericEdit::wndProc(UINT msg, WPARAM wParam, LPARAM lParam)
 		{
 		case VK_RETURN:
 			updateStr();
-			SendMessage(GetParent(hEdit), WM_COMMAND, ID_CONFIRM, 0);
+			SNDMSG(GetParent(hEdit), WM_COMMAND, ID_CONFIRM, 0);
 			break;
 		case VK_ESCAPE:
 			Edit::setText(curUndo.c_str());
@@ -277,12 +277,12 @@ LRESULT AmountEdit::wndProc(UINT msg, WPARAM wParam, LPARAM lParam)
 		{
 		case VK_UP:
 		case VK_DOWN:
-			SendMessage(Button_GetCheck(hBankerSelector) ? hBankerOddsEdit : hBetOddsEdit, msg, wParam, lParam);
+			SNDMSG(Button_GetCheck(hBankerSelector) ? hBankerOddsEdit : hBetOddsEdit, msg, wParam, lParam);
 			return 0;
 		}
 		break;
 	case WM_KILLFOCUS:
-		SendMessage(Button_GetCheck(hBankerSelector) ? hBankerOddsEdit : hBetOddsEdit, WM_KEYUP, VK_UP, MAKELONG(1, KF_UP | KF_REPEAT | KF_EXTENDED));
+		SNDMSG(Button_GetCheck(hBankerSelector) ? hBankerOddsEdit : hBetOddsEdit, WM_KEYUP, VK_UP, MAKELONG(1, KF_UP | KF_REPEAT | KF_EXTENDED));
 		break;
 	case WM_COMMAND:
 		switch (LOWORD(wParam))
@@ -326,7 +326,7 @@ LRESULT OddsEdit::wndProc(UINT msg, WPARAM wParam, LPARAM lParam)
 		{
 		case VK_RETURN:
 			updateOdds();
-			SendMessage(GetParent(hEdit), WM_COMMAND, ID_CONFIRM, 0);
+			SNDMSG(GetParent(hEdit), WM_COMMAND, ID_CONFIRM, 0);
 			break;
 		}
 		break;
@@ -334,7 +334,7 @@ LRESULT OddsEdit::wndProc(UINT msg, WPARAM wParam, LPARAM lParam)
 		SetFocus(hEdit);
 		break;
 	case WM_KILLFOCUS:
-		SendMessage(hEdit, WM_KEYUP, VK_UP, MAKELONG(1, KF_UP | KF_REPEAT | KF_EXTENDED));
+		SNDMSG(hEdit, WM_KEYUP, VK_UP, MAKELONG(1, KF_UP | KF_REPEAT | KF_EXTENDED));
 		updateOdds();
 		break;
 	}
