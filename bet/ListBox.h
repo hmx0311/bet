@@ -19,7 +19,6 @@ public:
 	HWND getHwnd();
 	void setCurSel(int nSelect);
 protected:
-	int addString(PCTSTR str);
 	void drawFocus();
 };
 

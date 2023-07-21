@@ -71,11 +71,6 @@ HWND ListBox::getHwnd()
 	return hLB;
 }
 
-int ListBox::addString(PCTSTR pszItem)
-{
-	return ListBox_AddString(hLB, pszItem);
-}
-
 void ListBox::setCurSel(int nSelect)
 {
 	ListBox_SetCurSel(hLB, nSelect);
@@ -113,6 +108,7 @@ LRESULT BetList::wndProc(UINT msg, WPARAM wParam, LPARAM lParam)
 			{
 				cancelDrag();
 				SetCursor(nullptr);
+				SNDMSG(hLB, WM_LBUTTONUP, 0, 0);
 			}
 			setCurSel(-1);
 			ShowWindow(allBoughtButton.getHwnd(), SW_HIDE);
@@ -671,15 +667,15 @@ void BetList::resetContent()
 	addString(_T("赔率 已投入   已买"));
 }
 
-void BetList::addString(PCTSTR pszItem, BYTE style, COLORREF color)
+void BetList::addString(PCTSTR str, BYTE style, COLORREF color)
 {
-	int index = ListBox::addString(pszItem);
+	int index = ListBox_AddString(hLB, str);
 	ListBox_SetItemData(hLB, index, ((color << 8) | style));
 }
 
-void BetList::insertString(int nIndex, PCTSTR pszItem, BYTE style, COLORREF color)
+void BetList::insertString(int nIndex, PCTSTR str, BYTE style, COLORREF color)
 {
-	int index = ListBox_InsertString(hLB, nIndex, pszItem);
+	int index = ListBox_InsertString(hLB, nIndex, str);
 	ListBox_SetItemData(hLB, index, ((color << 8) | style));
 }
 
@@ -833,7 +829,7 @@ void ResultList::drawItem(PDRAWITEMSTRUCT pDrawItemStruct)
 
 int ResultList::addResult(PCTSTR str, __int64 aimAmount)
 {
-	int index = addString(str);
+	int index = ListBox_AddString(hLB, str);
 	ListBox_SetItemData(hLB, index, aimAmount);
 	return index;
 }
