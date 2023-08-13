@@ -38,7 +38,23 @@ INT_PTR BetDlg::initDlg(HWND hDlg)
 
 	hBetTab = GetDlgItem(hDlg, IDC_BET_TAB);
 	SNDMSG(hBetTab, WM_UPDATEUISTATE, MAKEWPARAM(UIS_SET, UISF_HIDEFOCUS | UISF_HIDEACCEL), 0);
-	SetWindowSubclass(hBetTab, noFocusRectSubclassProc, 0, 0);
+	SetWindowSubclass(hBetTab, [](HWND hTabCtrl, UINT msg, WPARAM wParam, LPARAM lParam, UINT_PTR, DWORD_PTR)->LRESULT
+		{
+			LRESULT result = noFocusRectSubclassProc(hTabCtrl, msg, wParam, lParam, 0, 0);
+			switch (msg)
+			{
+			case WM_PAINT:
+				{
+					HDC hDC = GetDCEx(hTabCtrl, nullptr, DCX_PARENTCLIP);
+					int curSel = TabCtrl_GetCurSel(hTabCtrl);
+					RECT rect = { 2 + curSel * TAB_WIDTH, TAB_HEIGHT - 1, 2 + (curSel + 1) * TAB_WIDTH, TAB_HEIGHT + 3 };
+					FillRect(hDC, &rect, GetSysColorBrush(COLOR_3DDKSHADOW));
+					ReleaseDC(hTabCtrl, hDC);
+				}
+				break;
+			}
+			return result;
+		}, 0, 0);
 	settingsButton.attach(GetDlgItem(hDlg, IDC_SETTINGS_BUTTON));
 	addTabButton.attach(GetDlgItem(hDlg, IDC_ADD_TAB_BUTTON));
 
