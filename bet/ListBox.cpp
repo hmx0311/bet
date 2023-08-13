@@ -8,6 +8,9 @@
 
 using namespace std;
 
+#define LB_SETFOCUS_ANIMATION_DURATION 167
+#define LB_KILLFOCUS_ANIMATION_DURATION  250
+
 #define X_CHANGE (int)(-53.0f*xScale)
 
 static LRESULT CALLBACK listBoxSubclassProc(HWND hLB, UINT msg, WPARAM wParam, LPARAM lParam, UINT_PTR uIdSubclass, DWORD_PTR dwRefData)
@@ -39,10 +42,6 @@ LRESULT ListBox::wndProc(UINT msg, WPARAM wParam, LPARAM lParam)
 		MapWindowRect(HWND_DESKTOP, GetParent(hLB), &rcLB);
 		rcLB.bottom = rcLB.top + listItemHeight * maxDisplayedItemCnt + 4;
 		SetWindowPos(hLB, nullptr, 0, 0, rcLB.right - rcLB.left, rcLB.bottom - rcLB.top, SWP_NOMOVE | SWP_NOZORDER | SWP_NOREDRAW);
-		if (GetFocus() == hLB)
-		{
-			SetWindowRgn(hLB, CreateRectRgn(0, 0, rcLB.right - rcLB.left - 2, rcLB.bottom - rcLB.top), FALSE);
-		}
 		break;
 	case WM_ERASEBKGND:
 		RECT rect;
@@ -53,8 +52,18 @@ LRESULT ListBox::wndProc(UINT msg, WPARAM wParam, LPARAM lParam)
 			FillRect((HDC)wParam, &rect, GetSysColorBrush(COLOR_WINDOW));
 		}
 		return LRESULT(TRUE);
-	case WM_SETFOCUS:
-		SetWindowRgn(hLB, CreateRectRgn(0, 0, rcLB.right - rcLB.left - 2, rcLB.bottom - rcLB.top), FALSE);
+	case WM_PAINT:
+		if (animationEndTime > clock())
+		{
+			HDC hDC = GetDCEx(hLB, nullptr, DCX_WINDOW | DCX_PARENTCLIP);
+			if (BufferedPaintRenderAnimation(hLB, hDC))
+			{
+				ReleaseDC(hLB, hDC);
+				ValidateRect(hLB, nullptr);
+				return 0;
+			}
+			ReleaseDC(hLB, hDC);
+		}
 		break;
 	}
 
@@ -76,11 +85,29 @@ void ListBox::setCurSel(int nSelect)
 	ListBox_SetCurSel(hLB, nSelect);
 }
 
-void ListBox::drawFocus()
+void ListBox::drawFocus(bool isFocused)
 {
 	HDC hDC = GetDCEx(hLB, nullptr, DCX_WINDOW | DCX_PARENTCLIP);
 	RECT rcFocus = { rcLB.right - rcLB.left - 2, 0, rcLB.right - rcLB.left, rcLB.bottom - rcLB.top };
-	FillRect(hDC, &rcFocus, GetSysColorBrush(COLOR_HIGHLIGHT));
+	BP_PAINTPARAMS paintParams = { sizeof(BP_PAINTPARAMS), BPPF_NONCLIENT, nullptr, nullptr };
+	BP_ANIMATIONPARAMS animParams = { sizeof(BP_ANIMATIONPARAMS), 0, BPAS_LINEAR, isFocused ? LB_SETFOCUS_ANIMATION_DURATION : LB_KILLFOCUS_ANIMATION_DURATION };
+	HDC hDCFrom, hDCTo;
+	HANIMATIONBUFFER hbpAnimation = BeginBufferedAnimation(hLB, hDC, &rcFocus, BPBF_COMPATIBLEBITMAP, &paintParams, &animParams, &hDCFrom, &hDCTo);
+	if (hDCFrom != nullptr)
+	{
+		BitBlt(hDCFrom, rcLB.right - rcLB.left - 2, 0, 2, rcLB.bottom - rcLB.top, hDC, rcLB.right - rcLB.left - 2, 0, SRCCOPY);
+		animationEndTime = clock() + animParams.dwDuration;
+	}
+	BufferedPaintStopAllAnimations(hLB);
+	if (isFocused)
+	{
+		FillRect(hDCTo, &rcFocus, GetSysColorBrush(COLOR_HIGHLIGHT));
+	}
+	else
+	{
+		StretchBlt(hDCTo, rcLB.right - rcLB.left - 2, 0, 2, rcLB.bottom - rcLB.top, hDC, 1, 0, -2, rcLB.bottom - rcLB.top, SRCCOPY);
+	}
+	EndBufferedAnimation(hbpAnimation, TRUE);
 	ReleaseDC(hLB, hDC);
 }
 
@@ -101,6 +128,12 @@ LRESULT BetList::wndProc(UINT msg, WPARAM wParam, LPARAM lParam)
 {
 	switch (msg)
 	{
+	case WM_SETFOCUS:
+		if (getCurSel() == -1)
+		{
+			drawFocus(true);
+		}
+		break;
 	case WM_KILLFOCUS:
 		if ((HWND)wParam != allBoughtButton.getHwnd() && (HWND)wParam != boughtEdit.getHwnd())
 		{
@@ -112,8 +145,7 @@ LRESULT BetList::wndProc(UINT msg, WPARAM wParam, LPARAM lParam)
 			}
 			setCurSel(-1);
 			ShowWindow(allBoughtButton.getHwnd(), SW_HIDE);
-			SetWindowRgn(hLB, nullptr, FALSE);
-			RedrawWindow(hLB, nullptr, nullptr, RDW_FRAME | RDW_INVALIDATE);
+			drawFocus(false);
 		}
 		break;
 	case WM_GETDLGCODE:
@@ -123,6 +155,24 @@ LRESULT BetList::wndProc(UINT msg, WPARAM wParam, LPARAM lParam)
 			return DLGC_WANTALLKEYS;
 		}
 		break;
+	case WM_NCPAINT:
+		{
+			if (clock() > animationEndTime)
+			{
+				if (GetFocus() != hLB && getCurSel() == -1)
+				{
+					break;
+				}
+				HDC hDC = GetDCEx(hLB, nullptr, DCX_WINDOW | DCX_PARENTCLIP);
+				RECT rcFocus = { rcLB.right - rcLB.left - 2, 0, rcLB.right - rcLB.left, rcLB.bottom - rcLB.top };
+				FillRect(hDC, &rcFocus, GetSysColorBrush(COLOR_HIGHLIGHT));
+				ReleaseDC(hLB, hDC);
+			}
+			SetWindowRgn(hLB, CreateRectRgn(0, 0, rcLB.right - rcLB.left - 2, rcLB.bottom - rcLB.top), FALSE);
+			LRESULT result = DefSubclassProc(hLB, msg, wParam, lParam);
+			SetWindowRgn(hLB, nullptr, FALSE);
+			return result;
+		}
 	case WM_KEYDOWN:
 		switch (wParam)
 		{
@@ -250,13 +300,6 @@ LRESULT BetList::wndProc(UINT msg, WPARAM wParam, LPARAM lParam)
 
 	switch (msg)
 	{
-	case WM_PAINT:
-	case WM_NCPAINT:
-		if (GetFocus() == hLB || getCurSel() != -1)
-		{
-			drawFocus();
-		}
-		break;
 	case WM_KEYDOWN:
 		switch (wParam)
 		{
@@ -763,10 +806,30 @@ LRESULT ResultList::wndProc(UINT msg, WPARAM wParam, LPARAM lParam)
 {
 	switch (msg)
 	{
-	case WM_KILLFOCUS:
-		SetWindowRgn(hLB, nullptr, FALSE);
-		RedrawWindow(hLB, nullptr, nullptr, RDW_FRAME | RDW_INVALIDATE);
+	case WM_SETFOCUS:
+		drawFocus(true);
 		break;
+	case WM_KILLFOCUS:
+		drawFocus(false);
+		break;
+	case WM_NCPAINT:
+		{
+			if (clock() > animationEndTime)
+			{
+				if (GetFocus() != hLB)
+				{
+					break;
+				}
+				HDC hDC = GetDCEx(hLB, nullptr, DCX_WINDOW | DCX_PARENTCLIP);
+				RECT rcFocus = { rcLB.right - rcLB.left - 2, 0, rcLB.right - rcLB.left, rcLB.bottom - rcLB.top };
+				FillRect(hDC, &rcFocus, GetSysColorBrush(COLOR_HIGHLIGHT));
+				ReleaseDC(hLB, hDC);
+			}
+			SetWindowRgn(hLB, CreateRectRgn(0, 0, rcLB.right - rcLB.left - 2, rcLB.bottom - rcLB.top), FALSE);
+			LRESULT result = DefSubclassProc(hLB, msg, wParam, lParam);
+			SetWindowRgn(hLB, nullptr, FALSE);
+			return result;
+		}
 	case WM_CONTEXTMENU:
 		{
 			int curSel = ListBox_GetCurSel(hLB);
@@ -800,13 +863,6 @@ LRESULT ResultList::wndProc(UINT msg, WPARAM wParam, LPARAM lParam)
 
 	switch (msg)
 	{
-	case WM_PAINT:
-	case WM_NCPAINT:
-		if (GetFocus() == hLB)
-		{
-			drawFocus();
-		}
-		break;
 	}
 	return result;
 }

@@ -311,7 +311,7 @@ INT_PTR BetTabDlg::dlgProc(UINT msg, WPARAM wParam, LPARAM lParam)
 				switch (HIWORD(wParam))
 				{
 				case LBN_SETFOCUS:
-					selSide = uid == IDC_R_BET_LIST;
+					selSide = uid - IDC_L_BET_LIST;
 					return (INT_PTR)TRUE;
 				}
 				return (INT_PTR)TRUE;

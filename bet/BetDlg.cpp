@@ -198,7 +198,7 @@ INT_PTR BetDlg::dlgProc(UINT msg, WPARAM wParam, LPARAM lParam)
 							SetWindowPos(hTabNameEdit, HWND_TOP, TAB_NAME_EDIT_X + lastSel * TAB_WIDTH, TAB_NAME_EDIT_Y, 0, 0, SWP_NOSIZE | SWP_SHOWWINDOW);
 							SetFocus(hTabNameEdit);
 							lastSel = -1;
-							lastClickTime = -1000;
+							lastClickTime = INT_MIN;
 							return (INT_PTR)TRUE;
 						}
 						lastClickTime = clickTime;

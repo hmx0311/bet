@@ -3,6 +3,7 @@
 #include "edit.h"
 #include "model.h"
 
+#include <time.h>
 #include <utility>
 
 class ListBox
@@ -11,7 +12,7 @@ protected:
 	HWND hLB;
 	RECT rcLB;
 	int maxDisplayedItemCnt;
-	int focusAnimationFrame = 0;
+	clock_t animationEndTime = 0;
 public:
 	void attach(HWND hLB);
 	virtual LRESULT wndProc(UINT msg, WPARAM wParam, LPARAM lParam);
@@ -19,7 +20,7 @@ public:
 	HWND getHwnd();
 	void setCurSel(int nSelect);
 protected:
-	void drawFocus();
+	void drawFocus(bool isFocused);
 };
 
 class BetList :
