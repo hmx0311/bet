@@ -93,12 +93,6 @@ void ListBox::drawFocus(bool isFocused)
 	BP_ANIMATIONPARAMS animParams = { sizeof(BP_ANIMATIONPARAMS), 0, BPAS_LINEAR, isFocused ? LB_SETFOCUS_ANIMATION_DURATION : LB_KILLFOCUS_ANIMATION_DURATION };
 	HDC hDCFrom, hDCTo;
 	HANIMATIONBUFFER hbpAnimation = BeginBufferedAnimation(hLB, hDC, &rcFocus, BPBF_COMPATIBLEBITMAP, &paintParams, &animParams, &hDCFrom, &hDCTo);
-	if (hDCFrom != nullptr)
-	{
-		BitBlt(hDCFrom, rcLB.right - rcLB.left - 2, 0, 2, rcLB.bottom - rcLB.top, hDC, rcLB.right - rcLB.left - 2, 0, SRCCOPY);
-		animationEndTime = clock() + animParams.dwDuration;
-	}
-	BufferedPaintStopAllAnimations(hLB);
 	if (isFocused)
 	{
 		FillRect(hDCTo, &rcFocus, GetSysColorBrush(COLOR_HIGHLIGHT));
@@ -107,6 +101,12 @@ void ListBox::drawFocus(bool isFocused)
 	{
 		StretchBlt(hDCTo, rcLB.right - rcLB.left - 2, 0, 2, rcLB.bottom - rcLB.top, hDC, 1, 0, -2, rcLB.bottom - rcLB.top, SRCCOPY);
 	}
+	if (hDCFrom != nullptr)
+	{
+		BitBlt(hDCFrom, rcLB.right - rcLB.left - 2, 0, 2, rcLB.bottom - rcLB.top, hDC, rcLB.right - rcLB.left - 2, 0, SRCCOPY);
+		animationEndTime = clock() + animParams.dwDuration;
+	}
+	BufferedPaintStopAllAnimations(hLB);
 	EndBufferedAnimation(hbpAnimation, TRUE);
 	ReleaseDC(hLB, hDC);
 }
