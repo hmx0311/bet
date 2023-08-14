@@ -284,6 +284,9 @@ LRESULT AmountEdit::wndProc(UINT msg, WPARAM wParam, LPARAM lParam)
 	case WM_KILLFOCUS:
 		SNDMSG(Button_GetCheck(hBankerSelector) ? hBankerOddsEdit : hBetOddsEdit, WM_KEYUP, VK_UP, MAKELONG(1, KF_UP | KF_REPEAT | KF_EXTENDED));
 		break;
+	case WM_PAINT:
+		InvalidateRect(clearButton.getHwnd(), nullptr, FALSE);
+		break;
 	case WM_COMMAND:
 		switch (LOWORD(wParam))
 		{
