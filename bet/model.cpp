@@ -156,7 +156,7 @@ void Model::deleteBanker(bool side, int index)
 	totalInvest -= banker->amount;
 	int oddsIdx = lround(10 * banker->odds);
 	profit[side] -= banker->profit;
-	potentialProfit[side][0].deltaUpdate(oddsIdx, banker->profit - int(int(banker->amount / banker->odds) * cut));
+	potentialProfit[side][0].deltaUpdate(oddsIdx, banker->profit - int(banker->maxBought / banker->odds * cut * DBL_PRECISION_COMPENSATE));
 	profit[!side] += haveClosing ? banker->bought : banker->maxBought;
 	potentialProfit[side][1].deltaUpdate(oddsIdx, banker->maxBought - banker->bought);
 	bankers[side].erase(banker);
@@ -212,7 +212,7 @@ pair<__int64, __int64> Model::calcAimAmountBalance(bool isBet, double odds)
 	difference += balancedProfit;
 	if (difference < MIN_NOTABLE_DIFF)
 	{
-		return { 0,balancedProfit };
+		return { 0, balancedProfit };
 	}
 	__int64 aimAmount = llround(difference / (cut * (isBet ? odds : 1 / odds) + 1));
 	if (aimAmount < 0)
