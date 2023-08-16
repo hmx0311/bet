@@ -47,7 +47,7 @@ INT_PTR BetDlg::initDlg(HWND hDlg)
 				{
 					HDC hDC = GetDCEx(hTabCtrl, nullptr, DCX_PARENTCLIP);
 					int curSel = TabCtrl_GetCurSel(hTabCtrl);
-					RECT rect = { 2 + curSel * TAB_WIDTH, TAB_HEIGHT - 1, 2 + (curSel + 1) * TAB_WIDTH, TAB_HEIGHT + 2 };
+					RECT rect = { 2 + curSel * TAB_WIDTH, TAB_HEIGHT, 2 + (curSel + 1) * TAB_WIDTH, TAB_HEIGHT + 2 };
 					FillRect(hDC, &rect, GetSysColorBrush(COLOR_APPWORKSPACE));
 					ReleaseDC(hTabCtrl, hDC);
 				}
