@@ -19,7 +19,7 @@ void Banker::changeBought(int newBought, double cut)
 	profit = bought / odds * cut * DBL_PRECISION_COMPENSATE;
 }
 
-__int64 Model::IntervalSumTree::getAmount(uint32_t index)
+__int64 Model::IntervalSumTree::getAmount(uint32_t index) const
 {
 	return amount[index | (1 << INTERVAL_TREE_DEPTH)];
 }
@@ -32,7 +32,7 @@ void Model::IntervalSumTree::deltaUpdate(uint32_t index, __int64 deltaAmount)
 	}
 }
 
-__int64 Model::IntervalSumTree::getSum(uint32_t begin, uint32_t end)
+__int64 Model::IntervalSumTree::getSum(uint32_t begin, uint32_t end) const
 {
 	if (begin == end)
 	{
@@ -52,7 +52,7 @@ __int64 Model::IntervalSumTree::getSum(uint32_t begin, uint32_t end)
 	return sum;
 }
 
-__int64 Model::IntervalSumTree::total()
+__int64 Model::IntervalSumTree::total() const
 {
 	return amount[1];
 }
@@ -188,7 +188,7 @@ bool Model::changeClosing()
 	return true;
 }
 
-pair<__int64, __int64> Model::calcAimAmountBalance(bool isBet, double odds)
+pair<__int64, __int64> Model::calcAimAmountBalance(bool isBet, double odds) const
 {
 	bool side = profit[0] > profit[1];
 	__int64 difference = -profit[side];
@@ -234,7 +234,7 @@ double calcError(double p, double errorFactor)
 	return errorFactor * (a * p + b * sqrt(p * (1 - p))) / (a + b);
 }
 
-void Model::calcReferenceOdds(__int64 initialAmount, double winProb, double errorFactor, double* __restrict referenceOdds)
+void Model::calcReferenceOdds(__int64 initialAmount, double winProb, double errorFactor, double* __restrict referenceOdds) const
 {
 	for (int i = 0; i < 2; i++)
 	{
@@ -293,7 +293,7 @@ void Model::calcReferenceOdds(__int64 initialAmount, double winProb, double erro
 	}
 }
 
-__int64 Model::calcAimAmountProb(__int64 initialAmount, double winProb, double errorFactor, bool side, bool isBet, double odds)
+__int64 Model::calcAimAmountProb(__int64 initialAmount, double winProb, double errorFactor, bool side, bool isBet, double odds) const
 {
 	winProb = side ? 1 - winProb : winProb;
 	double lowerWinProb = winProb - calcError(winProb, errorFactor);
@@ -340,17 +340,17 @@ __int64 Model::calcAimAmountProb(__int64 initialAmount, double winProb, double e
 	return aimAmount;
 }
 
-double Model::getCut()
+double Model::getCut() const
 {
 	return cut;
 }
 
-__int64 Model::getProfit(bool side)
+__int64 Model::getProfit(bool side) const
 {
 	return profit[side];
 }
 
-__int64 Model::getTotalInvest()
+__int64 Model::getTotalInvest() const
 {
 	return totalInvest;
 }

@@ -55,7 +55,7 @@ INT_PTR Dialog::dialogBox(HWND hWndParent)
 	return DialogBoxParam(hInst, MAKEINTRESOURCE(nIDTemplate), hWndParent, ::dlgProc, (LPARAM)this);
 }
 
-HWND Dialog::getHwnd()
+HWND Dialog::getHwnd() const
 {
 	return hDlg;
 }

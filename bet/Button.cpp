@@ -108,7 +108,7 @@ LRESULT Button::wndProc(UINT msg, WPARAM wParam, LPARAM lParam)
 	return DefSubclassProc(hButton, msg, wParam, lParam);
 }
 
-HWND Button::getHwnd()
+HWND Button::getHwnd() const
 {
 	return hButton;
 }

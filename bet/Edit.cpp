@@ -90,7 +90,7 @@ void Edit::attach(HWND hEdit)
 	ImmAssociateContext(hEdit, nullptr);
 }
 
-HWND Edit::getHwnd()
+HWND Edit::getHwnd() const
 {
 	return hEdit;
 }
@@ -101,7 +101,7 @@ void Edit::setText(PCTSTR str)
 	Edit_SetSel(hEdit, lstrlen(str), -1);
 }
 
-void Edit::getText(PTSTR str, int nMaxCount)
+void Edit::getText(PTSTR str, int nMaxCount) const
 {
 	GetWindowText(hEdit, str, nMaxCount);
 }
@@ -344,7 +344,7 @@ LRESULT OddsEdit::wndProc(UINT msg, WPARAM wParam, LPARAM lParam)
 	return DefSubclassProc(hEdit, msg, wParam, lParam);
 }
 
-double OddsEdit::getOdds()
+double OddsEdit::getOdds() const
 {
 	return odds;
 }

@@ -34,10 +34,10 @@ private:
 		__int64 amount[(1 << (INTERVAL_TREE_DEPTH + 1)) - 1]{};
 
 	public:
-		__int64 getAmount(uint32_t index);
+		__int64 getAmount(uint32_t index) const;
 		void deltaUpdate(uint32_t index, __int64 deltaAmount);
-		__int64 getSum(uint32_t begin, uint32_t end);	//sum between [begin,end)
-		__int64 total();
+		__int64 getSum(uint32_t begin, uint32_t end) const;	//sum between [begin,end)
+		__int64 total() const;
 	};
 
 	double cut;
@@ -62,10 +62,10 @@ public:
 	void deleteBanker(bool side, int index);
 	void reset();
 	bool changeClosing();
-	std::pair<__int64, __int64> calcAimAmountBalance(bool isBet, double odds);
-	void calcReferenceOdds(__int64 initialAmount, double winProb, double errorFactor, double* __restrict referenceOdds);
-	__int64 calcAimAmountProb(__int64 initialAmount, double winProb, double errorFactor, bool side, bool isBet, double odds);
-	double getCut();
-	__int64 getProfit(bool side);
-	__int64 getTotalInvest();
+	std::pair<__int64, __int64> calcAimAmountBalance(bool isBet, double odds) const;
+	void calcReferenceOdds(__int64 initialAmount, double winProb, double errorFactor, double* __restrict referenceOdds) const;
+	__int64 calcAimAmountProb(__int64 initialAmount, double winProb, double errorFactor, bool side, bool isBet, double odds) const;
+	double getCut() const;
+	__int64 getProfit(bool side) const;
+	__int64 getTotalInvest() const;
 };

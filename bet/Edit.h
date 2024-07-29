@@ -13,9 +13,9 @@ protected:
 public:
 	void attach(HWND hEdit);
 	virtual LRESULT wndProc(UINT msg, WPARAM wParam, LPARAM lParam) = 0;
-	HWND getHwnd();
+	HWND getHwnd() const;
 	void setText(PCTSTR str);
-	void getText(PTSTR str, int nMaxCount);
+	void getText(PTSTR str, int nMaxCount) const;
 	void setSel(int start, int end);
 };
 
@@ -57,7 +57,7 @@ private:
 
 public:
 	virtual LRESULT wndProc(UINT msg, WPARAM wParam, LPARAM lParam);
-	double getOdds();
+	double getOdds() const;
 	void spinDelta(int iDelta);
 private:
 	void oddsUp(double up = 0.1);

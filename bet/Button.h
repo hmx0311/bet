@@ -18,7 +18,7 @@ protected:
 public:
 	void attach(HWND hButton);
 	LRESULT wndProc(UINT msg, WPARAM wParam, LPARAM lParam);
-	HWND getHwnd();
+	HWND getHwnd() const;
 	void setText(PCTSTR str);
 	void setIcon(HICON hIcon);
 	void setBkgBrush(HBRUSH hBkgBrush);

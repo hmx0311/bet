@@ -335,7 +335,7 @@ void BetDlg::createTab()
 	SetFocus(hTabNameEdit);
 }
 
-void BetDlg::calcPos()
+void BetDlg::calcPos() const
 {
 	RECT pos;
 	GetWindowRect(hBetTab, &pos);

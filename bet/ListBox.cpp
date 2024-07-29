@@ -75,7 +75,7 @@ LRESULT ListBox::wndProc(UINT msg, WPARAM wParam, LPARAM lParam)
 	return result;
 }
 
-HWND ListBox::getHwnd()
+HWND ListBox::getHwnd() const
 {
 	return hLB;
 }
@@ -619,17 +619,17 @@ void BetList::cancelDrag()
 	}
 }
 
-int BetList::getBetsSize()
+int BetList::getBetsSize() const
 {
 	return betsSize;
 }
 
-int BetList::getBankersSize()
+int BetList::getBankersSize() const
 {
 	return bankersSize;
 }
 
-int BetList::getCurSel()
+int BetList::getCurSel() const
 {
 	int curSel = ListBox_GetCurSel(hLB);
 	if (curSel < 2 || betsSize + 1 < curSel && curSel < betsSize + 5)
@@ -693,7 +693,7 @@ pair<bool, int> BetList::deleteSel()
 	return result;
 }
 
-bool BetList::isEmpty()
+bool BetList::isEmpty() const
 {
 	return betsSize + bankersSize == 0;
 }

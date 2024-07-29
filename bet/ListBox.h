@@ -17,7 +17,7 @@ public:
 	void attach(HWND hLB);
 	virtual LRESULT wndProc(UINT msg, WPARAM wParam, LPARAM lParam);
 	virtual void drawItem(PDRAWITEMSTRUCT pDrawItemStruct) = 0;
-	HWND getHwnd();
+	HWND getHwnd() const;
 	void setCurSel(int nSelect);
 protected:
 	void drawFocus(bool isFocused);
@@ -45,14 +45,14 @@ public:
 	UINT dragging(POINT ptCursor);
 	int dropped(POINT ptCursor);
 	void cancelDrag();
-	int getBetsSize();
-	int getBankersSize();
-	int getCurSel();
+	int getBetsSize() const;
+	int getBankersSize() const;
+	int getCurSel() const;
 	void addBet(double odds, int amount);
 	void addBanker(const Banker& banker);
 	void updateBanker(int nIndex, const Banker& banker);
 	std::pair<bool, int> deleteSel();
-	bool isEmpty();
+	bool isEmpty() const;
 	void resetContent();
 private:
 	void addString(PCTSTR str, BYTE style = 0, COLORREF color = 0);

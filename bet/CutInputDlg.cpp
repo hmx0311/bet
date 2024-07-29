@@ -36,7 +36,7 @@ INT_PTR CutInputDlg::dlgProc(UINT msg, WPARAM wParam, LPARAM lParam)
 	return (INT_PTR)FALSE;
 }
 
-double CutInputDlg::getCut()
+double CutInputDlg::getCut() const
 {
 	double cut = 0;
 	TCHAR str[6];
